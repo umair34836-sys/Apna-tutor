@@ -1,0 +1,92 @@
+---
+// =============================================================================
+// src/pages/index.astro — Phase 1 ka minimal homepage
+//
+// Poora homepage (hero search card, subject tiles, featured tutors, trust,
+// how-it-works, recruit CTA) Phase 3 mein banega — index.html ko components
+// mein tod kar. Abhi sirf itna hai ke build chal jaye.
+//
+// ★ Saare numbers src/data/stats.json se aate hain — yani asli Firestore data.
+//   Zero tutors hon to empty state dikhta hai, jhoota number kabhi nahi.
+// =============================================================================
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { stats } from '../lib/data';
+
+const hasTutors = stats.tutorCount > 0;
+
+const title = hasTutors
+  ? `Verified Home & Online Tutors in Pakistan — ${stats.tutorCount} Tutors | ApnaTutor`
+  : 'Verified Home & Online Tutors in Pakistan | ApnaTutor';
+
+const description = hasTutors
+  ? `Pakistan mein ${stats.tutorCount} verified home aur online tutors. Class, subject, area aur budget ke hisaab se dhoondein. Parents ke liye free.`
+  : 'Pakistan mein apne area ka verified home tutor ya online tutor dhoondein. Class, subject, area aur budget ke hisaab se filter karein. Parents ke liye free.';
+---
+<Base title={title} description={description} path="/" showStickyCta bodyClass="has-sticky-cta">
+  <div class="hero">
+    <div class="wrap">
+      <div class="hero-head">
+        <span class="eyebrow">
+          <Icon name="map-pin" size={16} />
+          Risalpur aur Nowshera mein shuru
+        </span>
+        <h1>Apne area ka <em>right tutor</em>, ek jagah.</h1>
+        <p class="hero-sub">
+          Class, subject, area aur budget batayein — ApnaTutor aapke liye matching tutors
+          dhoondega. Home tuition ho ya online, verified profiles ke saath.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/find-tutor">
+            <Icon name="search" />
+            Tutor dhoondein
+          </a>
+          <a class="btn btn-outline" href="/request-tutor">
+            <Icon name="send" />
+            Request post karein
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      {hasTutors ? (
+        <div class="sec-head">
+          <h2>{stats.tutorCount} verified tutors, {stats.cityCount} cities</h2>
+          <p>Profile khol kar poori detail dekhein — qualification, fee range aur availability.</p>
+        </div>
+      ) : (
+        <div class="empty">
+          <Icon name="users" class="icon" />
+          <h3>Abhi koi tutor live nahi hai</h3>
+          <p>
+            Pehle tutors onboard ho rahe hain. Aap apni requirement post kar dein — jaise hi
+            aapke area mein matching tutor aayega, hum aapko bata denge.
+          </p>
+          <a class="btn btn-primary" href="/request-tutor">
+            <Icon name="send" />
+            Request post karein
+          </a>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <style>
+    .hero{background:
+        radial-gradient(900px 380px at 15% -10%,#E6FFFB 0%,transparent 60%),
+        linear-gradient(180deg,var(--primary-soft) 0%,var(--bg) 100%);
+      padding:var(--space-5) 0 var(--space-4);border-bottom:1px solid var(--border)}
+    .hero-head{max-width:660px}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;
+      border:1px solid var(--primary-border);color:var(--primary-dark);
+      padding:6px 14px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;
+      margin-bottom:var(--space-2)}
+    .hero h1{font-size:clamp(30px,6vw,50px);font-weight:700;max-inline-size:22ch;text-wrap:balance}
+    .hero h1 em{font-style:normal;color:var(--primary)}
+    .hero-sub{margin-top:14px;font-size:clamp(16px,2.2vw,19px);color:var(--muted-fg);max-inline-size:52ch}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:var(--space-1);margin-top:var(--space-3)}
+  </style>
+</Base>

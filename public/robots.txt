@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Private / logged-in areas — index karne ki koi wajah nahi
+Disallow: /admin
+Disallow: /tutor/dashboard
+Disallow: /tutor/leads
+Disallow: /tutor/profile
+Disallow: /parent/
+
+# Filtered search URLs — thin/duplicate content ban jate hain
+Disallow: /find-tutor?
+
+Sitemap: https://apnatutor.com/sitemap-index.xml

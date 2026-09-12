@@ -1,0 +1,382 @@
+rules_version = '2';
+
+// =============================================================================
+// ApnaTutor — Firestore Security Rules
+//
+// Cloud Functions Spark plan par available nahi hain, isliye ye file hi
+// backend hai. Har wo cheez jo normally server karta — authorization, field
+// protection, trust flags, review eligibility — yahan enforce hoti hai.
+//
+// Do rules kabhi na todo:
+//   1. Trust fields (badges, ratings, featuredUntil, photoUrl, status) sirf
+//      admin likh sakta hai. Tutor apna badge set kar sake to poora trust
+//      system bekaar.
+//   2. Phone number public `tutors/{id}` doc mein kabhi nahi. Wo
+//      `tutors/{id}/private/contact` mein hai, alag rules ke peeche.
+//
+// Test karna zaroori hai:  firebase emulators:exec --only firestore "npm test"
+// =============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------------
+    // Helpers
+    // ---------------------------------------------------------------------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    // Admin role custom claims se nahi aata (uske liye Admin SDK/Functions
+    // chahiye hote). `admins/{uid}` document ka mojood hona hi admin hai.
+    // Ye documents Firebase Console se HAATH SE banao.
+    function isAdmin() {
+      return signedIn()
+             && exists(/databases/$(database)/documents/admins/$(uid()));
+    }
+
+    function isOwner(userId) {
+      return signedIn() && uid() == userId;
+    }
+
+    // Bulk scraping rokta hai. Rate limiting server ke bagair mumkin nahi,
+    // lekin ek query mein zyada docs nikalna rok sakte hain.
+    function capped(n) {
+      return request.query.limit != null && request.query.limit <= n;
+    }
+
+    // Client ko serverTimestamp() use karna hoga — apna waqt nahi bhej sakta.
+    function serverTime(field) {
+      return request.resource.data[field] == request.time;
+    }
+
+    function unchanged(field) {
+      return request.resource.data.get(field, null) == resource.data.get(field, null);
+    }
+
+    // ---------------------------------------------------------------------
+    // admins/{uid}  —  admin registry
+    // Client se kabhi writable nahi. Console se banao.
+    // ---------------------------------------------------------------------
+
+    match /admins/{adminUid} {
+      allow read:  if isAdmin();
+      allow write: if false;
+    }
+
+    // ---------------------------------------------------------------------
+    // users/{uid}  —  account + role
+    // ---------------------------------------------------------------------
+
+    match /users/{userId} {
+      allow get: if isAdmin() || isOwner(userId);
+      allow list: if isAdmin() && capped(50);
+
+      allow create: if isOwner(userId)
+        && request.resource.data.role in ['parent', 'tutor']
+        && request.resource.data.keys().hasOnly(['role', 'name', 'city', 'createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 60
+        && serverTime('createdAt');
+
+      // User apna naam/city badal sakta hai — role nahi.
+      allow update: if isAdmin()
+        || (isOwner(userId) && unchanged('role'));
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------
+    // tutors/{uid}  —  public profile
+    // ---------------------------------------------------------------------
+
+    match /tutors/{tutorId} {
+
+      // Sirf approved profiles public hain.
+      allow get: if resource.data.status == 'approved'
+                 || isAdmin()
+                 || isOwner(tutorId);
+
+      // LIST: rule per-document evaluate hoti hai, isliye client ki query mein
+      // `where('status','==','approved')` hona LAZMI hai — warna poori query
+      // reject ho jayegi. Ye by design hai.
+      allow list: if capped(30)
+                  && (isAdmin() || resource.data.status == 'approved');
+
+      allow create: if isOwner(tutorId)
+        // Naya profile hamesha review ke liye jata hai.
+        && request.resource.data.status == 'pending'
+        // Trust fields shuru mein khali — tutor inhe seed nahi kar sakta.
+        && request.resource.data.badges.phoneChecked == false
+        && request.resource.data.badges.idChecked == false
+        && request.resource.data.badges.qualChecked == false
+        && request.resource.data.ratingAvg == 0
+        && request.resource.data.ratingCount == 0
+        && request.resource.data.photoUrl == null
+        && request.resource.data.get('featuredUntil', null) == null
+        // Contact info is document mein bilkul nahi.
+        && !('phone' in request.resource.data)
+        && !('whatsapp' in request.resource.data)
+        && !('email' in request.resource.data)
+        // Basic sanity
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 3
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.bio.size() <= 600
+        && request.resource.data.feeMin is int
+        && request.resource.data.feeMax is int
+        && request.resource.data.feeMin >= 500
+        && request.resource.data.feeMax >= request.resource.data.feeMin
+        && request.resource.data.feeMax <= 200000
+        && request.resource.data.experienceYears is int
+        && request.resource.data.experienceYears >= 0
+        && request.resource.data.experienceYears <= 50
+        && request.resource.data.subjects.size() >= 1
+        && request.resource.data.subjects.size() <= 8
+        && request.resource.data.areas.size() >= 1
+        && request.resource.data.areas.size() <= 6
+        && request.resource.data.gender in ['male', 'female']
+        && serverTime('createdAt');
+
+      allow update: if isAdmin()
+        || (isOwner(tutorId)
+            // Tutor apna content edit kar sakta hai, magar:
+            && unchanged('badges')          // trust flags — sirf admin
+            && unchanged('ratingAvg')
+            && unchanged('ratingCount')
+            && unchanged('featuredUntil')   // paid placement — sirf admin
+            && unchanged('photoUrl')        // approved photo — sirf admin
+            && unchanged('status')          // khud ko approve nahi kar sakta
+            && unchanged('slug')            // URL fix — warna SEO links tootenge
+            && unchanged('createdAt')
+            && !('phone' in request.resource.data)
+            && !('whatsapp' in request.resource.data)
+            && !('email' in request.resource.data)
+            && request.resource.data.bio.size() <= 600
+            && request.resource.data.feeMax >= request.resource.data.feeMin
+            && serverTime('updatedAt'));
+
+      allow delete: if isAdmin();
+
+      // -------------------------------------------------------------------
+      // tutors/{uid}/private/contact  —  gated phone number
+      //
+      // Firestore rules document-level hoti hain, field-level nahi. Phone
+      // chhupane ka yahi ek tareeqa hai — alag document.
+      // -------------------------------------------------------------------
+
+      match /private/contact {
+        allow read: if isAdmin()
+          || isOwner(tutorId)
+          // Parent ne is tutor ka contact unlock kiya hai.
+          || (signedIn()
+              && exists(/databases/$(database)/documents/connections/$(uid() + '_' + tutorId)));
+
+        allow write: if isAdmin()
+          || (isOwner(tutorId)
+              && request.resource.data.keys().hasOnly(['phone', 'whatsapp', 'email'])
+              && request.resource.data.phone is string
+              && request.resource.data.phone.matches('^\\+92[0-9]{10}$'));
+      }
+
+      // Tutor apni photo upload karta hai → pending. Admin approve karke
+      // `photoUrl` set karta hai. Alag doc taake public profile ki update
+      // rule saaf rahe.
+      match /private/photoSubmission {
+        allow read:   if isAdmin() || isOwner(tutorId);
+        allow create, update: if isOwner(tutorId)
+          && request.resource.data.keys().hasOnly(['url', 'publicId', 'submittedAt'])
+          && request.resource.data.url.matches('^https://res[.]cloudinary[.]com/.*')
+          && serverTime('submittedAt');
+        allow delete: if isAdmin() || isOwner(tutorId);
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // connections/{parentUid}_{tutorUid}  —  contact unlock record
+    //
+    // Composite document ID = ek pair ka ek hi record. Ye record contact
+    // access bhi deta hai aur review likhne ka haq bhi.
+    // ---------------------------------------------------------------------
+
+    match /connections/{connectionId} {
+      allow get: if isAdmin()
+        || (signedIn() && (resource.data.parentUid == uid()
+                           || resource.data.tutorUid == uid()));
+
+      allow list: if capped(50)
+        && (isAdmin() || (signedIn() && resource.data.parentUid == uid()));
+
+      allow create: if signedIn()
+        // ID ka format enforce — warna doosre parent ke naam par bana sakte.
+        && connectionId == uid() + '_' + request.resource.data.tutorUid
+        && request.resource.data.parentUid == uid()
+        && request.resource.data.keys().hasOnly(['parentUid', 'tutorUid', 'source', 'createdAt'])
+        && request.resource.data.source in ['search', 'lead']
+        // Sirf approved tutor ka contact unlock ho sakta hai.
+        && get(/databases/$(database)/documents/tutors/$(request.resource.data.tutorUid))
+             .data.status == 'approved'
+        && serverTime('createdAt');
+
+      // Immutable — banane ke baad badalta nahi.
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------
+    // requests/{requestId}  —  parent ki tuition request (private)
+    // Parent ka phone yahan safe hai kyunki public read nahi hai.
+    // ---------------------------------------------------------------------
+
+    match /requests/{requestId} {
+      allow get: if isAdmin() || (signedIn() && resource.data.parentUid == uid());
+      allow list: if capped(50)
+        && (isAdmin() || (signedIn() && resource.data.parentUid == uid()));
+
+      allow create: if signedIn()
+        && request.resource.data.parentUid == uid()
+        && request.resource.data.status == 'open'
+        && request.resource.data.parentPhone.matches('^\\+92[0-9]{10}$')
+        && request.resource.data.notes.size() <= 1000
+        && request.resource.data.budgetMax is int
+        && request.resource.data.budgetMax > 0
+        && request.resource.data.mode in ['home', 'online', 'any']
+        && request.resource.data.genderPref in ['male', 'female', 'any']
+        && serverTime('createdAt');
+
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.parentUid == uid()
+            && unchanged('parentUid')
+            && unchanged('createdAt'));
+
+      allow delete: if isAdmin()
+        || (signedIn() && resource.data.parentUid == uid());
+    }
+
+    // ---------------------------------------------------------------------
+    // leads/{leadId}  —  request ka fan-out, tutor dashboard ke liye
+    //
+    // Server nahi hai, isliye fan-out parent ka browser karta hai. Rules ka
+    // kaam: parent sirf apni request ka fan-out kare, aur lead mein parent ka
+    // contact bilkul na ho.
+    // ---------------------------------------------------------------------
+
+    match /leads/{leadId} {
+      allow get: if isAdmin()
+        || (signedIn() && (resource.data.tutorUid == uid()
+                           || resource.data.parentUid == uid()));
+
+      allow list: if capped(50)
+        && (isAdmin()
+            || (signedIn() && (resource.data.tutorUid == uid()
+                               || resource.data.parentUid == uid())));
+
+      allow create: if signedIn()
+        && request.resource.data.parentUid == uid()
+        // Referenced request waqai isi parent ki hai.
+        && get(/databases/$(database)/documents/requests/$(request.resource.data.requestId))
+             .data.parentUid == uid()
+        // Tutor approved hona chahiye.
+        && get(/databases/$(database)/documents/tutors/$(request.resource.data.tutorUid))
+             .data.status == 'approved'
+        // ★ Parent ka contact lead mein kabhi nahi. Tutor "I'm Interested"
+        //   karta hai, phir parent decide karta hai ke number de ya na de.
+        && !('parentPhone' in request.resource.data)
+        && !('parentAddress' in request.resource.data)
+        && !('parentEmail' in request.resource.data)
+        && request.resource.data.status == 'new'
+        && serverTime('createdAt');
+
+      // Tutor sirf respond kar sakta hai — lead ka content nahi badal sakta.
+      allow update: if isAdmin()
+        || (signedIn()
+            && resource.data.tutorUid == uid()
+            && request.resource.data.diff(resource.data)
+                 .affectedKeys().hasOnly(['status', 'respondedAt'])
+            && request.resource.data.status in ['interested', 'declined']
+            && serverTime('respondedAt'));
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------
+    // reviews/{parentUid}_{tutorUid}
+    //
+    // Fake reviews ke khilaf sabse mazboot defence: review sirf tab ban sakta
+    // hai jab `connections/` doc mojood ho. Composite ID = ek parent ek tutor
+    // ko ek hi review de sakta hai.
+    // ---------------------------------------------------------------------
+
+    match /reviews/{reviewId} {
+      allow get: if resource.data.status == 'approved'
+        || isAdmin()
+        || (signedIn() && resource.data.parentUid == uid());
+
+      // Client ki query mein `where('status','==','approved')` lazmi.
+      allow list: if capped(30)
+        && (isAdmin() || resource.data.status == 'approved');
+
+      allow create: if signedIn()
+        && reviewId == uid() + '_' + request.resource.data.tutorUid
+        && request.resource.data.parentUid == uid()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.text is string
+        && request.resource.data.text.size() >= 10
+        && request.resource.data.text.size() <= 800
+        // ★ Verified interaction proof
+        && exists(/databases/$(database)/documents/connections/$(uid() + '_' + request.resource.data.tutorUid))
+        && serverTime('createdAt');
+
+      // Parent edit nahi kar sakta — warna approve hone ke baad text badal dega.
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------
+    // reports/{autoId}  —  abuse reporting
+    // Write-only for users; sirf admin padh sakta hai.
+    // ---------------------------------------------------------------------
+
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && request.resource.data.reporterUid == uid()
+        && request.resource.data.status == 'open'
+        && request.resource.data.targetType in ['tutor', 'review', 'request']
+        && request.resource.data.detail.size() <= 1000
+        && serverTime('createdAt');
+
+      allow get, list, update, delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------
+    // SEO content — world readable, admin writable
+    // Build script inhe Admin SDK se padhta hai.
+    // ---------------------------------------------------------------------
+
+    match /cities/{cityId} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    match /subjects/{subjectId} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------
+    // Default deny — koi bhi collection jo upar list nahi hai, band hai.
+    // Naya collection add karte waqt yahan rule likhna na bhoolo.
+    // ---------------------------------------------------------------------
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

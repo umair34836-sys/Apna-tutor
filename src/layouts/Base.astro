@@ -1,0 +1,201 @@
+---
+// =============================================================================
+// src/layouts/Base.astro — har page ka shell
+//
+// Isme teen cheezein hain jo har page par lazmi hain:
+//   1. Consent Mode v2 — GTM se PEHLE (docs/03-SEO-ANALYTICS.md §1)
+//   2. GTM container — GA4, Google Ads aur Meta Pixel sab iske andar se
+//   3. JSON-LD slot — WebSite + Organization har page par, page-specific upar se
+//
+// ★ Firebase yahan import NAHI hota. Homepage, city pages aur tutor profiles
+//   static hain — unhe Firebase ki zarurat nahi. src/lib/firebase.ts sirf
+//   wahan await hoti hai jahan waqai chahiye. Ye sabse bara performance win hai.
+// =============================================================================
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE, absoluteUrl, env } from '../lib/site';
+
+export interface Props {
+  title: string;
+  description: string;
+  /** Site-relative path, e.g. "/home-tutor-risalpur". Canonical hamesha absolute banti hai. */
+  path?: string;
+  ogImage?: string;
+  /** Filtered search, admin aur dashboard pages par true. */
+  noindex?: boolean;
+  /** Page-specific structured data — Person, BreadcrumbList, FAQPage waghaira. */
+  jsonLd?: Record<string, unknown>[];
+  /** Sticky mobile CTA sirf public marketing pages par. */
+  showStickyCta?: boolean;
+  bodyClass?: string;
+}
+
+const {
+  title,
+  description,
+  path = Astro.url.pathname,
+  ogImage = absoluteUrl('/og/default.png'),
+  noindex = false,
+  jsonLd = [],
+  showStickyCta = false,
+  bodyClass = '',
+} = Astro.props;
+
+const canonical = absoluteUrl(path);
+
+// Har page par — WebSite + Organization (docs/03-SEO-ANALYTICS.md §3)
+const baseJsonLd: Record<string, unknown>[] = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE.name,
+    url: SITE.url,
+    inLanguage: SITE.lang,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${SITE.url}/find-tutor?subject={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: SITE.name,
+    url: SITE.url,
+    logo: absoluteUrl('/favicon.svg'),
+    areaServed: 'Pakistan',
+    ...(SITE.sameAs.length ? { sameAs: SITE.sameAs } : {}),
+  },
+];
+
+/** `<` ko escape karna zaroori hai warna JSON-LD block se bahar nikal sakta hai. */
+const ld = (o: Record<string, unknown>) => JSON.stringify(o).replace(/</g, '\\u003c');
+---
+<!DOCTYPE html>
+<html lang={SITE.lang} dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  {/* ---- Consent Mode v2 — GTM se PEHLE chalna chahiye ---- */}
+  <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    // EEA/UK traffic ke liye default denied. Pakistan GDPR mein nahi aata,
+    // lekin Google Ads aur Meta dono EEA traffic par Consent Mode expect karte
+    // hain — aur overseas Pakistani parents target karne par lazmi hoga.
+    gtag('consent', 'default', {
+      'ad_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied',
+      'analytics_storage': 'denied',
+      'region': ['EU','EEA','GB','CH','NO','IS','LI']
+    });
+
+    // Baqi duniya
+    gtag('consent', 'default', {
+      'ad_storage': 'granted',
+      'ad_user_data': 'granted',
+      'ad_personalization': 'granted',
+      'analytics_storage': 'granted'
+    });
+  </script>
+
+  {/* ---- Google Tag Manager ---- */}
+  {env.gtmId && (
+    <script is:inline set:html={`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','${env.gtmId}');`} />
+  )}
+
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  {noindex && <meta name="robots" content="noindex, follow" />}
+
+  <meta property="og:site_name" content={SITE.name} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content={SITE.ogLocale} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#0F766E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  {[...baseJsonLd, ...jsonLd].map((block) => (
+    <script type="application/ld+json" is:inline set:html={ld(block)} />
+  ))}
+
+  <slot name="head" />
+</head>
+<body class={bodyClass}>
+  {env.gtmId && (
+    <noscript set:html={`<iframe src="https://www.googletagmanager.com/ns.html?id=${env.gtmId}"
+height="0" width="0" style="display:none;visibility:hidden"></iframe>`} />
+  )}
+
+  <a class="skip" href="#main">Skip to main content</a>
+
+  <Header />
+  <main id="main"><slot /></main>
+  <Footer />
+
+  {showStickyCta && (
+    <div class="sticky-cta">
+      <a class="btn btn-primary btn-sm" href="/find-tutor">Tutor dhoondein</a>
+      <a class="btn btn-outline btn-sm" href="/request-tutor">Request post karein</a>
+    </div>
+  )}
+
+  <style>
+    /* Sticky mobile CTA — hero action mobile par hamesha reachable rahe */
+    .sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:45;display:none;gap:var(--space-1);
+      padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+      background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--border)}
+    .sticky-cta .btn{flex:1}
+    @media(max-width:699px){
+      .sticky-cta{display:flex}
+      :global(body.has-sticky-cta){padding-bottom:84px}
+    }
+  </style>
+
+  <script>
+    // Scroll reveal — reduced motion par bilkul skip, final state turant render
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const items = document.querySelectorAll('.reveal');
+    if (reduce || !('IntersectionObserver' in window)) {
+      items.forEach((el) => el.classList.add('in'));
+    } else {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((en) => {
+            if (en.isIntersecting) {
+              en.target.classList.add('in');
+              io.unobserve(en.target);
+            }
+          });
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+      );
+      items.forEach((el) => io.observe(el));
+    }
+  </script>
+</body>
+</html>

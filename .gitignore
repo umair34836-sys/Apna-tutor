@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.astro/
+
+# build-time data — Firestore se aata hai, repo mein commit nahi hota.
+# Warna stale/demo data repo mein reh jata hai (BUILD-PROMPT rule #2).
+src/data/*.json
+
+# env — secrets kabhi commit na hon
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# firebase
+.firebase/
+firebase-debug.log
+*firebase-adminsdk*.json
+serviceAccount*.json
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.log

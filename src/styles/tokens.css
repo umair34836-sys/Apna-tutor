@@ -1,0 +1,60 @@
+/* ==========================================================================
+   ApnaTutor — Design tokens
+   Source: index.html (approved homepage design)
+   Palette: "LMS" (education teal + course amber)  · colors.csv
+   Type:    "Corporate Trust" — Lexend + Source Sans 3 · typography.csv
+
+   ★ RULE: koi naya hex code kisi component mein nahi. Naya color chahiye to
+     yahan add karo, aur pehle contrast calculate karo (minimum 4.5:1 normal
+     text par). Neeche ke saare pairs already check ho chuke hain —
+     DESIGN-NOTES.md dekho.
+   ========================================================================== */
+:root{
+  --primary:#0F766E;          /* teal-700 — 5.47:1 on white, safe for button text */
+  --primary-bright:#0D9488;   /* teal-600 — fills, icons, large text only */
+  --primary-dark:#134E4A;
+  --primary-soft:#F0FDFA;
+  --primary-border:#99F6E4;
+
+  --accent:#D97706;           /* amber — stars, featured badge fills */
+  --accent-text:#92400E;      /* amber-800 — 4.9:1 on white for amber-tinted text */
+  --accent-soft:#FFFBEB;
+
+  --whatsapp:#0E7A6D;         /* darkened WhatsApp green — 5.22:1 with white text */
+
+  --bg:#FFFFFF;
+  --bg-alt:#F8FAFB;
+  --card:#FFFFFF;
+  --fg:#0F172A;
+  --muted-fg:#475569;
+  --border:#E2E8F0;
+  --border-strong:#CBD5E1;
+  --destructive:#DC2626;
+
+  --space-1:8px; --space-2:16px; --space-3:24px; --space-4:32px;
+  --space-5:48px; --space-6:64px;
+
+  --radius:12px; --radius-lg:16px; --radius-pill:999px;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06),0 1px 3px rgba(15,23,42,.05);
+  --shadow-md:0 4px 6px -1px rgba(15,23,42,.07),0 2px 4px -2px rgba(15,23,42,.05);
+  --shadow-lg:0 10px 20px -5px rgba(15,23,42,.10),0 4px 8px -4px rgba(15,23,42,.05);
+
+  --font-heading:'Lexend',system-ui,sans-serif;
+  --font-body:'Source Sans 3',system-ui,sans-serif;
+  --ease:cubic-bezier(.4,0,.2,1);
+
+  /* Badge colors — har badge ka apna matlab hai (DESIGN-NOTES.md "Trust badges") */
+  --b-phone-bg:#F0FDF4;  --b-phone-border:#BBF7D0;  --b-phone-fg:#15803D;
+  --b-id-bg:#EFF6FF;     --b-id-border:#BFDBFE;     --b-id-fg:#1D4ED8;
+  --b-qual-bg:#F5F3FF;   --b-qual-border:#DDD6FE;   --b-qual-fg:#6D28D9;
+  --b-full-border:#FCD34D;
+
+  --icon-muted:#94A3B8;
+  --footer-bg:#0B1220;
+  --footer-fg:#94A3B8;
+  --footer-border:#1E293B;
+  --footer-link-hover:#5EEAD4;
+  --on-dark-soft:#B7E4DE;
+  --on-dark-accent:#5EEAD4;
+  --on-dark-teal:#CCFBF1;
+}

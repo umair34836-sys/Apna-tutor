@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ur" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ApnaTutor — Apne area ka right tutor, ek jagah</title>
+<meta name="description" content="Pakistan mein apne area ka verified home tutor ya online tutor dhoondein. Class, subject, area aur budget select karein — ApnaTutor matching tutors dhoondega.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   ApnaTutor — Design tokens
+   Palette: "LMS" (education teal + course amber)  · colors.csv
+   Type:    "Corporate Trust" — Lexend + Source Sans 3 · typography.csv
+   Pattern: marketplace-directory · landing.csv
+   ========================================================================== */
+:root{
+  --primary:#0F766E;          /* teal-700 — 5.47:1 on white, safe for button text */
+  --primary-bright:#0D9488;   /* teal-600 — fills, icons, large text only */
+  --primary-dark:#134E4A;
+  --primary-soft:#F0FDFA;
+  --primary-border:#99F6E4;
+
+  --accent:#D97706;           /* amber — stars, featured badge fills */
+  --accent-text:#92400E;      /* amber-800 — 4.9:1 on white for amber-tinted text */
+  --accent-soft:#FFFBEB;
+
+  --whatsapp:#0E7A6D;         /* darkened WhatsApp green — 5.22:1 with white text */
+
+  --bg:#FFFFFF;
+  --bg-alt:#F8FAFB;
+  --card:#FFFFFF;
+  --fg:#0F172A;
+  --muted-fg:#475569;
+  --border:#E2E8F0;
+  --border-strong:#CBD5E1;
+  --destructive:#DC2626;
+
+  --space-1:8px; --space-2:16px; --space-3:24px; --space-4:32px;
+  --space-5:48px; --space-6:64px;
+
+  --radius:12px; --radius-lg:16px; --radius-pill:999px;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06),0 1px 3px rgba(15,23,42,.05);
+  --shadow-md:0 4px 6px -1px rgba(15,23,42,.07),0 2px 4px -2px rgba(15,23,42,.05);
+  --shadow-lg:0 10px 20px -5px rgba(15,23,42,.10),0 4px 8px -4px rgba(15,23,42,.05);
+
+  --font-heading:'Lexend',system-ui,sans-serif;
+  --font-body:'Source Sans 3',system-ui,sans-serif;
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--fg);
+  font-family:var(--font-body);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--font-heading);line-height:1.2;margin:0;font-weight:600;letter-spacing:-.01em}
+p{margin:0}
+img{max-width:100%;display:block}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Focus: never removed, always visible (Accessibility, priority 1) */
+:focus-visible{outline:3px solid var(--primary-bright);outline-offset:2px;border-radius:4px}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 var(--space-2)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip{position:absolute;left:-9999px;top:0;z-index:100;background:var(--primary);
+  color:#fff;padding:12px 20px;border-radius:0 0 var(--radius) 0}
+.skip:focus{left:0}
+
+/* ---------- Buttons: min 44x44 touch target (priority 2) ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:48px;padding:12px 22px;border:1px solid transparent;
+  border-radius:var(--radius);font-family:var(--font-heading);font-size:16px;
+  font-weight:600;cursor:pointer;text-decoration:none;
+  transition:background-color .2s var(--ease),border-color .2s var(--ease),transform .12s var(--ease);
+}
+.btn:hover{text-decoration:none}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-outline{background:#fff;color:var(--primary);border-color:var(--border-strong)}
+.btn-outline:hover{border-color:var(--primary);background:var(--primary-soft)}
+.btn-wa{background:var(--whatsapp);color:#fff}
+.btn-wa:hover{background:#0B6B60}
+.btn-ghost{background:transparent;color:var(--fg);border-color:var(--border)}
+.btn-ghost:hover{background:var(--bg-alt)}
+.btn-sm{min-height:44px;padding:10px 14px;font-size:15px}
+.btn-block{width:100%}
+.icon{width:20px;height:20px;flex:0 0 auto;stroke-width:2}
+
+/* ---------- Header ---------- */
+header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.nav{display:flex;align-items:center;justify-content:space-between;min-height:68px;gap:var(--space-2)}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--font-heading);
+  font-weight:700;font-size:21px;color:var(--primary-dark);letter-spacing:-.02em}
+.logo:hover{text-decoration:none}
+.logo-mark{width:36px;height:36px;border-radius:10px;background:var(--primary);
+  display:grid;place-items:center;color:#fff;flex:0 0 auto}
+.nav-links{display:none;gap:4px}
+.nav-links a{padding:10px 14px;border-radius:var(--radius);color:var(--muted-fg);font-weight:500}
+.nav-links a:hover{background:var(--bg-alt);color:var(--fg);text-decoration:none}
+.nav-cta{display:flex;gap:var(--space-1);align-items:center}
+.nav-cta .btn-ghost{display:none}
+@media(min-width:900px){
+  .nav-links{display:flex}
+  .nav-cta .btn-ghost{display:inline-flex}
+}
+
+/* ---------- Hero: search IS the primary CTA ---------- */
+.hero{background:
+    radial-gradient(900px 380px at 15% -10%,#E6FFFB 0%,transparent 60%),
+    linear-gradient(180deg,var(--primary-soft) 0%,var(--bg) 100%);
+  padding:var(--space-5) 0 var(--space-4);border-bottom:1px solid var(--border)}
+.hero-head{max-width:660px;margin-bottom:var(--space-3)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;
+  border:1px solid var(--primary-border);color:var(--primary-dark);
+  padding:6px 14px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;
+  margin-bottom:var(--space-2)}
+.hero h1{font-size:clamp(30px,6vw,50px);font-weight:700;max-inline-size:22ch;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--primary)}
+.hero-sub{margin-top:14px;font-size:clamp(16px,2.2vw,19px);color:var(--muted-fg);max-inline-size:52ch}
+
+/* Search card with two paths — tabs on mobile, progressive disclosure */
+.search-card{background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden}
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg-alt)}
+.tab{flex:1;min-height:60px;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px;background:none;border:0;border-bottom:3px solid transparent;cursor:pointer;
+  font-family:var(--font-heading);font-size:15px;font-weight:600;color:var(--muted-fg);
+  transition:color .2s var(--ease),background-color .2s var(--ease),border-color .2s var(--ease)}
+.tab:hover{background:#fff;color:var(--fg)}
+.tab[aria-selected="true"]{background:#fff;color:var(--primary-dark);border-bottom-color:var(--primary)}
+.tab .icon{width:19px;height:19px}
+@media(max-width:520px){.tab{font-size:13.5px;padding:10px 6px;flex-direction:column;gap:4px}}
+
+.panel{padding:var(--space-3)}
+.panel[hidden]{display:none}
+.field-grid{display:grid;gap:var(--space-2);grid-template-columns:1fr}
+@media(min-width:640px){.field-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:980px){.field-grid.cols-4{grid-template-columns:repeat(4,1fr)}}
+
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:14px;font-weight:600;color:var(--fg);font-family:var(--font-heading)}
+.field .hint{font-size:13px;color:var(--muted-fg)}
+select,input[type="text"],input[type="tel"],textarea{
+  width:100%;min-height:48px;padding:12px 14px;font-family:var(--font-body);font-size:16px;
+  color:var(--fg);background:#fff;border:1px solid var(--border-strong);border-radius:var(--radius);
+  transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+select:hover,input:hover,textarea:hover{border-color:#94A3B8}
+select:focus,input:focus,textarea:focus{border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(13,148,136,.18);outline:none}
+textarea{min-height:96px;resize:vertical;line-height:1.5}
+.panel-actions{display:flex;flex-wrap:wrap;gap:var(--space-1);align-items:center;
+  margin-top:var(--space-3);padding-top:var(--space-2);border-top:1px solid var(--border)}
+.panel-note{font-size:13.5px;color:var(--muted-fg);display:flex;align-items:center;gap:6px}
+.panel-note .icon{width:16px;height:16px;color:var(--primary-bright)}
+
+/* Inline validation message sits next to its field, not at the top */
+.err{display:none;font-size:13.5px;color:var(--destructive);font-weight:600;
+  align-items:center;gap:6px}
+.err.show{display:flex}
+.field.invalid select,.field.invalid input{border-color:var(--destructive)}
+
+/* ---------- Trust strip ---------- */
+.strip{background:var(--primary-dark);color:#fff;padding:var(--space-3) 0}
+.strip-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-3) var(--space-2)}
+@media(min-width:820px){.strip-grid{grid-template-columns:repeat(4,1fr)}}
+.stat{display:flex;gap:12px;align-items:flex-start}
+.stat .icon{width:22px;height:22px;color:#5EEAD4;margin-top:3px}
+.stat strong{display:block;font-family:var(--font-heading);font-size:19px;font-weight:600}
+.stat span{font-size:14px;color:#B7E4DE;line-height:1.4;display:block}
+
+/* ---------- Sections ---------- */
+section{padding:var(--space-5) 0}
+.sec-alt{background:var(--bg-alt);border-block:1px solid var(--border)}
+.sec-head{margin-bottom:var(--space-4);max-width:680px}
+.sec-head h2{font-size:clamp(24px,4vw,34px);font-weight:700;text-wrap:balance}
+.sec-head p{margin-top:10px;color:var(--muted-fg);font-size:17px}
+.sec-bar{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:flex-end;
+  justify-content:space-between;margin-bottom:var(--space-4)}
+.sec-bar .sec-head{margin-bottom:0}
+
+/* ---------- Subject category tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-2)}
+@media(min-width:640px){.tiles{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:980px){.tiles{grid-template-columns:repeat(6,1fr)}}
+.tile{display:flex;flex-direction:column;gap:10px;padding:18px 16px;background:#fff;
+  border:1px solid var(--border);border-radius:var(--radius);min-height:110px;
+  transition:border-color .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease)}
+.tile:hover{border-color:var(--primary-border);box-shadow:var(--shadow-md);
+  transform:translateY(-2px);text-decoration:none}
+.tile .icon{width:26px;height:26px;color:var(--primary-bright)}
+.tile b{font-family:var(--font-heading);font-size:15.5px;color:var(--fg);font-weight:600}
+.tile span{font-size:13px;color:var(--muted-fg)}
+
+/* ---------- Tutor cards ---------- */
+.tutors{display:grid;grid-template-columns:1fr;gap:var(--space-3)}
+@media(min-width:700px){.tutors{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1060px){.tutors{grid-template-columns:repeat(3,1fr)}}
+.tutor{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2);
+  transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+.tutor:hover{border-color:var(--border-strong);box-shadow:var(--shadow-lg)}
+.tutor.featured{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.feat-flag{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+  background:var(--accent-soft);color:var(--accent-text);border:1px solid #FCD34D;
+  padding:4px 10px;border-radius:var(--radius-pill);font-size:12.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em}
+.feat-flag .icon{width:14px;height:14px}
+.tutor-top{display:flex;gap:14px;align-items:flex-start}
+.avatar{width:60px;height:60px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  background:var(--primary-soft);border:2px solid var(--primary-border);
+  font-family:var(--font-heading);font-weight:700;font-size:21px;color:var(--primary-dark)}
+.tutor-id h3{font-size:18.5px;font-weight:600}
+.tutor-role{font-size:14.5px;color:var(--muted-fg);margin-top:2px}
+.rating{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:14px;font-weight:600}
+.rating .icon{width:16px;height:16px;color:var(--accent);fill:var(--accent)}
+.rating small{color:var(--muted-fg);font-weight:400}
+
+.meta{display:flex;flex-direction:column;gap:8px;font-size:14.5px;color:var(--muted-fg)}
+.meta div{display:flex;gap:9px;align-items:flex-start}
+.meta .icon{width:17px;height:17px;color:#94A3B8;margin-top:2px}
+.meta b{color:var(--fg);font-weight:600}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg-alt);
+  border:1px solid var(--border);color:var(--muted-fg);padding:5px 11px;
+  border-radius:var(--radius-pill);font-size:13px;font-weight:500;white-space:nowrap}
+.chip .icon{width:14px;height:14px}
+.chip-mode{background:var(--primary-soft);border-color:var(--primary-border);color:var(--primary-dark)}
+
+/* Badge meanings are spelled out — no "Verified" on unverified things */
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;
+  border-radius:var(--radius-pill);font-size:12.5px;font-weight:600;white-space:nowrap;
+  border:1px solid}
+.badge .icon{width:14px;height:14px}
+.b-phone{background:#F0FDF4;border-color:#BBF7D0;color:#15803D}
+.b-id{background:#EFF6FF;border-color:#BFDBFE;color:#1D4ED8}
+.b-qual{background:#F5F3FF;border-color:#DDD6FE;color:#6D28D9}
+.b-full{background:var(--accent-soft);border-color:#FCD34D;color:var(--accent-text)}
+
+.fee{padding:14px;background:var(--bg-alt);border:1px solid var(--border);
+  border-radius:var(--radius);display:flex;justify-content:space-between;
+  align-items:center;gap:10px;flex-wrap:wrap}
+.fee small{display:block;font-size:12.5px;color:var(--muted-fg);font-weight:500;
+  text-transform:uppercase;letter-spacing:.04em}
+.fee strong{font-family:var(--font-heading);font-size:18px;color:var(--fg);font-weight:600}
+.tutor-actions{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-1);margin-top:auto}
+.tutor-actions .btn-primary{grid-column:1 / -1}
+
+/* ---------- Trust & safety ---------- */
+.trust-grid{display:grid;grid-template-columns:1fr;gap:var(--space-2)}
+@media(min-width:760px){.trust-grid{grid-template-columns:repeat(2,1fr)}}
+.trust-item{background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+  padding:var(--space-3);display:flex;gap:14px;align-items:flex-start}
+.trust-item .icon{width:24px;height:24px;color:var(--primary-bright);margin-top:2px;flex:0 0 auto}
+.trust-item h3{font-size:17px;font-weight:600}
+.trust-item p{margin-top:6px;font-size:15px;color:var(--muted-fg)}
+.callout{margin-top:var(--space-3);background:var(--accent-soft);border:1px solid #FCD34D;
+  border-left:4px solid var(--accent);border-radius:var(--radius);padding:var(--space-3);
+  display:flex;gap:14px;align-items:flex-start}
+.callout .icon{width:22px;height:22px;color:var(--accent-text);flex:0 0 auto;margin-top:2px}
+.callout p{font-size:15px;color:#78350F}
+.callout b{color:#451A03}
+
+/* ---------- How it works ---------- */
+.steps{display:grid;grid-template-columns:1fr;gap:var(--space-3);counter-reset:s}
+@media(min-width:760px){.steps{grid-template-columns:repeat(3,1fr)}}
+.step{position:relative;padding-top:var(--space-2)}
+.step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;
+  width:44px;height:44px;border-radius:50%;background:var(--primary);color:#fff;
+  font-family:var(--font-heading);font-size:19px;font-weight:700;margin-bottom:14px}
+.step h3{font-size:18px;font-weight:600}
+.step p{margin-top:8px;color:var(--muted-fg);font-size:15.5px}
+
+/* ---------- Tutor recruitment CTA ---------- */
+.recruit{background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 100%);
+  color:#fff;border-radius:var(--radius-lg);padding:var(--space-5) var(--space-3);text-align:center}
+.recruit h2{font-size:clamp(24px,4vw,34px);font-weight:700;color:#fff;text-wrap:balance}
+.recruit p{margin:14px auto 0;max-width:54ch;color:#CCFBF1;font-size:17px}
+.recruit-actions{display:flex;flex-wrap:wrap;gap:var(--space-1);justify-content:center;margin-top:var(--space-3)}
+.recruit .btn-primary{background:#fff;color:var(--primary-dark)}
+.recruit .btn-primary:hover{background:#CCFBF1}
+.recruit .btn-outline{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+.recruit .btn-outline:hover{background:rgba(255,255,255,.12);border-color:#fff}
+.recruit-free{margin-top:var(--space-2);font-size:14px;color:#C3F9F0}
+
+/* ---------- Footer: SEO landing links ---------- */
+footer{background:#0B1220;color:#94A3B8;padding:var(--space-5) 0 var(--space-3);font-size:15px}
+.foot-grid{display:grid;grid-template-columns:1fr;gap:var(--space-4)}
+@media(min-width:700px){.foot-grid{grid-template-columns:1.4fr 1fr 1fr 1fr}}
+footer h4{font-size:14px;color:#fff;text-transform:uppercase;letter-spacing:.06em;
+  margin-bottom:14px;font-weight:600}
+footer ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+footer a{color:#94A3B8}
+footer a:hover{color:#5EEAD4}
+.foot-about .logo{color:#fff;margin-bottom:14px}
+.foot-about p{font-size:14.5px;max-width:36ch;line-height:1.6}
+.foot-bottom{margin-top:var(--space-4);padding-top:var(--space-3);
+  border-top:1px solid #1E293B;display:flex;flex-wrap:wrap;gap:var(--space-2);
+  justify-content:space-between;font-size:14px}
+
+/* ---------- Sticky mobile CTA (hero CTA stays reachable) ---------- */
+.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:45;display:none;gap:var(--space-1);
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--border)}
+.sticky-cta .btn{flex:1}
+@media(max-width:699px){.sticky-cta{display:flex}body{padding-bottom:84px}}
+
+/* ---------- Scroll reveal (CSS + IntersectionObserver, no GSAP dependency) ---------- */
+.reveal{opacity:0;transform:translateY(16px) scale(.99);
+  transition:opacity .4s var(--ease),transform .4s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+  .reveal{opacity:1;transform:none}
+  .tile:hover,.btn:active{transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<!-- ===================== HEADER ===================== -->
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="/">
+      <span class="logo-mark" aria-hidden="true">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+      </span>
+      ApnaTutor
+    </a>
+
+    <nav class="nav-links" aria-label="Main">
+      <a href="/find-tutor">Tutor dhoondein</a>
+      <a href="/request-tutor">Request post karein</a>
+      <a href="/how-it-works">Kaise kaam karta hai</a>
+      <a href="/cities">Cities</a>
+    </nav>
+
+    <div class="nav-cta">
+      <a class="btn btn-ghost btn-sm" href="/login">Login</a>
+      <a class="btn btn-primary btn-sm" href="/tutor/register">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+        Tutor banein
+      </a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ===================== HERO — search is the primary CTA ===================== -->
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-head">
+      <span class="eyebrow">
+        <svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Abhi Risalpur, Nowshera aur Peshawar mein live
+      </span>
+      <h1>Apne area ka <em>right tutor</em>, ek jagah.</h1>
+      <p class="hero-sub">
+        Class, subject, area aur budget batayein — ApnaTutor aapke liye matching tutors
+        dhoondega. Home tuition ho ya online, verified profiles ke saath.
+      </p>
+    </div>
+
+    <!-- Two paths: browse yourself, or post a request and let tutors come to you -->
+    <div class="search-card">
+      <div class="tabs" role="tablist" aria-label="Tutor dhoondne ka tareeqa">
+        <button class="tab" role="tab" id="tab-find" aria-controls="panel-find" aria-selected="true">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          Tutor dhoondein
+        </button>
+        <button class="tab" role="tab" id="tab-request" aria-controls="panel-request" aria-selected="false" tabindex="-1">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8z"/></svg>
+          Request post karein
+        </button>
+      </div>
+
+      <!-- PANEL 1: filter-based search -->
+      <div class="panel" id="panel-find" role="tabpanel" aria-labelledby="tab-find">
+        <form id="form-find" novalidate>
+          <div class="field-grid cols-4">
+            <div class="field" id="f-class">
+              <label for="s-class">Class</label>
+              <select id="s-class" name="class" required>
+                <option value="">Select karein</option>
+                <option>Class 1–5 (Primary)</option>
+                <option>Class 6–8 (Middle)</option>
+                <option>Class 9</option>
+                <option>Class 10 (Matric)</option>
+                <option>FSc / Intermediate</option>
+                <option>O Level</option>
+                <option>A Level</option>
+                <option>University / BS</option>
+              </select>
+              <p class="err" id="e-class"><svg class="icon" style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg> Class select karna zaroori hai</p>
+            </div>
+
+            <div class="field" id="f-subject">
+              <label for="s-subject">Subject</label>
+              <select id="s-subject" name="subject" required>
+                <option value="">Select karein</option>
+                <option>Mathematics</option>
+                <option>Physics</option>
+                <option>Chemistry</option>
+                <option>Biology</option>
+                <option>English</option>
+                <option>Urdu</option>
+                <option>Computer Science</option>
+                <option>Accounting</option>
+                <option>All subjects (Primary)</option>
+              </select>
+              <p class="err" id="e-subject"><svg class="icon" style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg> Subject select karna zaroori hai</p>
+            </div>
+
+            <div class="field" id="f-area">
+              <label for="s-area">Area / City</label>
+              <select id="s-area" name="area" required>
+                <option value="">Select karein</option>
+                <optgroup label="Nowshera District">
+                  <option>Risalpur</option>
+                  <option>Nowshera City</option>
+                  <option>Pabbi</option>
+                </optgroup>
+                <optgroup label="Peshawar">
+                  <option>Hayatabad</option>
+                  <option>University Town</option>
+                  <option>Gulbahar</option>
+                </optgroup>
+                <optgroup label="Islamabad">
+                  <option>F-10</option>
+                  <option>G-11</option>
+                  <option>I-8</option>
+                </optgroup>
+                <option>Online (any city)</option>
+              </select>
+              <p class="err" id="e-area"><svg class="icon" style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg> Area select karna zaroori hai</p>
+            </div>
+
+            <div class="field">
+              <label for="s-budget">Budget <span class="hint">(optional)</span></label>
+              <select id="s-budget" name="budget">
+                <option value="">Koi bhi</option>
+                <option>Rs. 3,000 tak</option>
+                <option>Rs. 3,000 – 5,000</option>
+                <option>Rs. 5,000 – 8,000</option>
+                <option>Rs. 8,000+</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button type="submit" class="btn btn-primary">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              Find My Tutor
+            </button>
+            <a class="btn btn-outline" href="/teachers">Saare tutors dekhein</a>
+            <span class="panel-note">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              Parents ke liye hamesha free
+            </span>
+          </div>
+        </form>
+      </div>
+
+      <!-- PANEL 2: post a requirement -->
+      <div class="panel" id="panel-request" role="tabpanel" aria-labelledby="tab-request" hidden>
+        <form id="form-request" novalidate>
+          <div class="field-grid">
+            <div class="field">
+              <label for="r-need">Aapko kya chahiye?</label>
+              <textarea id="r-need" name="need" placeholder="Misal: Class 8 ki beti ke liye female Maths teacher chahiye, G-11 Islamabad, ghar aa sake, 4–6 PM, budget 5,000."></textarea>
+              <p class="hint">Apne alfaaz mein likhein — hum requirements khud samajh lenge.</p>
+            </div>
+            <div class="field-grid" style="gap:var(--space-2)">
+              <div class="field">
+                <label for="r-mode">Teaching mode</label>
+                <select id="r-mode" name="mode">
+                  <option>Home tuition (teacher ghar aaye)</option>
+                  <option>Online tuition</option>
+                  <option>Dono theek hain</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="r-gender">Teacher gender preference</label>
+                <select id="r-gender" name="gender">
+                  <option>Koi preference nahi</option>
+                  <option>Female teacher</option>
+                  <option>Male teacher</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button type="submit" class="btn btn-primary">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8z"/></svg>
+              Find Teachers For Me
+            </button>
+            <span class="panel-note">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Aapka number sirf matching tutors ko jata hai — public nahi hota
+            </span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TRUST STRIP ===================== -->
+<div class="strip">
+  <div class="wrap strip-grid">
+    <div class="stat">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+      <div><strong>Har badge ka matlab</strong><span>Jo verify nahi hua, us par badge nahi lagta</span></div>
+    </div>
+    <div class="stat">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <div><strong>Area-level search</strong><span>Sirf city nahi — mohalla aur sector tak</span></div>
+    </div>
+    <div class="stat">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <div><strong>Seedha rabta</strong><span>WhatsApp ya call — koi lamba process nahi</span></div>
+    </div>
+    <div class="stat">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M12 18v4M4.9 4.9l2.9 2.9M16.2 16.2l2.9 2.9M2 12h4M18 12h4M4.9 19.1l2.9-2.9M16.2 7.8l2.9-2.9"/></svg>
+      <div><strong>Parents ke liye free</strong><span>Search aur request — bilkul free</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CATEGORIES ===================== -->
+<section>
+  <div class="wrap">
+    <div class="sec-bar">
+      <div class="sec-head">
+        <h2>Popular subjects</h2>
+        <p>Sabse zyada demand in subjects mein hai. Kisi bhi tile par click karein.</p>
+      </div>
+      <a class="btn btn-outline btn-sm" href="/subjects">Saare subjects</a>
+    </div>
+
+    <div class="tiles reveal">
+      <a class="tile" href="/math-tutor-risalpur">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h6M8 4v6M14 17h6M14 7l6 6M20 7l-6 6M5 17h6"/></svg>
+        <b>Mathematics</b><span>148 tutors</span>
+      </a>
+      <a class="tile" href="/physics-tutor-risalpur">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4.5"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(60 12 12)"/></svg>
+        <b>Physics</b><span>96 tutors</span>
+      </a>
+      <a class="tile" href="/chemistry-tutor-risalpur">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7 15h10"/></svg>
+        <b>Chemistry</b><span>74 tutors</span>
+      </a>
+      <a class="tile" href="/english-tutor-risalpur">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <b>English</b><span>112 tutors</span>
+      </a>
+      <a class="tile" href="/computer-science-tutor-risalpur">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 9-3 3 3 3M15 9l3 3-3 3"/><rect x="2" y="3" width="20" height="18" rx="2"/></svg>
+        <b>Computer Sci.</b><span>41 tutors</span>
+      </a>
+      <a class="tile" href="/o-level-tutor-islamabad">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        <b>O / A Level</b><span>38 tutors</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FEATURED TUTORS ===================== -->
+<section class="sec-alt">
+  <div class="wrap">
+    <div class="sec-bar">
+      <div class="sec-head">
+        <h2>Aapke area ke tutors</h2>
+        <p>Risalpur aur Nowshera mein available. Profile khol kar poori detail dekhein.</p>
+      </div>
+      <a class="btn btn-outline btn-sm" href="/teachers?area=risalpur">Risalpur ke saare tutors</a>
+    </div>
+
+    <div class="tutors reveal">
+
+      <!-- Tutor 1 — fully verified + featured (paid placement, honestly labelled) -->
+      <article class="tutor featured">
+        <span class="feat-flag">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3L7 14.2l-5-4.9 6.9-1z"/></svg>
+          Featured
+        </span>
+
+        <div class="tutor-top">
+          <div class="avatar" aria-hidden="true">MA</div>
+          <div class="tutor-id">
+            <h3>Muhammad Ali</h3>
+            <p class="tutor-role">Mathematics &amp; Physics Tutor</p>
+            <p class="rating">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3L7 14.2l-5-4.9 6.9-1z"/></svg>
+              4.8 <small>(23 verified reviews)</small>
+            </p>
+          </div>
+        </div>
+
+        <div class="badges">
+          <span class="badge b-full"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>ApnaTutor Verified</span>
+          <span class="badge b-qual"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>Qualification checked</span>
+        </div>
+
+        <div class="meta">
+          <div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Risalpur, Nowshera</span></div>
+          <div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg><span>MSc Mathematics · <b>5 saal ka tajurba</b></span></div>
+          <div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span>Mon–Sat, 4 PM – 9 PM</span></div>
+        </div>
+
+        <div class="chips">
+          <span class="chip chip-mode"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</span>
+          <span class="chip chip-mode"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Online</span>
+          <span class="chip">Class 6–10</span>
+          <span class="chip">FSc</span>
+        </div>
+
+        <div class="fee">
+          <div><small>Monthly fee</small><strong>Rs. 3,000 – 6,000</strong></div>
+        </div>
+
+        <div class="tutor-actions">
+          <a class="btn btn-primary btn-sm" href="/teacher/muhammad-ali">Profile dekhein</a>
+          <a class="btn btn-wa btn-sm" href="/teacher/muhammad-ali/contact">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            WhatsApp
+          </a>
+          <a class="btn btn-outline btn-sm" href="/request-tutor?tutor=muhammad-ali">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2z"/></svg>
+            Call
+          </a>
+        </div>
+      </article>
+
+      <!-- Tutor 2 — partial verification, badges only for what's actually checked -->
+      <article class="tutor">
+        <div class="tutor-top">
+          <div class="avatar" aria-hidden="true">AK</div>
+          <div class="tutor-id">
+            <h3>Ayesha Khan</h3>
+            <p class="tutor-role">Female Tutor — Primary &amp; Middle</p>
+            <p class="rating">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3L7 14.2l-5-4.9 6.9-1z"/></svg>
+              4.9 <small>(11 verified reviews)</small>
+            </p>
+          </div>
+        </div>
+
+        <div class="badges">
+          <span class="badge b-id"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M15 10h3M15 14h3"/></svg>Identity checked</span>
+          <span class="badge b-phone"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2z"/></svg>Phone verified</span>
+        </div>
+
+        <div class="meta">
+          <div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Nowshera City</span></div>
+          <div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg><span>BEd · <b>3 saal ka tajurba</b></span></div>
+          <div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span>Mon–Fri, 3 PM – 7 PM</span></div>
+        </div>
+
+        <div class="chips">
+          <span class="chip chip-mode"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</span>
+          <span class="chip">Class 1–8</span>
+          <span class="chip">All subjects</span>
+        </div>
+
+        <div class="fee">
+          <div><small>Monthly fee</small><strong>Rs. 2,500 – 4,000</strong></div>
+        </div>
+
+        <div class="tutor-actions">
+          <a class="btn btn-primary btn-sm" href="/teacher/ayesha-khan">Profile dekhein</a>
+          <a class="btn btn-wa btn-sm" href="/teacher/ayesha-khan/contact">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            WhatsApp
+          </a>
+          <a class="btn btn-outline btn-sm" href="/request-tutor?tutor=ayesha-khan">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2z"/></svg>
+            Call
+          </a>
+        </div>
+      </article>
+
+      <!-- Tutor 3 — new tutor, phone only. No reviews yet, stated plainly. -->
+      <article class="tutor">
+        <div class="tutor-top">
+          <div class="avatar" aria-hidden="true">BA</div>
+          <div class="tutor-id">
+            <h3>Bilal Ahmed</h3>
+            <p class="tutor-role">Computer Science &amp; Maths</p>
+            <p class="rating" style="color:var(--muted-fg);font-weight:400">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="color:#94A3B8;fill:none" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              Naya tutor — abhi koi review nahi
+            </p>
+          </div>
+        </div>
+
+        <div class="badges">
+          <span class="badge b-phone"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2z"/></svg>Phone verified</span>
+        </div>
+
+        <div class="meta">
+          <div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Risalpur · Online bhi</span></div>
+          <div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg><span>BS Computer Science · <b>1 saal</b></span></div>
+          <div><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><span>Roz, 6 PM – 10 PM</span></div>
+        </div>
+
+        <div class="chips">
+          <span class="chip chip-mode"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Online</span>
+          <span class="chip chip-mode"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</span>
+          <span class="chip">Class 9–12</span>
+        </div>
+
+        <div class="fee">
+          <div><small>Monthly fee</small><strong>Rs. 3,500 – 5,000</strong></div>
+        </div>
+
+        <div class="tutor-actions">
+          <a class="btn btn-primary btn-sm" href="/teacher/bilal-ahmed">Profile dekhein</a>
+          <a class="btn btn-wa btn-sm" href="/teacher/bilal-ahmed/contact">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            WhatsApp
+          </a>
+          <a class="btn btn-outline btn-sm" href="/request-tutor?tutor=bilal-ahmed">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2z"/></svg>
+            Call
+          </a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Teen step mein tutor</h2>
+      <p>Sau profiles browse karne ki zarurat nahi. Requirement batayein, hum matching tutors laayenge.</p>
+    </div>
+    <div class="steps reveal">
+      <div class="step">
+        <h3>Requirement batayein</h3>
+        <p>Class, subject, area, timing aur budget. Ya apne alfaaz mein likh dein — dono chalta hai.</p>
+      </div>
+      <div class="step">
+        <h3>Matching tutors dekhein</h3>
+        <p>Hum aapke area ke 3–5 suitable tutors shortlist karte hain, verification aur reviews ke saath.</p>
+      </div>
+      <div class="step">
+        <h3>Rabta karein</h3>
+        <p>WhatsApp ya call par seedhi baat karein. Fee aur timing aap tutor se khud tay karein.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TRUST & SAFETY ===================== -->
+<section class="sec-alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Trust aur safety</h2>
+      <p>Ye platform bachon se related hai. Isliye har badge ka matlab clearly likha hua hai.</p>
+    </div>
+
+    <div class="trust-grid reveal">
+      <div class="trust-item">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2z"/></svg>
+        <div>
+          <h3>Phone verified</h3>
+          <p>Tutor ka number OTP se verify hua hai. Iska matlab sirf ye — number asli hai.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M15 10h3M15 14h3"/></svg>
+        <div>
+          <h3>Identity checked</h3>
+          <p>Identity document ApnaTutor team ne manually dekha hai. Document public nahi hota.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        <div>
+          <h3>Qualification checked</h3>
+          <p>Degree ya certificate ki copy check ki gayi hai — jo profile par claim kiya gaya hai.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        <div>
+          <h3>ApnaTutor Verified</h3>
+          <p>Teeno checks complete — phone, identity aur qualification. Sirf isi surat mein ye badge lagta hai.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div>
+          <h3>Aapka data private</h3>
+          <p>Parent ka number aur ghar ka address public nahi hota. Sirf matching tutors ko request jati hai.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.8 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        <div>
+          <h3>Report karein</h3>
+          <p>Kisi bhi profile par report button hai. Reported accounts manually review hote hain.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></svg>
+      <p><b>Zaroori baat:</b> ApnaTutor tutors ko connect karta hai, employ nahi karta. Verification badges documents aur phone checks par based hain — ye teaching quality ki guarantee nahi. Pehli class se pehle demo lein, aur chhote bachon ki tuition ke waqt ghar par kisi baray ki mojoodgi behtar hai.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TUTOR RECRUITMENT ===================== -->
+<section>
+  <div class="wrap">
+    <div class="recruit reveal">
+      <h2>Tutor hain? Apne area ke students tak pohanchein.</h2>
+      <p>Profile banayein, subjects aur areas set karein, aur apne ilaqay se aane wali tuition requests direct apne dashboard mein dekhein.</p>
+      <div class="recruit-actions">
+        <a class="btn btn-primary" href="/tutor/register">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+          Free profile banayein
+        </a>
+        <a class="btn btn-outline" href="/for-tutors">Tutors ke liye tafseel</a>
+      </div>
+      <p class="recruit-free">Shuru ke 500 tutors ke liye profile aur leads — bilkul free.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== FOOTER — SEO landing links ===================== -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-about">
+        <span class="logo">
+          <span class="logo-mark" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </span>
+          ApnaTutor
+        </span>
+        <p>Apne area ka right tutor, ek jagah. Home tuition, online tuition aur verified tutors — Pakistan bhar mein.</p>
+      </div>
+
+      <div>
+        <h4>Areas</h4>
+        <ul>
+          <li><a href="/home-tutor-risalpur">Home tutors in Risalpur</a></li>
+          <li><a href="/home-tutor-nowshera">Home tutors in Nowshera</a></li>
+          <li><a href="/home-tutor-peshawar">Home tutors in Peshawar</a></li>
+          <li><a href="/home-tutor-islamabad">Home tutors in Islamabad</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Popular searches</h4>
+        <ul>
+          <li><a href="/math-tutor-islamabad">Math tutors in Islamabad</a></li>
+          <li><a href="/female-tutor-islamabad">Female tutors in Islamabad</a></li>
+          <li><a href="/class-9-tutor-peshawar">Class 9 tutors in Peshawar</a></li>
+          <li><a href="/o-level-maths-tutor-islamabad">O Level Maths, Islamabad</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>ApnaTutor</h4>
+        <ul>
+          <li><a href="/how-it-works">Kaise kaam karta hai</a></li>
+          <li><a href="/for-tutors">Tutors ke liye</a></li>
+          <li><a href="/safety">Safety policy</a></li>
+          <li><a href="/contact">Rabta karein</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot-bottom">
+      <span>&copy; 2026 ApnaTutor. Pakistan.</span>
+      <span><a href="/privacy">Privacy</a> &nbsp;·&nbsp; <a href="/terms">Terms</a></span>
+    </div>
+  </div>
+</footer>
+
+<!-- Sticky mobile CTA so the hero action stays reachable -->
+<div class="sticky-cta">
+  <a class="btn btn-primary btn-sm" href="#panel-find">Tutor dhoondein</a>
+  <a class="btn btn-outline btn-sm" href="#panel-request">Request post karein</a>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---- Tabs: full keyboard support (arrows, Home, End) ---- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  function select(tab){
+    tabs.forEach(function(t){
+      var on = t === tab;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  tabs.forEach(function(tab, i){
+    tab.addEventListener('click', function(){ select(tab); });
+    tab.addEventListener('keydown', function(e){
+      var next = null;
+      if (e.key === 'ArrowRight') next = tabs[(i + 1) % tabs.length];
+      else if (e.key === 'ArrowLeft') next = tabs[(i - 1 + tabs.length) % tabs.length];
+      else if (e.key === 'Home') next = tabs[0];
+      else if (e.key === 'End') next = tabs[tabs.length - 1];
+      if (next){ e.preventDefault(); select(next); next.focus(); }
+    });
+  });
+
+  /* Sticky CTA links switch tab, then scroll */
+  document.querySelectorAll('.sticky-cta a').forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      var id = a.getAttribute('href').slice(1);
+      select(document.querySelector('[aria-controls="' + id + '"]'));
+      document.querySelector('.search-card')
+        .scrollIntoView({behavior:'smooth', block:'center'});
+    });
+  });
+
+  /* ---- Inline validation: error next to the field, focus the first bad one ---- */
+  var required = [
+    {sel:'#s-class',   field:'#f-class',   err:'#e-class'},
+    {sel:'#s-subject', field:'#f-subject', err:'#e-subject'},
+    {sel:'#s-area',    field:'#f-area',    err:'#e-area'}
+  ];
+
+  required.forEach(function(r){
+    var input = document.querySelector(r.sel);
+    input.addEventListener('change', function(){
+      if (input.value){
+        document.querySelector(r.field).classList.remove('invalid');
+        document.querySelector(r.err).classList.remove('show');
+        input.removeAttribute('aria-invalid');
+      }
+    });
+  });
+
+  document.getElementById('form-find').addEventListener('submit', function(e){
+    e.preventDefault();
+    var firstBad = null;
+    required.forEach(function(r){
+      var input = document.querySelector(r.sel);
+      var bad = !input.value;
+      document.querySelector(r.field).classList.toggle('invalid', bad);
+      document.querySelector(r.err).classList.toggle('show', bad);
+      if (bad){
+        input.setAttribute('aria-invalid','true');
+        input.setAttribute('aria-describedby', r.err.slice(1));
+        if (!firstBad) firstBad = input;
+      } else {
+        input.removeAttribute('aria-invalid');
+      }
+    });
+    if (firstBad){ firstBad.focus(); return; }
+
+    /* Build the SEO-friendly results URL the plan calls for */
+    var q = new URLSearchParams({
+      class:   document.getElementById('s-class').value,
+      subject: document.getElementById('s-subject').value,
+      area:    document.getElementById('s-area').value
+    });
+    var budget = document.getElementById('s-budget').value;
+    if (budget) q.set('budget', budget);
+    console.log('GET /find-tutor?' + q.toString());
+    /* Wire to the backend: window.location.href = '/find-tutor?' + q; */
+  });
+
+  document.getElementById('form-request').addEventListener('submit', function(e){
+    e.preventDefault();
+    console.log('POST /request-tutor', {
+      need:   document.getElementById('r-need').value,
+      mode:   document.getElementById('r-mode').value,
+      gender: document.getElementById('r-gender').value
+    });
+  });
+
+  /* ---- Scroll reveal, skipped entirely under reduced-motion ---- */
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var items = document.querySelectorAll('.reveal');
+  if (reduce || !('IntersectionObserver' in window)){
+    items.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -40px 0px'});
+    items.forEach(function(el){ io.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>
