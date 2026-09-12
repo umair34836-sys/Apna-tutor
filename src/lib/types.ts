@@ -75,7 +75,7 @@ export interface Subject {
 export interface Review {
   id: string;
   tutorUid: string;
-  parentUid: string;
+  /** parentUid build output mein nahi jata — fetch-data.mjs usay strip karti hai. */
   parentName: string;
   rating: number;
   text: string;

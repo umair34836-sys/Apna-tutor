@@ -247,6 +247,43 @@ export function comboPages(): ComboPage[] {
   return pages;
 }
 
+// ---------------------------------------------------------------------------
+// Hub pages — /city/[city] aur /subject/[subject]
+//
+// Inhi teen gates par: 3+ tutors, 120+ words intro. Farq sirf itna ke inka
+// intro seedha cities/{slug}.intro aur subjects/{slug}.intro se aata hai.
+// ---------------------------------------------------------------------------
+
+export interface HubPage<T> {
+  entity: T;
+  tutors: Tutor[];
+  intro: string[];
+}
+
+export function cityPages(): HubPage<City>[] {
+  return cities
+    .map((city) => ({ entity: city, tutors: rank(tutors.filter((t) => t.city === city.slug)), intro: [city.intro] }))
+    .filter((p) => p.tutors.length >= MIN_TUTORS_PER_PAGE && words(p.entity.intro ?? '') >= MIN_INTRO_WORDS);
+}
+
+export function subjectPages(): HubPage<Subject>[] {
+  return subjects
+    .map((subject) => ({
+      entity: subject,
+      tutors: rank(tutors.filter((t) => t.subjects.includes(subject.slug))),
+      intro: [subject.intro],
+    }))
+    .filter((p) => p.tutors.length >= MIN_TUTORS_PER_PAGE && words(p.entity.intro ?? '') >= MIN_INTRO_WORDS);
+}
+
+const cityPageSlugs = new Set(cityPages().map((p) => p.entity.slug));
+
+/**
+ * City hub page waqai bani hai? Breadcrumbs aur links isay poochte hain —
+ * warna hum apne hi 404 par link kar rahe hote.
+ */
+export const hasCityPage = (slug: string) => cityPageSlugs.has(slug);
+
 /** Build log ke liye — kaun si pages kyun nahi banin. */
 export function comboReport(): string {
   const built = comboPages().length;

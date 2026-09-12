@@ -1,21 +1,15 @@
-name: Rules tests
+name: Checks
 
 # firestore.rules hi is project ka backend hai. Ye tests sirf push/PR par
 # chalte hain — cron deploy builds ko slow nahi karte.
 on:
   push:
     branches: [main, 'claude/**']
-    paths:
-      - 'firestore.rules'
-      - 'tests/**'
-      - 'package.json'
-      - 'vitest.config.ts'
-      - '.github/workflows/test.yml'
   pull_request:
   workflow_dispatch:
 
 jobs:
-  rules:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,5 +23,9 @@ jobs:
           distribution: temurin
           java-version: '21'
       - run: npm ci
+
+      - name: Types aur Astro check
+        run: npx astro check
+
       - name: Firestore rules tests
         run: npm run test:rules

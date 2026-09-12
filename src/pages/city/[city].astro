@@ -1,0 +1,89 @@
+---
+// src/pages/city/[city].astro — city hub page
+//
+// Teen gates (src/lib/seo.ts): 3+ approved tutors, 120+ words unique intro,
+// aur wo intro kisi aur page par na ho. Gate pass na ho to page banta hi nahi.
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SeoIntro from '../../components/SeoIntro.astro';
+import TutorGrid from '../../components/TutorGrid.astro';
+import Icon from '../../components/Icon.astro';
+import { cityPages, breadcrumbJsonLd, comboPages } from '../../lib/seo';
+import { SITE } from '../../lib/site';
+import type { City, Tutor } from '../../lib/types';
+
+export function getStaticPaths() {
+  return cityPages().map((p) => ({
+    params: { city: p.entity.slug },
+    props: { city: p.entity, tutors: p.tutors, intro: p.intro },
+  }));
+}
+
+interface Props { city: City; tutors: Tutor[]; intro: string[] }
+const { city, tutors, intro } = Astro.props;
+
+const path = `/city/${city.slug}`;
+const n = tutors.length;
+const crumbs = [{ name: 'Home', url: '/' }, { name: city.name, url: path }];
+
+// Isi city ke wo combo pages jo waqai bani hain — internal linking ke liye.
+const related = comboPages().filter((p) => p.city.slug === city.slug).slice(0, 8);
+
+const title = `Home & Online Tutors in ${city.name} — ${n} Verified | ApnaTutor`;
+const description =
+  `${city.name} mein ${n} verified home aur online tutors. Subject, class, area aur budget ke hisaab se filter karein. Parents ke liye bilkul free.`;
+---
+<Base title={title} description={description} path={path} jsonLd={[breadcrumbJsonLd(crumbs, SITE.url)]}>
+  <div class="wrap"><Breadcrumbs items={crumbs} /></div>
+
+  <div class="wrap head">
+    <h1>Home &amp; Online Tutors in {city.name}</h1>
+    <p class="lead">
+      {city.name}{city.district && city.district !== city.name ? `, ${city.district}` : ''} mein
+      {' '}{n} verified tutors. Profile khol kar fee, timing aur tajurba dekhein.
+    </p>
+    {city.areas.length > 0 && (
+      <ul class="areas">
+        {city.areas.map((a) => <li><Icon name="map-pin" size={14} />{a}</li>)}
+      </ul>
+    )}
+  </div>
+
+  <section>
+    <div class="wrap"><TutorGrid tutors={tutors} /></div>
+  </section>
+
+  {related.length > 0 && (
+    <section class="sec-alt">
+      <div class="wrap">
+        <div class="sec-head"><h2>{city.name} mein aur dhoondein</h2></div>
+        <ul class="links">
+          {related.map((p) => (
+            <li><a href={`/${p.slug}`}>{p.h1}&#32;<span>({p.tutors.length})</span></a></li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <section>
+    <div class="wrap"><SeoIntro paragraphs={intro} heading={`${city.name} mein tuition`} /></div>
+  </section>
+
+  <style>
+    .head{padding:var(--space-3) var(--space-2) 0}
+    .head h1{font-size:clamp(26px,5vw,40px);font-weight:700;text-wrap:balance}
+    .lead{margin-top:12px;color:var(--muted-fg);font-size:17px;max-width:60ch}
+    .areas{list-style:none;padding:0;margin:var(--space-2) 0 0;display:flex;flex-wrap:wrap;gap:8px}
+    .areas li{display:inline-flex;align-items:center;gap:5px;background:var(--bg-alt);
+      border:1px solid var(--border);border-radius:var(--radius-pill);padding:5px 11px;
+      font-size:13px;color:var(--muted-fg)}
+    .links{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:640px){.links{grid-template-columns:repeat(2,1fr)}}
+    @media(min-width:980px){.links{grid-template-columns:repeat(4,1fr)}}
+    .links a{display:block;padding:12px 14px;background:#fff;border:1px solid var(--border);
+      border-radius:var(--radius);font-size:15px;min-height:44px}
+    .links a:hover{border-color:var(--primary-border);text-decoration:none}
+    .links span{color:var(--muted-fg)}
+  </style>
+</Base>

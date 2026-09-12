@@ -11,7 +11,7 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { City, Stats, Subject, Tutor } from './types';
+import type { City, Review, Stats, Subject, Tutor } from './types';
 
 const DATA_DIR = join(process.cwd(), 'src', 'data');
 
@@ -29,6 +29,9 @@ export const tutors: Tutor[] = read<Tutor[]>('tutors.json', []);
 export const cities: City[] = read<City[]>('cities.json', []);
 export const subjects: Subject[] = read<Subject[]>('subjects.json', []);
 
+/** Sirf approved reviews, aur sirf un tutors ke jo live hain. */
+export const reviews: Review[] = read<Review[]>('reviews.json', []);
+
 export const stats: Stats = read<Stats>('stats.json', {
   tutorCount: 0,
   cityCount: 0,
@@ -43,6 +46,12 @@ export function tutorsInCity(citySlug: string): Tutor[] {
 
 export function tutorsForSubject(subjectSlug: string): Tutor[] {
   return tutors.filter((t) => t.subjects.includes(subjectSlug));
+}
+
+export function reviewsForTutor(tutorUid: string): Review[] {
+  return reviews
+    .filter((r) => r.tutorUid === tutorUid)
+    .sort((a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? '')));
 }
 
 export function cityBySlug(slug: string): City | undefined {

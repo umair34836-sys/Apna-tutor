@@ -21,7 +21,18 @@ export const env = {
   metaPixelId: import.meta.env.PUBLIC_META_PIXEL_ID ?? '',
   cloudinaryCloud: import.meta.env.PUBLIC_CLOUDINARY_CLOUD ?? '',
   cloudinaryPreset: import.meta.env.PUBLIC_CLOUDINARY_PRESET ?? '',
+  contactEmail: import.meta.env.PUBLIC_CONTACT_EMAIL ?? '',
+  /** ApnaTutor ka apna number. SEO gate ke phone-leak check se mustasna hai. */
+  officialWhatsapp: import.meta.env.PUBLIC_OFFICIAL_WHATSAPP ?? '',
 } as const;
+
+/**
+ * /teachers par ek page mein kitne tutors.
+ *
+ * ★ Ye yahan isliye hai ke Astro ka `getStaticPaths` sirf imports dekh sakta
+ *   hai — page file ke apne module-level consts bhi us tak nahi pohanchte.
+ */
+export const TUTORS_PER_PAGE = 24;
 
 /** Har canonical absolute honi chahiye (docs/03-SEO-ANALYTICS.md §4). */
 export function absoluteUrl(path: string): string {

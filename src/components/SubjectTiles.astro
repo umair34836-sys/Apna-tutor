@@ -46,7 +46,7 @@ const tiles = subjects
         {tiles.map((t) => (
           <a class="tile" href={t.href}>
             <Icon name={t.icon} />
-            <b>{t.name}</b><span>{t.count} {t.count === 1 ? 'tutor' : 'tutors'}</span>
+            <b>{t.name}</b><span>{`${t.count} ${t.count === 1 ? 'tutor' : 'tutors'}`}</span>
           </a>
         ))}
       </div>

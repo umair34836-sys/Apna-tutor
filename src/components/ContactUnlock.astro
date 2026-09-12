@@ -1,0 +1,193 @@
+---
+// =============================================================================
+// src/components/ContactUnlock.astro
+//
+// Tutor ka phone number kabhi static HTML mein nahi hota. Ye component login
+// ke baad client-side wo number `tutors/{id}/private/contact` se laata hai.
+//
+// Flow (02-PAGES-SPEC.md "Contact unlock"):
+//   1. Logged out  → login prompt
+//   2. Logged in   → pehle seedha contact read karne ki koshish (agar pehle se
+//                    unlock hai to ek read mein kaam ho jata hai)
+//   3. Permission denied → connections/{uid}_{tutorId} banao, phir dobara read
+//   4. GA4 event `unlock_contact`
+//
+// Firebase yahan bhi lazy hai — button dabaye bagair SDK download nahi hoti.
+// =============================================================================
+import Icon from './Icon.astro';
+
+export interface Props {
+  tutorId: string;
+  tutorSlug: string;
+  tutorName: string;
+  city: string;
+}
+const { tutorId, tutorSlug, tutorName, city } = Astro.props;
+---
+<section
+  id="contact"
+  class="unlock"
+  data-tutor-id={tutorId}
+  data-tutor-slug={tutorSlug}
+  data-tutor-name={tutorName}
+  data-city={city}
+>
+  <div class="unlock-head">
+    <Icon name="lock" />
+    <div>
+      <h2>{tutorName} se rabta karein</h2>
+      <p>Number dekhne ke liye login karna zaroori hai. Ye tutors ko spam se bachata hai.</p>
+    </div>
+  </div>
+
+  <div data-view="idle">
+    <button type="button" class="btn btn-primary btn-block" data-action="unlock">
+      <Icon name="phone" />Contact dekhein
+    </button>
+  </div>
+
+  <div data-view="loading" hidden>
+    <p class="state state-info"><Icon name="loader" />Number laaya ja raha hai…</p>
+  </div>
+
+  <div data-view="login" hidden>
+    <p class="state state-info">
+      <Icon name="info" />
+      <span>Number dekhne ke liye login karein. Account banana free hai.</span>
+    </p>
+    <div class="unlock-actions">
+      <a class="btn btn-primary" data-login-link href="/login"><Icon name="user" />Login karein</a>
+      <a class="btn btn-outline" data-signup-link href="/signup">Naya account banayein</a>
+    </div>
+  </div>
+
+  <div data-view="error" hidden>
+    <p class="state state-error"><Icon name="alert-circle" /><span data-error-text></span></p>
+    <button type="button" class="btn btn-outline" data-action="unlock">
+      <Icon name="refresh" />Dobara koshish karein
+    </button>
+  </div>
+
+  <div data-view="done" hidden>
+    <div class="numbers">
+      <a class="btn btn-wa btn-block" data-wa href="#"><Icon name="message-square" />WhatsApp par baat karein</a>
+      <a class="btn btn-outline btn-block" data-call href="#"><Icon name="phone" /><span data-phone-text></span></a>
+    </div>
+    <p class="unlock-note">
+      <Icon name="info" size={15} />
+      Fee aur timing aap tutor se khud tay karein. Pehli class se pehle demo lena behtar hai.
+    </p>
+  </div>
+</section>
+
+<style>
+  .unlock{background:var(--primary-soft);border:1px solid var(--primary-border);
+    border-radius:var(--radius-lg);padding:var(--space-3);display:flex;
+    flex-direction:column;gap:var(--space-2)}
+  .unlock-head{display:flex;gap:14px;align-items:flex-start}
+  .unlock-head :global(.icon){width:24px;height:24px;color:var(--primary);flex:0 0 auto;margin-top:2px}
+  .unlock-head h2{font-size:19px;font-weight:600}
+  .unlock-head p{margin-top:6px;font-size:14.5px;color:var(--muted-fg)}
+  .unlock-actions{display:flex;flex-wrap:wrap;gap:var(--space-1);margin-top:var(--space-2)}
+  .numbers{display:flex;flex-direction:column;gap:var(--space-1)}
+  .unlock-note{display:flex;gap:8px;align-items:flex-start;margin-top:var(--space-2);
+    font-size:13.5px;color:var(--muted-fg)}
+  .unlock-note :global(.icon){color:var(--icon-muted);flex:0 0 auto;margin-top:2px}
+</style>
+
+<script>
+  import { track } from '../lib/analytics';
+
+  const root = document.getElementById('contact');
+  if (root) {
+    const tutorId = root.dataset.tutorId!;
+    const tutorSlug = root.dataset.tutorSlug!;
+    const city = root.dataset.city!;
+
+    const views = ['idle', 'loading', 'login', 'error', 'done'] as const;
+    const show = (name: (typeof views)[number]) => {
+      views.forEach((v) => {
+        const el = root.querySelector<HTMLElement>(`[data-view="${v}"]`);
+        if (el) el.hidden = v !== name;
+      });
+    };
+
+    const fail = (msg: string) => {
+      const el = root.querySelector<HTMLElement>('[data-error-text]');
+      if (el) el.textContent = msg;
+      show('error');
+    };
+
+    // Login ke baad wapas isi profile par aana chahiye.
+    const back = encodeURIComponent(window.location.pathname + '#contact');
+    root.querySelector<HTMLAnchorElement>('[data-login-link]')?.setAttribute('href', `/login?next=${back}`);
+    root.querySelector<HTMLAnchorElement>('[data-signup-link]')?.setAttribute('href', `/signup?next=${back}`);
+
+    function reveal(contact: { phone?: string; whatsapp?: string }) {
+      const phone = contact.phone ?? contact.whatsapp ?? '';
+      const wa = (contact.whatsapp ?? contact.phone ?? '').replace(/[^\d]/g, '');
+
+      const callBtn = root!.querySelector<HTMLAnchorElement>('[data-call]');
+      const waBtn = root!.querySelector<HTMLAnchorElement>('[data-wa]');
+      const phoneText = root!.querySelector<HTMLElement>('[data-phone-text]');
+
+      if (phoneText) phoneText.textContent = phone;
+      if (callBtn) callBtn.href = `tel:${phone}`;
+      if (waBtn) waBtn.href = `https://wa.me/${wa}`;
+
+      callBtn?.addEventListener('click', () => track('call_click', { tutor_slug: tutorSlug, city }));
+      waBtn?.addEventListener('click', () => track('whatsapp_click', { tutor_slug: tutorSlug, city }));
+
+      show('done');
+    }
+
+    async function unlock() {
+      show('loading');
+
+      try {
+        const [{ getFirebase, currentUser, firestoreError }, fb] = await Promise.all([
+          import('../lib/firebase'),
+          import('firebase/firestore'),
+        ]);
+
+        const user = await currentUser();
+        if (!user) { show('login'); return; }
+
+        const { db } = await getFirebase();
+        const { doc, getDoc, setDoc, serverTimestamp } = fb;
+        const contactRef = doc(db, 'tutors', tutorId, 'private', 'contact');
+
+        // Pehle seedha padhne ki koshish — pehle se unlock ho to ek read kaafi.
+        let snap;
+        try {
+          snap = await getDoc(contactRef);
+        } catch (err) {
+          if ((err as { code?: string })?.code !== 'permission-denied') {
+            fail(firestoreError(err)); return;
+          }
+          // Abhi unlock nahi hua — connection banao.
+          await setDoc(doc(db, 'connections', `${user.uid}_${tutorId}`), {
+            parentUid: user.uid,
+            tutorUid: tutorId,
+            source: 'search',
+            createdAt: serverTimestamp(),
+          });
+          snap = await getDoc(contactRef);
+        }
+
+        if (!snap.exists()) {
+          fail('Is tutor ne abhi apna number add nahi kiya. Aap request post kar sakte hain.');
+          return;
+        }
+
+        track('unlock_contact', { tutor_slug: tutorSlug, city, source: 'profile' });
+        reveal(snap.data() as { phone?: string; whatsapp?: string });
+      } catch (err) {
+        const { firestoreError } = await import('../lib/firebase');
+        fail(firestoreError(err));
+      }
+    }
+
+    root.querySelectorAll('[data-action="unlock"]').forEach((b) => b.addEventListener('click', unlock));
+  }
+</script>

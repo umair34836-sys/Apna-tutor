@@ -1,0 +1,268 @@
+---
+// =============================================================================
+// src/pages/teacher/[slug].astro — Tutor profile
+//
+// Site ke sabse ahem SEO pages. Har approved tutor ka apna static page.
+//
+// ★ Phone number is page ke source mein KABHI nahi hota. Contact
+//   <ContactUnlock /> se login ke baad client-side aata hai.
+//   scripts/validate-seo.mjs build ke baad har page ka source check karti hai.
+//
+// ★ AggregateRating JSON-LD sirf tab jab ratingCount > 0. Zero reviews par
+//   rating markup Google ki policy ki khilaaf-warzi hai — manual action.
+// =============================================================================
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import Badges from '../../components/Badges.astro';
+import Rating from '../../components/Rating.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ContactUnlock from '../../components/ContactUnlock.astro';
+import ReportButton from '../../components/ReportButton.astro';
+import SafetyCallout from '../../components/SafetyCallout.astro';
+import { cityBySlug, reviewsForTutor, subjectBySlug, tutors } from '../../lib/data';
+import { breadcrumbJsonLd, hasCityPage } from '../../lib/seo';
+import { boardLabel, classLabel, feeRange, initials, modeLabel } from '../../lib/taxonomy';
+import { isFullyVerified, type Tutor } from '../../lib/types';
+import { SITE, absoluteUrl } from '../../lib/site';
+
+export function getStaticPaths() {
+  // Sirf approved tutors (fetch-data.mjs pehle hi filter karti hai). Tutor
+  // suspend ya reject ho jaye to agli build par ye page khud ghayab ho jata
+  // hai aur sitemap se bhi nikal jata hai.
+  return tutors.map((tutor) => ({ params: { slug: tutor.slug }, props: { tutor } }));
+}
+
+interface Props { tutor: Tutor }
+const { tutor } = Astro.props;
+
+const city = cityBySlug(tutor.city);
+const cityName = city?.name ?? tutor.city.replace(/\b\w/g, (c) => c.toUpperCase());
+const subjectNames = tutor.subjects.map((s) => subjectBySlug(s)?.name ?? s);
+const reviews = reviewsForTutor(tutor.id);
+const verified = isFullyVerified(tutor);
+const path = `/teacher/${tutor.slug}`;
+
+const title = `${tutor.name} — ${subjectNames[0] ?? 'Home'} Tutor in ${cityName} | ApnaTutor`;
+const description =
+  `${tutor.name}, ${cityName} mein ${subjectNames.join(', ')} ke tutor. ` +
+  `${tutor.qualification}, ${tutor.experienceYears} saal ka tajurba. ` +
+  `Fee ${feeRange(tutor.feeMin, tutor.feeMax)} monthly.`;
+
+// City hub page tabhi link karo jab wo waqai bani ho — warna apne hi 404 par
+// link kar rahe hote.
+const crumbs = [
+  { name: 'Home', url: '/' },
+  ...(hasCityPage(tutor.city) ? [{ name: cityName, url: `/city/${tutor.city}` }] : [{ name: 'Tutors', url: '/teachers' }]),
+  { name: tutor.name, url: path },
+];
+
+// ---- Person JSON-LD (docs/03-SEO-ANALYTICS.md §3) ----
+const person: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: tutor.name,
+  jobTitle: `${subjectNames[0] ?? 'Home'} Tutor`,
+  url: absoluteUrl(path),
+  ...(tutor.photoUrl ? { image: tutor.photoUrl } : {}),
+  knowsAbout: subjectNames,
+  workLocation: {
+    '@type': 'Place',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: cityName,
+      ...(city?.province ? { addressRegion: city.province } : {}),
+      addressCountry: 'PK',
+    },
+  },
+};
+
+// ★ Sirf asli reviews par. Ye condition build script mein hard-coded hai,
+//   developer ki yaad par nahi chhori gayi.
+if (tutor.ratingCount > 0) {
+  person.aggregateRating = {
+    '@type': 'AggregateRating',
+    ratingValue: tutor.ratingAvg,
+    reviewCount: tutor.ratingCount,
+    bestRating: 5,
+    worstRating: 1,
+  };
+}
+---
+<Base
+  title={title}
+  description={description.slice(0, 160)}
+  path={path}
+  ogImage={tutor.photoUrl ?? undefined}
+  jsonLd={[person, breadcrumbJsonLd(crumbs, SITE.url)]}
+>
+  <div class="wrap"><Breadcrumbs items={crumbs} /></div>
+
+  <div class="wrap profile">
+    <div class="main-col">
+      <header class="head">
+        {tutor.photoUrl ? (
+          <img class="photo" src={tutor.photoUrl} alt={`${tutor.name} ki tasveer`} width="96" height="96" />
+        ) : (
+          <div class="photo photo-initials" aria-hidden="true">{initials(tutor.name)}</div>
+        )}
+        <div>
+          <h1>{tutor.name}</h1>
+          <p class="role">{subjectNames.join(' & ')} Tutor — {cityName}</p>
+          <Rating avg={tutor.ratingAvg} count={tutor.ratingCount} />
+          <div style="margin-top:var(--space-2)"><Badges badges={tutor.badges} /></div>
+        </div>
+      </header>
+
+      {tutor.bio && (
+        <section class="block">
+          <h2>{tutor.name} ke baare mein</h2>
+          <p class="bio">{tutor.bio}</p>
+        </section>
+      )}
+
+      <section class="block">
+        <h2>Tafseel</h2>
+        <dl class="facts">
+          <div><dt><Icon name="graduation-cap" />Qualification</dt><dd>{tutor.qualification}</dd></div>
+          <div><dt><Icon name="award" />Tajurba</dt><dd>{tutor.experienceYears} saal</dd></div>
+          <div><dt><Icon name="book" />Subjects</dt><dd>{subjectNames.join(', ')}</dd></div>
+          <div><dt><Icon name="list" />Classes</dt><dd>{tutor.classes.map(classLabel).join(', ')}</dd></div>
+          {tutor.boards.length > 0 && (
+            <div><dt><Icon name="file-text" />Boards</dt><dd>{tutor.boards.map(boardLabel).join(', ')}</dd></div>
+          )}
+          <div><dt><Icon name="home" />Teaching mode</dt><dd>{tutor.modes.map((m) => modeLabel(m).split(' (')[0]).join(', ')}</dd></div>
+          <div><dt><Icon name="map-pin" />Areas</dt><dd>{tutor.areas.join(', ')}</dd></div>
+          {tutor.availability && (
+            <div><dt><Icon name="calendar" />Availability</dt><dd>{tutor.availability}</dd></div>
+          )}
+          <div><dt><Icon name="money" />Monthly fee</dt><dd>{feeRange(tutor.feeMin, tutor.feeMax)}</dd></div>
+        </dl>
+      </section>
+
+      <section class="block">
+        <h2>Reviews&#32;{reviews.length > 0 && <span class="count">({reviews.length})</span>}</h2>
+        {reviews.length > 0 ? (
+          <ul class="reviews">
+            {reviews.map((r) => (
+              <li class="review">
+                <div class="review-top">
+                  <strong>{r.parentName}</strong>
+                  <span class="stars" aria-label={`${r.rating} out of 5`}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Icon name={n <= r.rating ? 'star' : 'star-outline'} size={15} />
+                    ))}
+                  </span>
+                </div>
+                <p>{r.text}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="no-reviews">
+            <Icon name="clock" size={17} />
+            Abhi koi review nahi. Ye tutor naya hai — pehli class se pehle demo lena behtar hai.
+          </p>
+        )}
+      </section>
+
+      <SafetyCallout />
+
+      <div class="report-row">
+        <ReportButton targetType="tutor" targetId={tutor.id} />
+      </div>
+    </div>
+
+    <aside class="side">
+      <ContactUnlock tutorId={tutor.id} tutorSlug={tutor.slug} tutorName={tutor.name} city={tutor.city} />
+
+      <div class="side-card">
+        <h2>Fee</h2>
+        <p class="fee-big">{feeRange(tutor.feeMin, tutor.feeMax)}</p>
+        <p class="fee-note">Monthly. Final fee aap tutor se khud tay karein.</p>
+      </div>
+
+      {verified && (
+        <div class="side-card verified-card">
+          <Icon name="shield-check" />
+          <div>
+            <h2>ApnaTutor Verified</h2>
+            <p>Phone, identity aur qualification — teeno check ho chuke hain.
+              <a href="/safety">Har badge ka matlab</a>.</p>
+          </div>
+        </div>
+      )}
+
+      <div class="side-card">
+        <h2>Apni requirement post karein</h2>
+        <p class="fee-note">Ek request bhejein aur apne area ke matching tutors ko aap tak aane dein.</p>
+        <a class="btn btn-outline btn-block" href="/request-tutor" style="margin-top:var(--space-2)">
+          <Icon name="send" />Request post karein
+        </a>
+      </div>
+    </aside>
+  </div>
+
+  <style>
+    .profile{display:grid;grid-template-columns:1fr;gap:var(--space-4);
+      padding:var(--space-3) var(--space-2) var(--space-5)}
+    @media(min-width:900px){.profile{grid-template-columns:minmax(0,1fr) 340px;align-items:start}}
+    .main-col{display:flex;flex-direction:column;gap:var(--space-4);min-width:0}
+    .side{display:flex;flex-direction:column;gap:var(--space-2)}
+    @media(min-width:900px){.side{position:sticky;top:88px}}
+
+    .head{display:flex;gap:var(--space-2);align-items:flex-start;flex-wrap:wrap}
+    .photo{width:96px;height:96px;border-radius:50%;flex:0 0 auto;object-fit:cover;
+      border:3px solid var(--primary-border)}
+    .photo-initials{display:grid;place-items:center;background:var(--primary-soft);
+      font-family:var(--font-heading);font-weight:700;font-size:32px;color:var(--primary-dark)}
+    .head h1{font-size:clamp(24px,4vw,34px);font-weight:700}
+    .role{margin-top:4px;color:var(--muted-fg);font-size:16.5px}
+
+    .block h2{font-size:20px;font-weight:600;margin-bottom:var(--space-2)}
+    .block .count{color:var(--muted-fg);font-weight:400}
+    .bio{color:var(--muted-fg);font-size:16.5px;line-height:1.7;max-width:70ch;white-space:pre-line}
+
+    .facts{display:grid;grid-template-columns:1fr;gap:var(--space-1);margin:0}
+    @media(min-width:560px){.facts{grid-template-columns:1fr 1fr}}
+    .facts > div{display:flex;flex-direction:column;gap:2px;padding:12px 14px;
+      background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius)}
+    .facts dt{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted-fg);
+      text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+    .facts dt :global(.icon){width:15px;height:15px;color:var(--icon-muted)}
+    .facts dd{margin:0;font-size:15.5px;color:var(--fg);font-weight:500}
+
+    .reviews{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-2)}
+    .review{border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-2)}
+    .review-top{display:flex;justify-content:space-between;align-items:center;gap:10px;
+      flex-wrap:wrap;margin-bottom:6px}
+    .stars{display:inline-flex;gap:2px;color:var(--accent)}
+    .review p{color:var(--muted-fg);font-size:15.5px}
+    .no-reviews{display:flex;gap:9px;align-items:flex-start;color:var(--muted-fg);font-size:15.5px}
+    .no-reviews :global(.icon){color:var(--icon-muted);flex:0 0 auto;margin-top:3px}
+
+    .report-row{border-top:1px solid var(--border);padding-top:var(--space-2)}
+
+    .side-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3)}
+    .side-card h2{font-size:16px;font-weight:600}
+    .fee-big{font-family:var(--font-heading);font-size:22px;font-weight:600;margin-top:6px}
+    .fee-note{font-size:14px;color:var(--muted-fg);margin-top:6px}
+    .verified-card{display:flex;gap:12px;align-items:flex-start;background:var(--accent-soft);
+      border-color:var(--b-full-border)}
+    .verified-card :global(.icon){width:22px;height:22px;color:var(--accent-text);flex:0 0 auto;margin-top:2px}
+    .verified-card p{font-size:14px;color:var(--accent-text);margin-top:4px}
+  </style>
+
+  <script>
+    import { track } from '../../lib/analytics';
+    const el = document.getElementById('contact');
+    if (el) {
+      track('view_tutor_profile', {
+        tutor_slug: el.dataset.tutorSlug ?? '',
+        city: el.dataset.city ?? '',
+        subject: document.querySelector('meta[name="description"]')?.getAttribute('content')?.split(' ')[0] ?? '',
+        is_featured: document.querySelector('.feat-flag') !== null,
+      });
+    }
+  </script>
+</Base>

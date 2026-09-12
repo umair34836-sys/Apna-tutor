@@ -34,7 +34,7 @@ const liveLine =
   : `Abhi ${liveCities.slice(0, -1).join(', ')} aur ${liveCities.at(-1)} mein live`;
 
 // Featured pehle; koi featured na ho to sabse naye approved tutors.
-const featured = tutors.filter(isFeatured);
+const featured = tutors.filter((t) => isFeatured(t));
 const showcase = rank(featured.length > 0 ? featured : tutors).slice(0, 6);
 
 const title = hasTutors

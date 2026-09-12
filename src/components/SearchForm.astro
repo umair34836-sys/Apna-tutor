@@ -13,7 +13,6 @@ import { comboPages } from '../lib/seo';
 
 // Build-time manifest: kaun se combo pages waqai bane hain.
 const manifest = comboPages().map((p) => p.slug);
-const areas = cities.flatMap((c) => c.areas.map((a) => ({ city: c, area: a })));
 ---
 <div class="search-card">
   <div class="tabs" role="tablist" aria-label="Tutor dhoondne ka tareeqa">

@@ -26,9 +26,8 @@ const MIN_TUTORS_PER_PAGE = 3;
 const MIN_INTRO_WORDS = 120;
 
 const failures = [];
-const warnings = [];
+const warnings = []; // aage ke non-fatal checks ke liye
 const fail = (page, msg) => failures.push(`${page}\n    → ${msg}`);
-const warn = (page, msg) => warnings.push(`${page}\n    → ${msg}`);
 
 // ---------------------------------------------------------------------------
 // Helpers

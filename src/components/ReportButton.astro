@@ -1,0 +1,154 @@
+---
+// src/components/ReportButton.astro
+//
+// Har profile aur review par report ka rasta hona chahiye (docs/05-RISKS.md §8).
+// Reports sirf admin padh sakta hai — rules mein write-only hai.
+import Icon from './Icon.astro';
+
+export interface Props {
+  targetType: 'tutor' | 'review' | 'request';
+  targetId: string;
+  label?: string;
+}
+const { targetType, targetId, label = 'Is profile ko report karein' } = Astro.props;
+const id = `report-${targetType}-${targetId}`;
+---
+<div class="report" data-report data-target-type={targetType} data-target-id={targetId}>
+  <button type="button" class="report-link" data-open aria-haspopup="dialog" aria-controls={id}>
+    <Icon name="flag" size={15} />{label}
+  </button>
+
+  <dialog id={id} class="report-dialog">
+    <form method="dialog" class="report-form" novalidate>
+      <h2>Report karein</h2>
+      <p class="report-sub">Aapki report ApnaTutor team dekhegi. Tutor ko aapka naam nahi jata.</p>
+
+      <div class="field">
+        <label for={`${id}-reason`}>Wajah</label>
+        <select id={`${id}-reason`} name="reason" required>
+          <option value="">Select karein</option>
+          <option value="fake-profile">Profile jhooti lagti hai</option>
+          <option value="wrong-info">Maloomat ghalat hain</option>
+          <option value="unprofessional">Ghair-munasib rawaiya</option>
+          <option value="not-reachable">Number par rabta nahi hota</option>
+          <option value="safety">Safety ka masla</option>
+          <option value="other">Koi aur wajah</option>
+        </select>
+        <p class="err" data-err-reason><Icon name="alert-circle" size={15} strokeWidth={2.5} /> Wajah select karna zaroori hai</p>
+      </div>
+
+      <div class="field">
+        <label for={`${id}-detail`}>Tafseel <span class="hint">(optional)</span></label>
+        <textarea id={`${id}-detail`} name="detail" maxlength="1000"
+          placeholder="Jo hua wo apne alfaaz mein likh dein."></textarea>
+      </div>
+
+      <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+      <p class="state state-success" data-success hidden>
+        <Icon name="check-circle" />Report bhej di gayi. Shukriya — hum isay dekhenge.
+      </p>
+
+      <div class="report-actions">
+        <button type="button" class="btn btn-ghost" data-close>Band karein</button>
+        <button type="button" class="btn btn-danger" data-submit><Icon name="flag" />Report bhejein</button>
+      </div>
+    </form>
+  </dialog>
+</div>
+
+<style>
+  .report-link{background:none;border:0;padding:8px 0;min-height:44px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;color:var(--muted-fg);
+    font-family:var(--font-body);font-size:14px;text-decoration:underline}
+  .report-link:hover{color:var(--destructive)}
+  .report-dialog{border:0;border-radius:var(--radius-lg);padding:0;max-width:480px;width:92%;
+    box-shadow:var(--shadow-lg);color:var(--fg)}
+  .report-dialog::backdrop{background:rgba(15,23,42,.5)}
+  .report-form{padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+  .report-form h2{font-size:20px;font-weight:600}
+  .report-sub{font-size:14.5px;color:var(--muted-fg)}
+  .report-actions{display:flex;gap:var(--space-1);justify-content:flex-end;flex-wrap:wrap;
+    margin-top:var(--space-1)}
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-report]').forEach((root) => {
+    const dialog = root.querySelector<HTMLDialogElement>('dialog')!;
+    const targetType = root.dataset.targetType as 'tutor' | 'review' | 'request';
+    const targetId = root.dataset.targetId!;
+
+    const reason = root.querySelector<HTMLSelectElement>('select[name="reason"]')!;
+    const detail = root.querySelector<HTMLTextAreaElement>('textarea[name="detail"]')!;
+    const errReason = root.querySelector<HTMLElement>('[data-err-reason]')!;
+    const errBox = root.querySelector<HTMLElement>('[data-error]')!;
+    const okBox = root.querySelector<HTMLElement>('[data-success]')!;
+    const submit = root.querySelector<HTMLButtonElement>('[data-submit]')!;
+
+    const showError = (msg: string) => {
+      errBox.querySelector('span')!.textContent = msg;
+      errBox.hidden = false;
+    };
+
+    root.querySelector('[data-open]')?.addEventListener('click', () => dialog.showModal());
+    root.querySelector('[data-close]')?.addEventListener('click', () => dialog.close());
+
+    reason.addEventListener('change', () => {
+      if (reason.value) {
+        errReason.classList.remove('show');
+        reason.removeAttribute('aria-invalid');
+      }
+    });
+
+    submit.addEventListener('click', async () => {
+      errBox.hidden = true;
+
+      if (!reason.value) {
+        errReason.classList.add('show');
+        reason.setAttribute('aria-invalid', 'true');
+        reason.focus();
+        return;
+      }
+
+      submit.disabled = true;
+      const original = submit.textContent;
+      submit.textContent = 'Bhej rahe hain…';
+
+      try {
+        const [{ getFirebase, currentUser, firestoreError }, { addDoc, collection, serverTimestamp }] =
+          await Promise.all([import('../lib/firebase'), import('firebase/firestore')]);
+
+        const user = await currentUser();
+        if (!user) {
+          const next = encodeURIComponent(window.location.pathname);
+          showError('Report karne ke liye login karna zaroori hai.');
+          const link = document.createElement('a');
+          link.href = `/login?next=${next}`;
+          link.className = 'btn btn-primary btn-sm';
+          link.textContent = 'Login karein';
+          errBox.appendChild(link);
+          return;
+        }
+
+        const { db } = await getFirebase();
+        await addDoc(collection(db, 'reports'), {
+          reporterUid: user.uid,
+          targetType,
+          targetId,
+          reason: reason.value,
+          detail: detail.value.slice(0, 1000),
+          status: 'open',
+          createdAt: serverTimestamp(),
+        });
+
+        okBox.hidden = false;
+        submit.hidden = true;
+      } catch (err) {
+        const { firestoreError } = await import('../lib/firebase');
+        showError(firestoreError(err));
+      } finally {
+        submit.disabled = false;
+        if (original) submit.textContent = original;
+      }
+    });
+  });
+</script>

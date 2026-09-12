@@ -1,0 +1,124 @@
+---
+// src/pages/terms.astro
+//
+// ★ Launch se pehle live hona LAZMI hai — Google Ads aur Meta dono iske bagair
+//   ad account reject karte hain.
+//
+// Sabse ahem nuqta §2 hai: ApnaTutor ek introduction platform hai. Tutors
+// employees ya agents nahi hain.
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+
+const UPDATED = '12 September 2026';
+---
+<Base
+  title="Terms of Service | ApnaTutor"
+  description="ApnaTutor istemal karne ki shurait. ApnaTutor ek introduction platform hai — tutors employees ya agents nahi hain, aur tuition ka arrangement parent aur tutor ke darmiyan hota hai."
+  path="/terms"
+>
+  <Prose
+    title="Terms of Service"
+    lead="ApnaTutor istemal karne ka matlab hai ke aap in shurait se ittefaq karte hain."
+    updated={UPDATED}
+  >
+    <section>
+      <h2>1. ApnaTutor kya hai</h2>
+      <p>ApnaTutor ek online platform hai jahan tutors apni profile banate hain aur parents unhe dhoond kar seedha rabta karte hain.</p>
+    </section>
+
+    <section>
+      <h2>2. Hum kya NAHI hain — sabse ahem nuqta</h2>
+      <ul>
+        <li><strong>ApnaTutor tutors ko employ nahi karta.</strong> Tutors hamare mulazim, agent, contractor ya numainday nahi hain.</li>
+        <li><strong>Hum tuition ke arrangement ka hissa nahi hain.</strong> Fee, timing, jagah aur baqi sab kuch parent aur tutor ke darmiyan tay hota hai. Jo agreement banta hai wo seedha unke darmiyan hai, ApnaTutor us ka fareeq nahi.</li>
+        <li><strong>Hum teaching quality ya natije ki guarantee nahi dete.</strong> Verification badges sirf ye batate hain ke humne kya check kiya — ye kisi ke rawaiye, qabiliyat ya natije ki zamanat nahi.</li>
+        <li><strong>Hum payment handle nahi karte.</strong> Fee parent seedha tutor ko deta hai. ApnaTutor ke through koi payment nahi hoti aur hum tuition fee par koi commission nahi lete.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Account</h2>
+      <ul>
+        <li>Account banane ke liye aap ki umr <strong>18 saal ya zyada</strong> honi chahiye. Parents apne bachon ki taraf se account banate hain; bachay khud account nahi bana sakte.</li>
+        <li>Aap jo maloomat dete hain wo sach honi chahiye.</li>
+        <li>Apne account ki hifazat aap ki zimmedari hai. Aap ke account se jo bhi hota hai us ke zimmedar aap hain.</li>
+        <li>Ek shakhs ek hi account banaye.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. Tutors ke liye khaas shurait</h2>
+      <ul>
+        <li>Profile par jo qualification aur tajurba likhein wo sach ho. Ghalat maloomat par profile hata di jati hai.</li>
+        <li>Verification ke liye hum documents dekhne ko keh sakte hain. Ye aap ki marzi hai, magar iske bagair badges nahi milte.</li>
+        <li>Verification badges, ratings, featured placement aur profile ka status sirf ApnaTutor team set karti hai. Inhe khud set karne ki koshish karne par account suspend ho sakta hai.</li>
+        <li>Parents se professional rawaiya rakhein. Students ke saath tuition ke alawa koi rabta na rakhein.</li>
+        <li>Parents ke numbers ya maloomat kisi aur ko na dein aur na kisi aur maqsad ke liye istemal karein.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Parents ke liye khaas shurait</h2>
+      <ul>
+        <li>Tutors ke numbers sirf tuition ke silsile mein istemal karein. Marketing, spam ya kisi aur maqsad ke liye nahi.</li>
+        <li>Review sirf apne asli tajurbe ki bunyad par likhein.</li>
+        <li>Pehli class se pehle demo lein, aur chhote bachon ki tuition ke waqt ghar par kisi baray ki mojoodgi behtar hai.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. Jo cheezein bilkul mana hain</h2>
+      <ul>
+        <li>Jhooti profile banana ya kisi aur ke naam par account banana</li>
+        <li>Jhoote reviews likhna ya likhwana</li>
+        <li>Automated tools se numbers ya profiles jama karna (scraping)</li>
+        <li>Kisi ko pareshan karna, dhamkana ya ghair-munasib rawaiya rakhna</li>
+        <li>Bachon ki safety ko khatre mein daalne wala koi bhi amal</li>
+        <li>Platform ke through ghair-qanooni koi bhi kaam</li>
+      </ul>
+      <p>In mein se kisi ki khilaaf-warzi par hum account <strong>bina ittila</strong> suspend ya delete kar sakte hain. Bachon ki safety se mutalliq maamlon mein hum pehle account band karte hain, tehqeeq baad mein.</p>
+    </section>
+
+    <section>
+      <h2>7. Content jo aap dete hain</h2>
+      <p>Profile, bio, reviews aur requests — jo bhi aap likhte hain wo aap ka hai. Aap hamein sirf itni ijazat dete hain ke hum usay ApnaTutor par dikha sakein.</p>
+      <p>Hum aisa koi bhi content hata sakte hain jo in shurait ke khilaf ho, ya jo ghalat, gumrah-kun ya ghair-munasib ho.</p>
+    </section>
+
+    <section>
+      <h2>8. Reviews</h2>
+      <p>Review sirf wahi parent likh sakta hai jisne us tutor ka contact khola ho. Har review publish hone se pehle hamari team dekhti hai. Hum wo review reject kar sakte hain jo jhoota lage, zaati hamla ho, ya jismein kisi ka phone number ya address ho.</p>
+      <p>Publish hone ke baad parent apna review khud edit nahi kar sakta — badalwana ho to hamein likhein.</p>
+    </section>
+
+    <section>
+      <h2>9. Fee aur paid features</h2>
+      <p>Parents ke liye ApnaTutor free hai. Tutors ke liye profile aur leads abhi free hain.</p>
+      <p>Aage chal kar tutors ke liye optional paid features (jaise Featured placement) aa sakti hain. Un ki qeemat aur shurait us waqt saaf batayi jayengi, aur wo naye features hongi — jo abhi free hai us par asar nahi parega.</p>
+    </section>
+
+    <section>
+      <h2>10. Zimmedari ki hadd</h2>
+      <p>ApnaTutor website "jaisi hai waisi" faraham ki jati hai. Hum poori koshish karte hain ke maloomat durust hon, magar har profile ki har baat ki tasdeeq mumkin nahi.</p>
+      <p>Qanoon jahan tak ijazat de, ApnaTutor us nuqsan ka zimmedar nahi hai jo parent aur tutor ke darmiyan kisi maamle se paida ho — tuition ki quality, rawaiya, fee ka jhagra, ya koi bhi doosra masla. Aap tutor khud chunte hain aur us faisle ki zimmedari aap ki hai.</p>
+      <p>Isi liye hum bar bar kehte hain: demo class lein, aur chhote bachon ki tuition ke waqt ghar par kisi baray ki mojoodgi rakhein.</p>
+    </section>
+
+    <section>
+      <h2>11. Account band karna</h2>
+      <p>Aap kabhi bhi apna account delete karwa sakte hain — <a href="/contact">contact page</a> se likh dein.</p>
+      <p>Hum bhi account band kar sakte hain agar in shurait ki khilaaf-warzi ho.</p>
+    </section>
+
+    <section>
+      <h2>12. Tabdeeli aur qanoon</h2>
+      <p>In shurait mein tabdeeli hone par upar "Aakhri update" ki tareekh badal jayegi. Bari tabdeeli ho to hum registered users ko bata denge.</p>
+      <p>In shurait par Pakistan ka qanoon lagoo hota hai.</p>
+    </section>
+
+    <section>
+      <h2>13. Rabta</h2>
+      <p>In shurait ke baare mein koi sawal ho to <a href="/contact">contact page</a> se likhein.</p>
+    </section>
+  </Prose>
+</Base>

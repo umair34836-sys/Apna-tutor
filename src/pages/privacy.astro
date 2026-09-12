@@ -1,0 +1,143 @@
+---
+// src/pages/privacy.astro
+//
+// ★ Launch se pehle ye page live hona LAZMI hai. Google Ads aur Meta Ads dono
+//   iske bagair ad account reject kar dete hain (docs/03-SEO-ANALYTICS.md §7).
+//
+// Is page mein wahi likha hai jo asal mein hota hai. Koi bhi data flow badlein
+// to ye page bhi usi commit mein update karein.
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import { env } from '../lib/site';
+
+const UPDATED = '12 September 2026';
+---
+<Base
+  title="Privacy Policy | ApnaTutor"
+  description="ApnaTutor kya data jama karta hai, kyun, kitni der rakhta hai, aur kis ke saath share karta hai. Verification documents hum store nahi karte."
+  path="/privacy"
+>
+  <Prose
+    title="Privacy Policy"
+    lead="Yahan saaf likha hai ke hum kya data lete hain, kyun lete hain, kitni der rakhte hain, aur kis ke saath share karte hain."
+    updated={UPDATED}
+  >
+    <section>
+      <h2>1. Hum kaun hain</h2>
+      <p>ApnaTutor ek online platform hai jo Pakistan mein parents ko local tutors se milata hai. Is policy mein "hum" ka matlab ApnaTutor hai, aur "aap" ka matlab wo shakhs jo is website ko istemal karta hai.</p>
+    </section>
+
+    <section>
+      <h2>2. Hum kya data jama karte hain</h2>
+      <h3>Agar aap sirf website dekh rahe hain</h3>
+      <p>Account banaye bagair browsing par hum aap se koi zaati maloomat nahi lete. Analytics (neeche §5) aap ke browser aur safhaat ke baare mein maloomat jama karti hai.</p>
+
+      <h3>Agar aap account banate hain</h3>
+      <ul>
+        <li>Naam, email address, aur password (password Firebase Authentication ke paas jata hai — hum usay dekh nahi sakte)</li>
+        <li>Aap parent hain ya tutor</li>
+        <li>Aap ka sheher</li>
+      </ul>
+
+      <h3>Agar aap parent ke taur par request post karte hain</h3>
+      <ul>
+        <li>Class, subject, area, teaching mode, budget, timing aur aap ke likhe hue notes</li>
+        <li>Aap ka phone number</li>
+      </ul>
+      <p><strong>Aap ka phone number aur poora address kisi public page par nahi jate.</strong> Jab aap ki request matching tutors tak pohanchti hai to unhe sirf class, subject, area, mode, budget aur timing nazar aati hai — aap ka number nahi. Number aap khud dete hain, jab aap chahein.</p>
+
+      <h3>Agar aap tutor ke taur par profile banate hain</h3>
+      <ul>
+        <li>Naam, gender, sheher, areas, subjects, classes, boards, qualification, tajurba, fee range, availability aur bio — <strong>ye sab public profile par dikhta hai</strong></li>
+        <li>Phone number, WhatsApp number aur email — <strong>ye public nahi hota</strong>. Ye alag, mehfooz jagah rakha jata hai aur sirf un logged-in parents ko nazar aata hai jo aap ka contact kholte hain</li>
+        <li>Profile photo (optional)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Verification documents hum store NAHI karte</h2>
+      <p>Verification ke doran hum aap se shanakhti card ya degree dekhne ko maang sakte hain. Hum wo document <strong>dekhte hain, naam match karte hain, aur message delete kar dete hain</strong>.</p>
+      <p>CNIC, B-Form, degree ya kisi bhi shanakhti dastavez ki koi image, scan ya copy hamare kisi server, database ya cloud storage par save nahi hoti.</p>
+      <p>Hamare paas sirf itna record rehta hai: kaunsa check hua, kis ne kiya, aur kab.</p>
+    </section>
+
+    <section>
+      <h2>4. Hum ye data kyun lete hain</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Data</th><th>Kis liye</th></tr></thead>
+          <tbody>
+            <tr><td>Email aur password</td><td>Aap ka account chalane ke liye</td></tr>
+            <tr><td>Tutor ki public profile</td><td>Taake parents aap ko dhoond sakein</td></tr>
+            <tr><td>Tutor ka phone number</td><td>Taake unlock karne wala parent aap se rabta kar sake</td></tr>
+            <tr><td>Parent ki request</td><td>Taake matching tutors tak pohancha sakein</td></tr>
+            <tr><td>Parent ka phone number</td><td>Zarurat par hum aap se rabta kar sakein; tutors ko khud-ba-khud nahi jata</td></tr>
+            <tr><td>Contact unlock ka record</td><td>Taake sirf wahi parent review likh sake jisne waqai rabta kiya</td></tr>
+            <tr><td>Analytics</td><td>Taake pata chale log kya dhoond rahe hain jo hamare paas nahi hai</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. Kis ke saath share hota hai</h2>
+      <p>Hum aap ka data bechte nahi. Jo services hum istemal karte hain wo ye hain:</p>
+      <ul>
+        <li><strong>Google Firebase</strong> (Authentication aur Firestore database) — aap ka account aur saara site data yahan rakha jata hai. Servers Mumbai, India (asia-south1) region mein hain.</li>
+        <li><strong>Cloudinary</strong> — sirf profile photos. Koi shanakhti document yahan nahi jata.</li>
+        <li><strong>GitHub Pages</strong> — website ke pages yahan se serve hote hain.</li>
+        <li><strong>Google Analytics 4 aur Google Tag Manager</strong> — browsing ke aankray.</li>
+        <li><strong>Google Ads aur Meta (Facebook) Pixel</strong> — advertising measurement.</li>
+      </ul>
+      <p>In mein se har ek ki apni privacy policy hai. Aap ka data unke servers par unki policy ke tehat rehta hai.</p>
+      <p>Iske alawa hum data sirf us surat mein share karenge jab qanoon ya kisi shakhs ki safety ke liye zaroori ho.</p>
+    </section>
+
+    <section>
+      <h2>6. Cookies aur tracking</h2>
+      <p>Hum cookies aur isi tarah ki technologies istemal karte hain — login yaad rakhne ke liye, aur analytics aur advertising ke liye. Europe, UK aur kuch doosre mumalik ke visitors ke liye advertising aur analytics cookies <strong>by default band</strong> rehti hain jab tak aap ijazat na dein (Google Consent Mode).</p>
+      <p>Aap apne browser se kabhi bhi cookies band kar sakte hain. Us surat mein login yaad nahi rahega, magar baqi site chalti rahegi.</p>
+    </section>
+
+    <section>
+      <h2>7. Kitni der rakhte hain</h2>
+      <ul>
+        <li><strong>Account aur profile</strong> — jab tak aap ka account hai.</li>
+        <li><strong>Requests aur leads</strong> — 12 mahine, phir hata diye jate hain.</li>
+        <li><strong>Reviews</strong> — jab tak profile mojood hai.</li>
+        <li><strong>Verification records</strong> — sirf boolean flags aur tareekh, jab tak profile mojood hai. Documents pehle hi delete ho chuke hote hain.</li>
+        <li><strong>Analytics</strong> — Google ki default muddat ke mutabiq.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>8. Aap ke haqooq</h2>
+      <p>Aap kabhi bhi ye keh sakte hain:</p>
+      <ul>
+        <li>Mera data mujhe dikhao</li>
+        <li>Meri maloomat theek karo</li>
+        <li>Mera account aur data delete karo</li>
+        <li>Meri profile search se hata do</li>
+      </ul>
+      <p>{env.contactEmail ? <>Iske liye <a href={`mailto:${env.contactEmail}`}>{env.contactEmail}</a> par likhein</> : <>Iske liye <a href="/contact">contact page</a> se rabta karein</>}. Hum 30 din ke andar kaam karte hain. Account delete karne par aap ki profile, requests aur contact maloomat hata di jati hain.</p>
+    </section>
+
+    <section>
+      <h2>9. Bachon ka data</h2>
+      <p>ApnaTutor 18 saal se kam umr walon ke liye nahi hai. Account sirf parent ya guardian bana sakte hain. Hum jaan boojh kar bachon ka data jama nahi karte, aur site par tutor–student direct messaging ka koi feature nahi hai.</p>
+      <p>Request post karte waqt apne bachay ka poora naam, school, ya ghar ka poora pata likhne ki zarurat nahi — class aur subject kaafi hai.</p>
+      <p>Agar aap ko lage ke kisi bachay ne apna data yahan diya hai to hamein batayein; hum usay hata denge.</p>
+    </section>
+
+    <section>
+      <h2>10. Security</h2>
+      <p>Data Firebase par rakha jata hai aur Security Rules ke peeche mehfooz hai. Phone numbers alag, gated document mein rakhe jate hain — koi bhi unhe browsing karke nahi dekh sakta. Saara traffic HTTPS par hai.</p>
+      <p>Is ke bawajood koi bhi online system 100% mehfooz nahi hota. Isi liye hum wo data rakhte hi nahi jiska leak hona sabse zyada nuqsan de sakta hai — jaise shanakhti dastavezat.</p>
+    </section>
+
+    <section>
+      <h2>11. Is policy mein tabdeeli</h2>
+      <p>Tabdeeli hone par upar "Aakhri update" ki tareekh badal jayegi. Bari tabdeeli ho to hum registered users ko bata denge.</p>
+    </section>
+  </Prose>
+</Base>

@@ -1,0 +1,91 @@
+---
+// =============================================================================
+// src/pages/[combo].astro — SEO combo pages
+//
+//   /math-tutor-risalpur · /home-tutor-nowshera · /female-tutor-islamabad
+//   /class-9-tutor-peshawar · /o-level-tutor-islamabad · /online-tutor-risalpur
+//
+// ⚠ Ye pages hi doorway-page penalty ka sabse bara khatra hain. Isliye kaun sa
+//   page banega ye src/lib/seo.ts ke teen gates tay karte hain:
+//     1. 3+ approved tutors
+//     2. 120+ words ka apna intro
+//     3. wo intro kisi doosre page par pehle se na ho
+//   Gate pass na ho to page banta hi nahi — URL 404 rehta hai. Ye jaan boojh
+//   kar hai. scripts/validate-seo.mjs build ke baad dobara check karti hai.
+// =============================================================================
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import SeoIntro from '../components/SeoIntro.astro';
+import TutorGrid from '../components/TutorGrid.astro';
+import Icon from '../components/Icon.astro';
+import { breadcrumbJsonLd, comboPages } from '../lib/seo';
+import { SITE } from '../lib/site';
+import type { ComboPage } from '../lib/seo';
+
+export function getStaticPaths() {
+  return comboPages().map((page) => ({ params: { combo: page.slug }, props: { page } }));
+}
+
+interface Props { page: ComboPage }
+const { page } = Astro.props;
+
+const path = `/${page.slug}`;
+// Isi city ke doosre combo pages — internal linking, magar khud ko link nahi.
+const siblings = comboPages()
+  .filter((p) => p.city.slug === page.city.slug && p.slug !== page.slug)
+  .slice(0, 8);
+---
+<Base
+  title={page.title}
+  description={page.description}
+  path={path}
+  jsonLd={[breadcrumbJsonLd(page.breadcrumbs, SITE.url)]}
+>
+  <div class="wrap"><Breadcrumbs items={page.breadcrumbs} /></div>
+
+  <div class="wrap head">
+    <h1>{page.h1}</h1>
+    <p class="lead">{page.lead}</p>
+    <p class="count">
+      <Icon name="users" size={16} />
+      {`${page.tutors.length} verified ${page.tutors.length === 1 ? 'tutor' : 'tutors'} available`}
+    </p>
+  </div>
+
+  <section><div class="wrap"><TutorGrid tutors={page.tutors} /></div></section>
+
+  <section class="sec-alt">
+    <div class="wrap"><SeoIntro paragraphs={page.intro} heading={`${page.h1} — tafseel`} /></div>
+  </section>
+
+  {siblings.length > 0 && (
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>{page.city.name} mein aur dhoondein</h2></div>
+        <ul class="links">
+          {siblings.map((p) => (
+            <li><a href={`/${p.slug}`}>{p.h1}&#32;<span>({p.tutors.length})</span></a></li>
+          ))}
+          <li><a href={`/city/${page.city.slug}`}>{page.city.name} ke saare tutors</a></li>
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <style>
+    .head{padding:var(--space-3) var(--space-2) 0}
+    .head h1{font-size:clamp(26px,5vw,40px);font-weight:700;text-wrap:balance}
+    .lead{margin-top:12px;color:var(--muted-fg);font-size:17px;max-width:60ch}
+    .count{margin-top:var(--space-2);display:inline-flex;align-items:center;gap:7px;
+      background:var(--primary-soft);border:1px solid var(--primary-border);
+      color:var(--primary-dark);border-radius:var(--radius-pill);padding:6px 14px;
+      font-size:14px;font-weight:600}
+    .links{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:640px){.links{grid-template-columns:repeat(2,1fr)}}
+    @media(min-width:980px){.links{grid-template-columns:repeat(4,1fr)}}
+    .links a{display:block;padding:12px 14px;background:#fff;border:1px solid var(--border);
+      border-radius:var(--radius);font-size:15px;min-height:44px}
+    .links a:hover{border-color:var(--primary-border);text-decoration:none}
+    .links span{color:var(--muted-fg)}
+  </style>
+</Base>

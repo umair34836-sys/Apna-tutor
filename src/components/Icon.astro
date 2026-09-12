@@ -99,7 +99,9 @@ const icon = PATHS[name];
 if (!icon) throw new Error(`Icon "${name}" src/components/Icon.astro mein mojood nahi hai.`);
 
 const style = size ? `width:${size}px;height:${size}px` : undefined;
-const a11y = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': 'true' };
+const a11y = label
+  ? ({ role: 'img' as const, 'aria-label': label })
+  : ({ 'aria-hidden': 'true' as const });
 ---
 <svg
   class={className}

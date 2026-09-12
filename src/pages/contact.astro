@@ -1,0 +1,72 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import Icon from '../components/Icon.astro';
+import { env } from '../lib/site';
+
+// Server nahi hai, isliye contact form kahin submit nahi ho sakta. Jo raste
+// waqai kaam karte hain wahi dikhate hain — ek aisa form nahi jo kuch na kare.
+const waDigits = env.officialWhatsapp.replace(/[^\d]/g, '');
+---
+<Base
+  title="Contact ApnaTutor — Support for Parents and Tutors | ApnaTutor"
+  description="ApnaTutor se rabta karein — sawal, shikayat, verification ya safety ke masle ke liye. Hum aam taur par ek working day mein jawab dete hain."
+  path="/contact"
+>
+  <Prose
+    title="Rabta karein"
+    lead="Sawal, mashwara ya shikayat — sab yahan bhej sakte hain. Hum aam taur par ek working day mein jawab dete hain."
+  >
+    <section>
+      <h2>Seedha rabta</h2>
+      <div class="contact-cards">
+        {env.contactEmail && (
+          <a class="contact-card" href={`mailto:${env.contactEmail}`}>
+            <Icon name="mail" />
+            <div><strong>Email</strong><span>{env.contactEmail}</span></div>
+          </a>
+        )}
+        {waDigits && (
+          <a class="contact-card" href={`https://wa.me/${waDigits}`} rel="noopener">
+            <Icon name="message-square" />
+            <div><strong>WhatsApp</strong><span>Tez jawab ke liye</span></div>
+          </a>
+        )}
+      </div>
+      {!env.contactEmail && !waDigits && (
+        <p class="state state-info">
+          <Icon name="info" />
+          <span>Rabte ki tafseel abhi set nahi hui. Site launch se pehle ye yahan aa jayegi.</span>
+        </p>
+      )}
+    </section>
+
+    <section>
+      <h2>Kis baare mein likh rahe hain?</h2>
+      <ul>
+        <li><strong>Safety ka masla</strong> — sabse pehle dekha jata hai. Subject mein "SAFETY" likh dein. Zarurat ho to hum account foran suspend karte hain aur baad mein tehqeeq karte hain.</li>
+        <li><strong>Verification</strong> — profile submit ki hai aur 48 ghante se zyada ho gaye? Apna registered email aur city likh dein.</li>
+        <li><strong>Profile edit ya delete</strong> — hum kar denge. Delete karne par aapka data hata diya jata hai.</li>
+        <li><strong>Kisi profile ki shikayat</strong> — profile page ka report button zyada tez hai, magar yahan bhi likh sakte hain.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Jo hum nahi kar sakte</h2>
+      <p>Hum parent aur tutor ke darmiyan fee ya timing ke jhagray mein faisla nahi kar sakte — ApnaTutor us arrangement ka hissa nahi hai. Agar kisi tutor ka rawaiya ghalat raha ho to zaroor batayein; wo hum dekhte hain.</p>
+    </section>
+  </Prose>
+
+  <style>
+    .contact-cards{display:grid;grid-template-columns:1fr;gap:var(--space-2)}
+    @media(min-width:560px){.contact-cards{grid-template-columns:1fr 1fr}}
+    .contact-card{display:flex;gap:12px;align-items:center;padding:var(--space-3);
+      background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+      min-height:44px;color:var(--fg)}
+    .contact-card:hover{border-color:var(--primary-border);background:var(--primary-soft);
+      text-decoration:none}
+    .contact-card :global(.icon){width:22px;height:22px;color:var(--primary-bright);flex:0 0 auto}
+    .contact-card strong{display:block;font-family:var(--font-heading);font-size:16px}
+    .contact-card span{font-size:14px;color:var(--muted-fg)}
+  </style>
+</Base>

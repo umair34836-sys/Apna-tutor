@@ -1,0 +1,87 @@
+---
+// src/pages/teachers/[...page].astro — saare approved tutors, paginated
+import type { GetStaticPaths, Page } from 'astro';
+import Base from '../../layouts/Base.astro';
+import TutorGrid from '../../components/TutorGrid.astro';
+import Icon from '../../components/Icon.astro';
+import { tutors } from '../../lib/data';
+import { rank } from '../../lib/seo';
+import { TUTORS_PER_PAGE } from '../../lib/site';
+import type { Tutor } from '../../lib/types';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  // Astro ka paginate() khali array par fail karta hai. Zero tutors ke saath
+  // bhi build chalni chahiye (Firestore khali ho sakta hai), isliye us surat
+  // mein ek khali page khud banate hain — jo empty state dikhata hai.
+  if (tutors.length === 0) {
+    const empty: Page<Tutor> = {
+      data: [], start: 0, end: 0, size: TUTORS_PER_PAGE, total: 0,
+      currentPage: 1, lastPage: 1,
+      url: { current: '/teachers', first: undefined, last: undefined, prev: undefined, next: undefined },
+    };
+    return [{ params: { page: undefined }, props: { page: empty } }];
+  }
+  return paginate(rank(tutors), { pageSize: TUTORS_PER_PAGE });
+}) satisfies GetStaticPaths;
+
+interface Props { page: Page<Tutor> }
+const { page } = Astro.props;
+
+const path = page.currentPage === 1 ? '/teachers' : `/teachers/${page.currentPage}`;
+const total = tutors.length;
+
+const title =
+  page.currentPage === 1
+    ? `All Verified Tutors in Pakistan — ${total} Profiles | ApnaTutor`
+    : `All Verified Tutors — Page ${page.currentPage} of ${page.lastPage} | ApnaTutor`;
+
+const description =
+  page.currentPage === 1
+    ? `ApnaTutor par ${total} verified home aur online tutors. Subject, class, city aur budget ke hisaab se dekhein. Parents ke liye bilkul free.`
+    : `Verified tutors ki list, page ${page.currentPage}. Subject, class aur city ke hisaab se filter karein.`;
+---
+<Base title={title} description={description} path={path}>
+  <div class="wrap head">
+    <h1>Saare verified tutors</h1>
+    <p class="lead">
+      {total > 0
+        ? `${total} approved profiles. Kisi bhi profile par click karke poori detail dekhein.`
+        : 'Abhi koi tutor approve nahi hua.'}
+    </p>
+    <a class="btn btn-outline btn-sm" href="/find-tutor">
+      <Icon name="filter" />Filter ke saath dhoondein
+    </a>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <TutorGrid
+        tutors={page.data}
+        emptyTitle="Abhi koi tutor live nahi hai"
+        emptyBody="Pehle tutors onboard ho rahe hain. Apni requirement post kar dein — matching tutor aate hi hum aapko bata denge."
+      />
+
+      {page.lastPage > 1 && (
+        <nav class="pager" aria-label="Pagination">
+          {page.url.prev
+            ? <a class="btn btn-outline btn-sm" href={page.url.prev} rel="prev"><Icon name="chevron-left" />Pichla</a>
+            : <span class="btn btn-outline btn-sm" aria-disabled="true"><Icon name="chevron-left" />Pichla</span>}
+          <span class="pager-count">Page {page.currentPage} / {page.lastPage}</span>
+          {page.url.next
+            ? <a class="btn btn-outline btn-sm" href={page.url.next} rel="next">Agla<Icon name="chevron-right" /></a>
+            : <span class="btn btn-outline btn-sm" aria-disabled="true">Agla<Icon name="chevron-right" /></span>}
+        </nav>
+      )}
+    </div>
+  </section>
+
+  <style>
+    .head{padding:var(--space-4) var(--space-2) 0;display:flex;flex-direction:column;
+      align-items:flex-start;gap:12px}
+    .head h1{font-size:clamp(26px,5vw,40px);font-weight:700}
+    .lead{color:var(--muted-fg);font-size:17px;max-width:60ch}
+    .pager{display:flex;align-items:center;justify-content:center;gap:var(--space-2);
+      margin-top:var(--space-4);flex-wrap:wrap}
+    .pager-count{font-size:14.5px;color:var(--muted-fg)}
+  </style>
+</Base>

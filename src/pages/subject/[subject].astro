@@ -1,0 +1,69 @@
+---
+// src/pages/subject/[subject].astro — subject hub page
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SeoIntro from '../../components/SeoIntro.astro';
+import TutorGrid from '../../components/TutorGrid.astro';
+import { subjectPages, breadcrumbJsonLd, comboPages } from '../../lib/seo';
+import { SITE } from '../../lib/site';
+import type { Subject, Tutor } from '../../lib/types';
+
+export function getStaticPaths() {
+  return subjectPages().map((p) => ({
+    params: { subject: p.entity.slug },
+    props: { subject: p.entity, tutors: p.tutors, intro: p.intro },
+  }));
+}
+
+interface Props { subject: Subject; tutors: Tutor[]; intro: string[] }
+const { subject, tutors, intro } = Astro.props;
+
+const path = `/subject/${subject.slug}`;
+const n = tutors.length;
+const crumbs = [{ name: 'Home', url: '/' }, { name: subject.name, url: path }];
+const related = comboPages().filter((p) => p.subject?.slug === subject.slug).slice(0, 8);
+
+const title = `${subject.name} Tutors in Pakistan — ${n} Verified | ApnaTutor`;
+const description =
+  `Pakistan mein ${n} verified ${subject.name.toLowerCase()} tutors — home tuition aur online. City, class aur budget ke hisaab se filter karein. Parents ke liye free.`;
+---
+<Base title={title} description={description} path={path} jsonLd={[breadcrumbJsonLd(crumbs, SITE.url)]}>
+  <div class="wrap"><Breadcrumbs items={crumbs} /></div>
+
+  <div class="wrap head">
+    <h1>{subject.name} Tutors</h1>
+    <p class="lead">{n} verified {subject.name.toLowerCase()} tutors — home tuition aur online, dono.</p>
+  </div>
+
+  <section><div class="wrap"><TutorGrid tutors={tutors} /></div></section>
+
+  {related.length > 0 && (
+    <section class="sec-alt">
+      <div class="wrap">
+        <div class="sec-head"><h2>Sheher ke hisaab se</h2></div>
+        <ul class="links">
+          {related.map((p) => (
+            <li><a href={`/${p.slug}`}>{p.h1}&#32;<span>({p.tutors.length})</span></a></li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <section>
+    <div class="wrap"><SeoIntro paragraphs={intro} heading={`${subject.name} ki tuition`} /></div>
+  </section>
+
+  <style>
+    .head{padding:var(--space-3) var(--space-2) 0}
+    .head h1{font-size:clamp(26px,5vw,40px);font-weight:700;text-wrap:balance}
+    .lead{margin-top:12px;color:var(--muted-fg);font-size:17px;max-width:60ch}
+    .links{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:640px){.links{grid-template-columns:repeat(2,1fr)}}
+    @media(min-width:980px){.links{grid-template-columns:repeat(4,1fr)}}
+    .links a{display:block;padding:12px 14px;background:#fff;border:1px solid var(--border);
+      border-radius:var(--radius);font-size:15px;min-height:44px}
+    .links a:hover{border-color:var(--primary-border);text-decoration:none}
+    .links span{color:var(--muted-fg)}
+  </style>
+</Base>

@@ -1,0 +1,35 @@
+---
+// src/pages/404.astro — GitHub Pages isay 404.html se serve karta hai
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+---
+<Base
+  title="Page Not Found | ApnaTutor"
+  description="Ye page mojood nahi hai. Tutor dhoondein ya apni requirement post karein."
+  path="/404"
+  noindex
+>
+  <div class="wrap notfound">
+    <Icon name="search" />
+    <h1>Ye page nahi mila</h1>
+    <p>
+      Ho sakta hai link purana ho, ya wo tutor ab available na ho.
+      Neeche se apna rasta chunein.
+    </p>
+    <div class="actions">
+      <a class="btn btn-primary" href="/find-tutor"><Icon name="search" />Tutor dhoondein</a>
+      <a class="btn btn-outline" href="/request-tutor"><Icon name="send" />Request post karein</a>
+      <a class="btn btn-ghost" href="/">Homepage</a>
+    </div>
+  </div>
+
+  <style>
+    .notfound{padding:var(--space-6) var(--space-2);text-align:center;
+      display:flex;flex-direction:column;align-items:center;gap:var(--space-2)}
+    .notfound :global(.icon){width:44px;height:44px;color:var(--icon-muted)}
+    .notfound h1{font-size:clamp(26px,5vw,38px);font-weight:700}
+    .notfound p{color:var(--muted-fg);font-size:17px;max-width:46ch}
+    .actions{display:flex;flex-wrap:wrap;gap:var(--space-1);justify-content:center;
+      margin-top:var(--space-2)}
+  </style>
+</Base>

@@ -1,0 +1,58 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Icon from '../components/Icon.astro';
+---
+<Base
+  title="How ApnaTutor Works — For Parents and Tutors | ApnaTutor"
+  description="ApnaTutor kaise kaam karta hai: parents tutor dhoondein ya request post karein, tutors apne area ki tuition leads dekhein. Parents ke liye bilkul free."
+  path="/how-it-works"
+>
+  <Prose
+    title="ApnaTutor kaise kaam karta hai"
+    lead="Do tarah ke log yahan aate hain — parents jinhe tutor chahiye, aur tutors jinhe students chahiye. Dono ka tareeqa neeche hai."
+  >
+    <section>
+      <h2>Parents ke liye</h2>
+      <p>Do raste hain, dono free:</p>
+      <ol>
+        <li><strong>Khud dhoondein</strong> — class, subject aur area select karke matching tutors dekhein. Profile par qualification, tajurba, fee range, availability aur verification badges hote hain.</li>
+        <li><strong>Request post karein</strong> — apni requirement likh dein. Hum wo aapke area ke matching tutors tak pohancha dete hain, aur jo dilchaspi lein wo aapke dashboard mein nazar aate hain. Aap faisla karein kisko number dena hai.</li>
+      </ol>
+      <p>Tutor ka number dekhne ke liye login karna parta hai. Ye tutors ko spam aur bulk scraping se bachata hai — aur isi wajah se wo apna number yahan dete hain.</p>
+      <p><strong>Fee aur timing aap seedha tutor se tay karte hain.</strong> ApnaTutor us mein koi commission nahi leta aur na hi beech mein aata hai.</p>
+    </section>
+
+    <section>
+      <h2>Tutors ke liye</h2>
+      <ol>
+        <li><strong>Profile banayein</strong> — subjects, classes, boards, areas, fee range aur availability. Isme 10 minute lagte hain.</li>
+        <li><strong>Verification</strong> — hum aapke number par rabta karte hain, aur identity aur qualification check karte hain. Har check ka apna badge hai.</li>
+        <li><strong>Leads dekhein</strong> — aapke area aur subjects ki tuition requests seedha aapke dashboard mein aati hain. Jo pasand aaye us par "I'm Interested" karein.</li>
+      </ol>
+      <p>Profile aur leads abhi bilkul free hain.</p>
+      <p><a href="/for-tutors">Tutors ke liye tafseel dekhein</a></p>
+    </section>
+
+    <section>
+      <h2>Kitna waqt lagta hai</h2>
+      <ul>
+        <li><strong>Tutor profile approve hone mein:</strong> 24–48 ghante. Hum WhatsApp par bata dete hain.</li>
+        <li><strong>Request post karne ke baad:</strong> matching tutors ko wo foran nazar aa jati hai. Jawab tutor ki availability par hai.</li>
+      </ul>
+      <p class="note">
+        <Icon name="info" size={17} />
+        ApnaTutor tutors ko employ nahi karta. Hum introduction karate hain — tuition ka
+        arrangement parent aur tutor ke darmiyan hota hai.
+      </p>
+    </section>
+  </Prose>
+
+  <HowItWorks alt />
+
+  <style>
+    .note{display:flex;gap:9px;align-items:flex-start}
+    .note :global(.icon){color:var(--primary-bright);flex:0 0 auto;margin-top:3px}
+  </style>
+</Base>

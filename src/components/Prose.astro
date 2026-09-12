@@ -1,0 +1,36 @@
+---
+// src/components/Prose.astro — text pages ki typography ek jagah
+export interface Props { title: string; lead?: string; updated?: string; }
+const { title, lead, updated } = Astro.props;
+---
+<div class="wrap prose-wrap">
+  <header class="prose-head">
+    <h1>{title}</h1>
+    {lead && <p class="lead">{lead}</p>}
+    {updated && <p class="updated">Aakhri update: {updated}</p>}
+  </header>
+  <div class="prose"><slot /></div>
+</div>
+
+<style>
+  .prose-wrap{padding:var(--space-5) var(--space-2)}
+  .prose-head{max-width:70ch;margin-bottom:var(--space-4)}
+  .prose-head h1{font-size:clamp(26px,5vw,40px);font-weight:700;text-wrap:balance}
+  .lead{margin-top:14px;font-size:18px;color:var(--muted-fg);max-width:60ch}
+  .updated{margin-top:10px;font-size:14px;color:var(--muted-fg)}
+
+  .prose{max-width:70ch;display:flex;flex-direction:column;gap:var(--space-3)}
+  .prose :global(h2){font-size:clamp(20px,3vw,26px);font-weight:600;margin-top:var(--space-2)}
+  .prose :global(h3){font-size:18px;font-weight:600}
+  .prose :global(p),.prose :global(li){color:var(--muted-fg);font-size:16.5px;line-height:1.75}
+  .prose :global(ul),.prose :global(ol){margin:0;padding-left:1.25rem;display:flex;
+    flex-direction:column;gap:10px}
+  .prose :global(strong){color:var(--fg)}
+  .prose :global(section){display:flex;flex-direction:column;gap:var(--space-2)}
+  .prose :global(table){width:100%;border-collapse:collapse;font-size:15.5px}
+  .prose :global(th),.prose :global(td){text-align:left;padding:10px 12px;
+    border-bottom:1px solid var(--border);vertical-align:top}
+  .prose :global(th){font-family:var(--font-heading);font-weight:600;color:var(--fg)}
+  .prose :global(td){color:var(--muted-fg)}
+  .prose :global(.table-scroll){overflow-x:auto}
+</style>

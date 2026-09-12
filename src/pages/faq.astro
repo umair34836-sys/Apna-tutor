@@ -1,0 +1,100 @@
+---
+// src/pages/faq.astro
+//
+// ★ FAQPage JSON-LD usi array se banta hai jo page par render hota hai. Google
+//   ki policy hai ke markup mein sirf wo sawal hon jo page par waqai dikhte
+//   hain — dono ek hi source se aane par ye galti mumkin hi nahi.
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+
+const faqs = [
+  {
+    q: 'Kya ApnaTutor parents ke liye free hai?',
+    a: 'Haan, bilkul free. Tutor dhoondna, request post karna aur tutor ka contact dekhna — sab free hai. Hum parents se koi fee nahi lete aur tuition fee par koi commission nahi lete.',
+  },
+  {
+    q: 'Tutor ka number kyun nazar nahi aata jab tak login na karun?',
+    a: 'Agar number khuli hui page par hota to ek chhoti si script saare tutors ke numbers 5 minute mein utha leti, aur wo numbers phir spam aur fraud ke liye istemal hote. Login ki shart isay rok deti hai. Account banana free hai aur ek minute ka kaam hai.',
+  },
+  {
+    q: '"ApnaTutor Verified" badge ka kya matlab hai?',
+    a: 'Iska matlab teen cheezein check ho chuki hain: tutor ka phone number (hum ne khud rabta kiya), unka shanakhti document (hum ne dekha aur naam match kiya), aur unki qualification (degree ya certificate dekha). Agar teeno mein se koi ek bhi check na hua ho to ye badge nahi lagta — us surat mein sirf jo check hua uska badge lagta hai.',
+  },
+  {
+    q: 'Kya ApnaTutor tutors ke documents apne paas rakhta hai?',
+    a: 'Nahi. Hum document WhatsApp par dekhte hain, naam match karte hain, aur message delete kar dete hain. CNIC ya degree ki koi copy hamare server par save nahi hoti. Sirf itna record rehta hai ke check hua, kis ne kiya aur kab.',
+  },
+  {
+    q: 'Kya ApnaTutor tutors ko employ karta hai?',
+    a: 'Nahi. ApnaTutor ek introduction platform hai. Tutors hamare employees ya agents nahi hain. Tuition ka arrangement, fee aur timing — sab parent aur tutor ke darmiyan tay hota hai.',
+  },
+  {
+    q: 'Fee kitni hoti hai aur kaise deni hoti hai?',
+    a: 'Har tutor apni fee range khud set karta hai, jo profile par likhi hoti hai. Final fee aap tutor se khud tay karte hain aur seedha unhe dete hain. ApnaTutor ke through koi payment nahi hoti.',
+  },
+  {
+    q: 'Maine request post ki, ab kya hoga?',
+    a: 'Aapki request aapke area aur subject ke matching tutors ko nazar aati hai. Jo tutor dilchaspi lete hain wo "Interested" mark karte hain, aur aapke dashboard mein aa jate hain. Phir aap faisla karte hain ke kis se rabta karna hai. Aapka number kisi tutor ko khud-ba-khud nahi jata.',
+  },
+  {
+    q: 'Kya mera phone number tutors ko nazar aata hai?',
+    a: 'Nahi. Tutor ko sirf class, subject, area, mode, budget aur timing nazar aati hai. Aapka number aur ghar ka address kabhi nahi. Aap khud faisla karte hain ke number kisko dena hai.',
+  },
+  {
+    q: 'Tutor profile approve hone mein kitna waqt lagta hai?',
+    a: 'Aam taur par 24 se 48 ghante. Hum verification ke baad WhatsApp par bata dete hain. Approve hone ke baad profile search mein aa jati hai.',
+  },
+  {
+    q: 'Kya main tutor ke baare mein review likh sakta hoon?',
+    a: 'Haan, magar sirf us tutor ke baare mein jiska contact aap ne khola ho. Ye shart isliye hai ke jhoote reviews na aa sakein. Review pehle hamari team dekhti hai, phir publish hota hai.',
+  },
+  {
+    q: 'Kisi profile ya tutor ke baare mein shikayat karni ho to?',
+    a: 'Har profile par report button hai. Report karne ke liye login zaroori hai, magar tutor ko aapka naam nahi jata. Safety ka masla ho to hum account foran suspend kar dete hain aur baad mein tehqeeq karte hain.',
+  },
+  {
+    q: 'Kya bachay khud account bana sakte hain?',
+    a: 'Nahi. ApnaTutor par sirf parent ya guardian account bana sakte hain. 18 saal se kam umr walon ke liye account nahi hai, aur site par tutor–student direct messaging ka koi feature nahi hai.',
+  },
+];
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+<Base
+  title="Frequently Asked Questions | ApnaTutor"
+  description="ApnaTutor ke aam sawalon ke jawab — fee, verification badges, privacy, reviews aur safety. Parents aur tutors dono ke liye."
+  path="/faq"
+  jsonLd={[faqJsonLd]}
+>
+  <Prose title="Aam sawalat" lead="Jo sawal sabse zyada poochay jate hain, unke jawab.">
+    <dl class="faq">
+      {faqs.map((f) => (
+        <div class="faq-item">
+          <dt>{f.q}</dt>
+          <dd>{f.a}</dd>
+        </div>
+      ))}
+    </dl>
+
+    <section>
+      <h2>Aur koi sawal?</h2>
+      <p>Hamein <a href="/contact">contact page</a> se likh dein. Hum aam taur par ek working day mein jawab dete hain.</p>
+    </section>
+  </Prose>
+
+  <style>
+    .faq{margin:0;display:flex;flex-direction:column;gap:var(--space-2)}
+    .faq-item{border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-3);
+      background:var(--bg-alt)}
+    .faq dt{font-family:var(--font-heading);font-size:17px;font-weight:600;color:var(--fg)}
+    .faq dd{margin:8px 0 0;color:var(--muted-fg);font-size:16px;line-height:1.7}
+  </style>
+</Base>
