@@ -26,3 +26,7 @@ serviceAccount*.json
 .vscode/
 .idea/
 *.log
+firestore-debug.log
+ui-debug.log
+database-debug.log
+pubsub-debug.log

@@ -25,6 +25,7 @@ site empty states dikhati hai. Ye jaan boojh kar hai: jhoota demo data kabhi nah
 | `npm run build` | Astro static build → `dist/` |
 | `npm run validate-seo` | SEO gate — fail hone par build tor deta hai |
 | `npm run build:full` | Teeno ek saath (jo CI karta hai) |
+| `npm run test:rules` | Firestore rules tests (emulator par — Java chahiye) |
 
 ## Architecture ek nazar mein
 
@@ -51,7 +52,7 @@ dhyan se parho.
 | Phase | Kaam | Status |
 |---|---|---|
 | 1 | Foundation — config, tokens, layout, lib, scripts, CI | ✅ |
-| 2 | Firestore rules tests (`@firebase/rules-unit-testing`) | ⬜ |
+| 2 | Firestore rules tests — 75 tests, sab pass | ✅ |
 | 3 | Public pages (SSG) + SEO combo pages | ⬜ |
 | 4 | Auth + tutor flows | ⬜ |
 | 5 | Parent flows + search + contact unlock | ⬜ |

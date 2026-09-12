@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "ApnaTutor — Pakistan ka tutor marketplace. Astro SSG + Firebase Spark + GitHub Pages.",
+  "description": "ApnaTutor \u2014 Pakistan ka tutor marketplace. Astro SSG + Firebase Spark + GitHub Pages.",
   "scripts": {
     "fetch-data": "node scripts/fetch-data.mjs",
     "dev": "npm run fetch-data && astro dev",
@@ -12,16 +12,20 @@
     "build:full": "npm run fetch-data && npm run build && npm run validate-seo",
     "preview": "astro preview",
     "check": "astro check",
-    "test": "vitest run"
+    "test": "npm run test:rules",
+    "test:rules": "firebase emulators:exec --project=apnatutor-rules-test --only firestore \"vitest run\""
   },
   "dependencies": {
-    "astro": "^5.14.1",
     "@astrojs/sitemap": "^3.6.0",
+    "astro": "^5.14.1",
     "firebase": "^12.4.0"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
     "firebase-admin": "^13.5.0",
-    "typescript": "^5.9.3"
+    "firebase-tools": "^15.30.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0"
   },
   "engines": {
     "node": ">=20"

@@ -1,0 +1,33 @@
+name: Rules tests
+
+# firestore.rules hi is project ka backend hai. Ye tests sirf push/PR par
+# chalte hain — cron deploy builds ko slow nahi karte.
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths:
+      - 'firestore.rules'
+      - 'tests/**'
+      - 'package.json'
+      - 'vitest.config.ts'
+      - '.github/workflows/test.yml'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      # Firestore emulator ko Java chahiye
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - name: Firestore rules tests
+        run: npm run test:rules

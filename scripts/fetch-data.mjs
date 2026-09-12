@@ -109,6 +109,23 @@ async function main() {
     return { id: d.id, ...data };
   });
 
+  // ---- Slug uniqueness
+  // Rules slug ki uniqueness enforce nahi kar sakti (uske liye server chahiye).
+  // Do tutors ka ek hi slug ho to ek dusre ka page overwrite kar dega — yani
+  // ek tutor ka URL kisi aur ka profile dikhane lagega. Yahan pakad lete hain.
+  const bySlug = new Map();
+  for (const t of tutors) {
+    if (!t.slug) throw new Error(`tutors/${t.id} ka slug khali hai — approve karne se pehle slug set karo.`);
+    if (bySlug.has(t.slug)) {
+      throw new Error(
+        `Do approved tutors ka ek hi slug hai: "${t.slug}"\n` +
+          `  → tutors/${bySlug.get(t.slug)} aur tutors/${t.id}\n` +
+          '  Admin panel se ek ka slug badlo, phir dobara build karo.'
+      );
+    }
+    bySlug.set(t.slug, t.id);
+  }
+
   // ---- SEO content
   const cities = (await db.collection('cities').get()).docs.map((d) => ({ slug: d.id, ...plain(d.data()) }));
   const subjects = (await db.collection('subjects').get()).docs.map((d) => ({ slug: d.id, ...plain(d.data()) }));
