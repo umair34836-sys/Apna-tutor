@@ -1,0 +1,19 @@
+---
+// src/components/SeoIntro.astro
+//
+// ★ `data-seo-intro` attribute scripts/validate-seo.mjs padhta hai aur is ke
+//   andar ke words ginta hai. 120 se kam hon to build toot jati hai. Ye text
+//   Firestore (cities/subjects ka intro) se aata hai — template nahi.
+export interface Props { paragraphs: string[]; heading?: string; }
+const { paragraphs, heading } = Astro.props;
+---
+<div class="seo-intro" data-seo-intro>
+  {heading && <h2>{heading}</h2>}
+  {paragraphs.map((p) => <p>{p}</p>)}
+</div>
+
+<style>
+  .seo-intro{max-width:70ch;display:flex;flex-direction:column;gap:var(--space-2)}
+  .seo-intro h2{font-size:clamp(20px,3vw,26px);font-weight:600}
+  .seo-intro p{color:var(--muted-fg);font-size:16.5px;line-height:1.7}
+</style>

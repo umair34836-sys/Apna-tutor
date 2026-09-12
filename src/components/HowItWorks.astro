@@ -1,0 +1,37 @@
+---
+export interface Props { alt?: boolean; }
+const { alt = false } = Astro.props;
+---
+<section class={alt ? 'sec-alt' : ''}>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Teen step mein tutor</h2>
+      <p>Sau profiles browse karne ki zarurat nahi. Requirement batayein, hum matching tutors laayenge.</p>
+    </div>
+    <div class="steps reveal">
+      <div class="step">
+        <h3>Requirement batayein</h3>
+        <p>Class, subject, area, timing aur budget. Ya apne alfaaz mein likh dein — dono chalta hai.</p>
+      </div>
+      <div class="step">
+        <h3>Matching tutors dekhein</h3>
+        <p>Hum aapke area ke suitable tutors shortlist karte hain, verification aur reviews ke saath.</p>
+      </div>
+      <div class="step">
+        <h3>Rabta karein</h3>
+        <p>WhatsApp ya call par seedhi baat karein. Fee aur timing aap tutor se khud tay karein.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .steps{display:grid;grid-template-columns:1fr;gap:var(--space-3);counter-reset:s}
+  @media(min-width:760px){.steps{grid-template-columns:repeat(3,1fr)}}
+  .step{position:relative;padding-top:var(--space-2)}
+  .step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;
+    width:44px;height:44px;border-radius:50%;background:var(--primary);color:#fff;
+    font-family:var(--font-heading);font-size:19px;font-weight:700;margin-bottom:14px}
+  .step h3{font-size:18px;font-weight:600}
+  .step p{margin-top:8px;color:var(--muted-fg);font-size:15.5px}
+</style>

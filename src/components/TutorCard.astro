@@ -1,0 +1,105 @@
+---
+// src/components/TutorCard.astro
+//
+// ★ Is card par phone number ya wa.me link KABHI nahi. Contact profile page
+//   par login ke baad khulta hai (connections doc banne par). DESIGN-NOTES.md
+//   "Safety": card par deep link rakhne se scrapers saare numbers utha lete.
+//
+// `data-tutor-card` attribute scripts/validate-seo.mjs ginta hai — 3 se kam
+// hon to build toot jati hai. Isay hatana mat.
+import Icon from './Icon.astro';
+import Badges from './Badges.astro';
+import Rating from './Rating.astro';
+import { classLabel, feeRange, initials, modeLabel } from '../lib/taxonomy';
+import { isFeatured, type Tutor } from '../lib/types';
+
+export interface Props { tutor: Tutor; }
+const { tutor } = Astro.props;
+
+const featured = isFeatured(tutor);
+const role = tutor.subjects.slice(0, 2).map((s) => s.replace(/(^|-)(\w)/g, (_, a, b) => a + b.toUpperCase()).replace(/-/g, ' ')).join(' & ');
+const areaLine = [tutor.areas[0], tutor.city].filter(Boolean).join(', ').replace(/\b\w/g, (c) => c.toUpperCase());
+---
+<article class={`tutor${featured ? ' featured' : ''}`} data-tutor-card>
+  {featured && (
+    <span class="feat-flag"><Icon name="star" />Featured</span>
+  )}
+
+  <div class="tutor-top">
+    {tutor.photoUrl ? (
+      <img class="avatar-img" src={tutor.photoUrl} alt="" width="60" height="60" loading="lazy" />
+    ) : (
+      <div class="avatar" aria-hidden="true">{initials(tutor.name)}</div>
+    )}
+    <div class="tutor-id">
+      <h3>{tutor.name}</h3>
+      <p class="tutor-role">{role} Tutor</p>
+      <Rating avg={tutor.ratingAvg} count={tutor.ratingCount} />
+    </div>
+  </div>
+
+  <Badges badges={tutor.badges} />
+
+  <div class="meta">
+    <div><Icon name="map-pin" /><span>{areaLine}</span></div>
+    <div>
+      <Icon name="graduation-cap" />
+      <span>{tutor.qualification} · <b>{tutor.experienceYears} saal ka tajurba</b></span>
+    </div>
+    {tutor.availability && (
+      <div><Icon name="calendar" /><span>{tutor.availability}</span></div>
+    )}
+  </div>
+
+  <div class="chips">
+    {tutor.modes.map((m) => (
+      <span class="chip chip-mode">
+        <Icon name={m === 'online' ? 'monitor' : 'home'} />{modeLabel(m).split(' (')[0]}
+      </span>
+    ))}
+    {tutor.classes.slice(0, 3).map((c) => <span class="chip">{classLabel(c)}</span>)}
+  </div>
+
+  <div class="fee">
+    <div><small>Monthly fee</small><strong>{feeRange(tutor.feeMin, tutor.feeMax)}</strong></div>
+  </div>
+
+  <div class="tutor-actions">
+    <a class="btn btn-primary btn-sm" href={`/teacher/${tutor.slug}`}>Profile dekhein</a>
+    <a class="btn btn-outline btn-sm" href={`/teacher/${tutor.slug}#contact`}>
+      <Icon name="message-square" />Contact dekhein
+    </a>
+  </div>
+</article>
+
+<style>
+  .tutor{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2);
+    transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+  .tutor:hover{border-color:var(--border-strong);box-shadow:var(--shadow-lg)}
+  .tutor.featured{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .feat-flag{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+    background:var(--accent-soft);color:var(--accent-text);border:1px solid var(--b-full-border);
+    padding:4px 10px;border-radius:var(--radius-pill);font-size:12.5px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.04em}
+  .feat-flag :global(.icon){width:14px;height:14px}
+  .tutor-top{display:flex;gap:14px;align-items:flex-start}
+  .avatar,.avatar-img{width:60px;height:60px;border-radius:50%;flex:0 0 auto}
+  .avatar{display:grid;place-items:center;background:var(--primary-soft);
+    border:2px solid var(--primary-border);font-family:var(--font-heading);
+    font-weight:700;font-size:21px;color:var(--primary-dark)}
+  .avatar-img{object-fit:cover;border:2px solid var(--primary-border)}
+  .tutor-id h3{font-size:18.5px;font-weight:600}
+  .tutor-role{font-size:14.5px;color:var(--muted-fg);margin-top:2px}
+  .meta{display:flex;flex-direction:column;gap:8px;font-size:14.5px;color:var(--muted-fg)}
+  .meta div{display:flex;gap:9px;align-items:flex-start}
+  .meta :global(.icon){width:17px;height:17px;color:var(--icon-muted);margin-top:2px}
+  .meta b{color:var(--fg);font-weight:600}
+  .fee{padding:14px;background:var(--bg-alt);border:1px solid var(--border);
+    border-radius:var(--radius);display:flex;justify-content:space-between;
+    align-items:center;gap:10px;flex-wrap:wrap}
+  .fee small{display:block;font-size:12.5px;color:var(--muted-fg);font-weight:500;
+    text-transform:uppercase;letter-spacing:.04em}
+  .fee strong{font-family:var(--font-heading);font-size:18px;color:var(--fg);font-weight:600}
+  .tutor-actions{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-1);margin-top:auto}
+</style>

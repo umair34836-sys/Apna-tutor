@@ -1,0 +1,30 @@
+---
+// src/components/Rating.astro
+//
+// ★ ratingCount === 0 par KOI stars nahi. Saaf likha jata hai ke abhi review
+//   nahi hai. Jhoote stars is platform ka sabse sasta aur sabse mehnga jhoot
+//   hote — parents chhote market mein pakad lete hain.
+import Icon from './Icon.astro';
+
+export interface Props { avg: number; count: number; }
+const { avg, count } = Astro.props;
+---
+{count > 0 ? (
+  <p class="rating">
+    <Icon name="star" />
+    {avg.toFixed(1)} <small>({count} verified {count === 1 ? 'review' : 'reviews'})</small>
+  </p>
+) : (
+  <p class="rating rating-none">
+    <Icon name="clock" />
+    Naya tutor — abhi koi review nahi
+  </p>
+)}
+
+<style>
+  .rating{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:14px;font-weight:600}
+  .rating :global(.icon){width:16px;height:16px;color:var(--accent)}
+  .rating small{color:var(--muted-fg);font-weight:400}
+  .rating-none{color:var(--muted-fg);font-weight:400}
+  .rating-none :global(.icon){color:var(--icon-muted)}
+</style>

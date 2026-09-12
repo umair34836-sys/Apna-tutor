@@ -1,0 +1,69 @@
+---
+// src/components/SubjectTiles.astro
+//
+// ★ Sirf wo subjects dikhte hain jinke 1+ approved tutor hain, aur count ASLI
+//   hai. "148 tutors" jaisa koi placeholder number nahi.
+import Icon from './Icon.astro';
+import { subjects, tutors } from '../lib/data';
+import { comboPages } from '../lib/seo';
+
+const ICON: Record<string, string> = {
+  mathematics: 'math', physics: 'atom', chemistry: 'flask', biology: 'flask',
+  english: 'book', urdu: 'book', 'computer-science': 'code', accounting: 'money',
+};
+
+const built = new Set(comboPages().map((p) => p.slug));
+
+const tiles = subjects
+  .map((s) => {
+    const count = tutors.filter((t) => t.subjects.includes(s.slug)).length;
+    // Combo page bana ho to wahan bhejo, warna subject page par.
+    const combo = comboPages().find((p) => p.subject?.slug === s.slug);
+    return {
+      slug: s.slug,
+      name: s.name,
+      count,
+      href: combo && built.has(combo.slug) ? `/${combo.slug}` : `/subject/${s.slug}`,
+      icon: ICON[s.slug] ?? 'book',
+    };
+  })
+  .filter((t) => t.count > 0)
+  .sort((a, b) => b.count - a.count)
+  .slice(0, 6);
+---
+{tiles.length > 0 && (
+  <section>
+    <div class="wrap">
+      <div class="sec-bar">
+        <div class="sec-head">
+          <h2>Popular subjects</h2>
+          <p>Sabse zyada demand in subjects mein hai. Kisi bhi tile par click karein.</p>
+        </div>
+        <a class="btn btn-outline btn-sm" href="/teachers">Saare tutors</a>
+      </div>
+
+      <div class="tiles reveal">
+        {tiles.map((t) => (
+          <a class="tile" href={t.href}>
+            <Icon name={t.icon} />
+            <b>{t.name}</b><span>{t.count} {t.count === 1 ? 'tutor' : 'tutors'}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-2)}
+  @media(min-width:640px){.tiles{grid-template-columns:repeat(3,1fr)}}
+  @media(min-width:980px){.tiles{grid-template-columns:repeat(6,1fr)}}
+  .tile{display:flex;flex-direction:column;gap:10px;padding:18px 16px;background:#fff;
+    border:1px solid var(--border);border-radius:var(--radius);min-height:110px;
+    transition:border-color .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease)}
+  .tile:hover{border-color:var(--primary-border);box-shadow:var(--shadow-md);
+    transform:translateY(-2px);text-decoration:none}
+  .tile :global(.icon){width:26px;height:26px;color:var(--primary-bright)}
+  .tile b{font-family:var(--font-heading);font-size:15.5px;color:var(--fg);font-weight:600}
+  .tile span{font-size:13px;color:var(--muted-fg)}
+</style>

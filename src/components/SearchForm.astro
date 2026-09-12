@@ -1,0 +1,232 @@
+---
+// src/components/SearchForm.astro — hero ka search card (index.html se)
+//
+// Do raste (index.html ke do tabs):
+//   1. "Tutor dhoondein" — filters. Agar us combo ka pre-rendered page mojood
+//      hai to seedha wahan bhejta hai (tez, free, SEO'd), warna /find-tutor.
+//   2. "Request post karein" — fields le kar /request-tutor par prefilled
+//      bhejta hai (asli submit login ke baad hota hai).
+import Icon from './Icon.astro';
+import { CLASSES, MODES, GENDERS } from '../lib/taxonomy';
+import { cities, subjects } from '../lib/data';
+import { comboPages } from '../lib/seo';
+
+// Build-time manifest: kaun se combo pages waqai bane hain.
+const manifest = comboPages().map((p) => p.slug);
+const areas = cities.flatMap((c) => c.areas.map((a) => ({ city: c, area: a })));
+---
+<div class="search-card">
+  <div class="tabs" role="tablist" aria-label="Tutor dhoondne ka tareeqa">
+    <button class="tab" role="tab" id="tab-find" aria-controls="panel-find" aria-selected="true" type="button">
+      <Icon name="search" />Tutor dhoondein
+    </button>
+    <button class="tab" role="tab" id="tab-request" aria-controls="panel-request" aria-selected="false" tabindex="-1" type="button">
+      <Icon name="send" />Request post karein
+    </button>
+  </div>
+
+  <!-- PANEL 1 -->
+  <div class="panel" id="panel-find" role="tabpanel" aria-labelledby="tab-find">
+    <form id="form-find" novalidate data-manifest={JSON.stringify(manifest)}>
+      <div class="field-grid cols-4">
+        <div class="field" id="f-class">
+          <label for="s-class">Class</label>
+          <select id="s-class" name="class" required>
+            <option value="">Select karein</option>
+            {CLASSES.map((c) => <option value={c.slug}>{c.labelUrdu}</option>)}
+          </select>
+          <p class="err" id="e-class"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> Class select karna zaroori hai</p>
+        </div>
+
+        <div class="field" id="f-subject">
+          <label for="s-subject">Subject</label>
+          <select id="s-subject" name="subject" required disabled={subjects.length === 0}>
+            <option value="">Select karein</option>
+            {subjects.map((s) => <option value={s.slug}>{s.name}</option>)}
+          </select>
+          <p class="err" id="e-subject"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> Subject select karna zaroori hai</p>
+        </div>
+
+        <div class="field" id="f-area">
+          <label for="s-area">Area / City</label>
+          <select id="s-area" name="area" required disabled={cities.length === 0}>
+            <option value="">Select karein</option>
+            {cities.map((c) => (
+              <optgroup label={c.name}>
+                <option value={`${c.slug}|`}>{c.name} (poora sheher)</option>
+                {c.areas.map((a) => <option value={`${c.slug}|${a}`}>{a}</option>)}
+              </optgroup>
+            ))}
+            <option value="|online">Online (any city)</option>
+          </select>
+          <p class="err" id="e-area"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> Area select karna zaroori hai</p>
+        </div>
+
+        <div class="field">
+          <label for="s-budget">Budget <span class="hint">(optional)</span></label>
+          <select id="s-budget" name="budget">
+            <option value="">Koi bhi</option>
+            <option value="3000">Rs. 3,000 tak</option>
+            <option value="5000">Rs. 3,000 – 5,000</option>
+            <option value="8000">Rs. 5,000 – 8,000</option>
+            <option value="999999">Rs. 8,000+</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="panel-actions">
+        <button type="submit" class="btn btn-primary"><Icon name="search" />Find My Tutor</button>
+        <a class="btn btn-outline" href="/teachers">Saare tutors dekhein</a>
+        <span class="panel-note"><Icon name="check" />Parents ke liye hamesha free</span>
+      </div>
+    </form>
+  </div>
+
+  <!-- PANEL 2 -->
+  <div class="panel" id="panel-request" role="tabpanel" aria-labelledby="tab-request" hidden>
+    <form id="form-request" novalidate action="/request-tutor" method="get">
+      <div class="field-grid">
+        <div class="field">
+          <label for="r-need">Aapko kya chahiye?</label>
+          <textarea id="r-need" name="notes" placeholder="Misal: Class 8 ki beti ke liye female Maths teacher chahiye, ghar aa sake, 4–6 PM, budget 5,000."></textarea>
+          <p class="hint">Apne alfaaz mein likhein — agle page par tafseel maang lenge.</p>
+        </div>
+        <div class="field-grid" style="gap:var(--space-2)">
+          <div class="field">
+            <label for="r-mode">Teaching mode</label>
+            <select id="r-mode" name="mode">
+              {MODES.map((m) => <option value={m.slug}>{m.labelUrdu}</option>)}
+              <option value="any">Dono theek hain</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="r-gender">Teacher gender preference</label>
+            <select id="r-gender" name="genderPref">
+              <option value="any">Koi preference nahi</option>
+              {GENDERS.map((g) => <option value={g.slug}>{g.labelUrdu}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-actions">
+        <button type="submit" class="btn btn-primary"><Icon name="send" />Find Teachers For Me</button>
+        <span class="panel-note"><Icon name="lock" />Aapka number sirf matching tutors ko jata hai — public nahi hota</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .search-card{background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden}
+  .tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg-alt)}
+  .tab{flex:1;min-height:60px;display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px;background:none;border:0;border-bottom:3px solid transparent;cursor:pointer;
+    font-family:var(--font-heading);font-size:15px;font-weight:600;color:var(--muted-fg);
+    transition:color .2s var(--ease),background-color .2s var(--ease),border-color .2s var(--ease)}
+  .tab:hover{background:#fff;color:var(--fg)}
+  .tab[aria-selected="true"]{background:#fff;color:var(--primary-dark);border-bottom-color:var(--primary)}
+  .tab :global(.icon){width:19px;height:19px}
+  @media(max-width:520px){.tab{font-size:13.5px;padding:10px 6px;flex-direction:column;gap:4px}}
+  .panel{padding:var(--space-3)}
+  .panel[hidden]{display:none}
+  .panel-actions{display:flex;flex-wrap:wrap;gap:var(--space-1);align-items:center;
+    margin-top:var(--space-3);padding-top:var(--space-2);border-top:1px solid var(--border)}
+  .panel-note{font-size:13.5px;color:var(--muted-fg);display:flex;align-items:center;gap:6px}
+  .panel-note :global(.icon){width:16px;height:16px;color:var(--primary-bright)}
+</style>
+
+<script>
+  import { track } from '../lib/analytics';
+
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+
+  function select(tab: HTMLButtonElement) {
+    tabs.forEach((t) => {
+      const on = t === tab;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      const panel = document.getElementById(t.getAttribute('aria-controls')!);
+      if (panel) panel.hidden = !on;
+    });
+  }
+
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('keydown', (e) => {
+      let next: HTMLButtonElement | undefined;
+      if (e.key === 'ArrowRight') next = tabs[(i + 1) % tabs.length];
+      else if (e.key === 'ArrowLeft') next = tabs[(i - 1 + tabs.length) % tabs.length];
+      else if (e.key === 'Home') next = tabs[0];
+      else if (e.key === 'End') next = tabs[tabs.length - 1];
+      if (next) { e.preventDefault(); select(next); next.focus(); }
+    });
+  });
+
+  // ---- Inline validation: error field ke neeche, pehla ghalat field focus ----
+  const required = [
+    { sel: '#s-class', field: '#f-class', err: '#e-class' },
+    { sel: '#s-subject', field: '#f-subject', err: '#e-subject' },
+    { sel: '#s-area', field: '#f-area', err: '#e-area' },
+  ];
+
+  required.forEach((r) => {
+    const input = document.querySelector<HTMLSelectElement>(r.sel);
+    input?.addEventListener('change', () => {
+      if (input.value) {
+        document.querySelector(r.field)?.classList.remove('invalid');
+        document.querySelector(r.err)?.classList.remove('show');
+        input.removeAttribute('aria-invalid');
+      }
+    });
+  });
+
+  const form = document.getElementById('form-find') as HTMLFormElement | null;
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let firstBad: HTMLSelectElement | null = null;
+
+    required.forEach((r) => {
+      const input = document.querySelector<HTMLSelectElement>(r.sel)!;
+      const bad = !input.value;
+      document.querySelector(r.field)?.classList.toggle('invalid', bad);
+      document.querySelector(r.err)?.classList.toggle('show', bad);
+      if (bad) {
+        input.setAttribute('aria-invalid', 'true');
+        input.setAttribute('aria-describedby', r.err.slice(1));
+        if (!firstBad) firstBad = input;
+      } else {
+        input.removeAttribute('aria-invalid');
+      }
+    });
+
+    if (firstBad) { (firstBad as HTMLSelectElement).focus(); return; }
+
+    const classLevel = (document.getElementById('s-class') as HTMLSelectElement).value;
+    const subject = (document.getElementById('s-subject') as HTMLSelectElement).value;
+    const [city, area] = (document.getElementById('s-area') as HTMLSelectElement).value.split('|');
+    const budget = (document.getElementById('s-budget') as HTMLSelectElement).value;
+
+    track('search_tutors', { city, subject, class_level: classLevel, results_count: -1 });
+
+    // Pre-rendered page mojood hai? Wahan bhejo — tez, free aur SEO'd.
+    const manifest: string[] = JSON.parse(form.dataset.manifest || '[]');
+    const comboSlug = `${subject}-tutor-${city}`;
+    if (city && manifest.includes(comboSlug)) {
+      window.location.href = `/${comboSlug}`;
+      return;
+    }
+
+    const q = new URLSearchParams({ class: classLevel, subject });
+    if (city) q.set('city', city);
+    if (area) q.set('area', area);
+    if (budget) q.set('budget', budget);
+    window.location.href = `/find-tutor?${q.toString()}`;
+  });
+
+  document.getElementById('form-request')?.addEventListener('submit', () => {
+    track('request_start', { entry_point: 'homepage_tab' });
+  });
+</script>

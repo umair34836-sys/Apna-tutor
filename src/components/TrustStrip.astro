@@ -1,0 +1,33 @@
+---
+import Icon from './Icon.astro';
+---
+<div class="strip">
+  <div class="wrap strip-grid">
+    <div class="stat">
+      <Icon name="shield-check" />
+      <div><strong>Har badge ka matlab</strong><span>Jo verify nahi hua, us par badge nahi lagta</span></div>
+    </div>
+    <div class="stat">
+      <Icon name="map-pin" />
+      <div><strong>Area-level search</strong><span>Sirf city nahi — mohalla aur sector tak</span></div>
+    </div>
+    <div class="stat">
+      <Icon name="message-square" />
+      <div><strong>Seedha rabta</strong><span>WhatsApp ya call — koi lamba process nahi</span></div>
+    </div>
+    <div class="stat">
+      <Icon name="sparkles" />
+      <div><strong>Parents ke liye free</strong><span>Search aur request — bilkul free</span></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .strip{background:var(--primary-dark);color:#fff;padding:var(--space-3) 0}
+  .strip-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-3) var(--space-2)}
+  @media(min-width:820px){.strip-grid{grid-template-columns:repeat(4,1fr)}}
+  .stat{display:flex;gap:12px;align-items:flex-start}
+  .stat :global(.icon){width:22px;height:22px;color:var(--on-dark-accent);margin-top:3px}
+  .stat strong{display:block;font-family:var(--font-heading);font-size:19px;font-weight:600}
+  .stat span{font-size:14px;color:var(--on-dark-soft);line-height:1.4;display:block}
+</style>

@@ -1,0 +1,27 @@
+---
+import TutorCard from './TutorCard.astro';
+import EmptyState from './EmptyState.astro';
+import type { Tutor } from '../lib/types';
+
+export interface Props {
+  tutors: Tutor[];
+  emptyTitle?: string;
+  emptyBody?: string;
+}
+const {
+  tutors,
+  emptyTitle = 'Is area mein abhi koi tutor nahi',
+  emptyBody = 'Request post kar dein — jaise hi matching tutor aayega, hum aapko bata denge.',
+} = Astro.props;
+---
+{tutors.length > 0 ? (
+  <div class="tutors reveal">{tutors.map((t) => <TutorCard tutor={t} />)}</div>
+) : (
+  <EmptyState title={emptyTitle} body={emptyBody} />
+)}
+
+<style>
+  .tutors{display:grid;grid-template-columns:1fr;gap:var(--space-3)}
+  @media(min-width:700px){.tutors{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:1060px){.tutors{grid-template-columns:repeat(3,1fr)}}
+</style>

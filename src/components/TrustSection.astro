@@ -1,0 +1,79 @@
+---
+// src/components/TrustSection.astro
+//
+// ★ Har badge ka matlab yahan LIKHA hua hai. Jo claim hum waqai nahi karte, wo
+//   yahan nahi likha ja sakta — trust platform par jhoota claim sabse mehnga
+//   bug hai.
+import Icon from './Icon.astro';
+import SafetyCallout from './SafetyCallout.astro';
+
+export interface Props { alt?: boolean; }
+const { alt = true } = Astro.props;
+
+const items = [
+  {
+    icon: 'phone',
+    title: 'Phone verified',
+    // Spark plan par SMS OTP nahi hai — verification manual hai. Isliye yahan
+    // "OTP" ka zikr nahi. Jo hota hai wahi likha hai.
+    body: 'Tutor ke number par ApnaTutor team ne khud rabta kiya hai. Iska matlab sirf ye — number asli hai aur us tutor ka hai.',
+  },
+  {
+    icon: 'id-card',
+    title: 'Identity checked',
+    body: 'Identity document ApnaTutor team ne apni aankh se dekha hai aur naam match kiya hai. Document kahin save nahi hota — na hamare paas, na kisi server par.',
+  },
+  {
+    icon: 'graduation-cap',
+    title: 'Qualification checked',
+    body: 'Degree ya certificate check ki gayi hai — wahi jo profile par claim ki gayi hai. Copy hum nahi rakhte.',
+  },
+  {
+    icon: 'shield-check',
+    title: 'ApnaTutor Verified',
+    body: 'Teeno checks complete — phone, identity aur qualification. Sirf isi surat mein ye badge lagta hai.',
+  },
+  {
+    icon: 'lock',
+    title: 'Aapka data private',
+    body: 'Parent ka number aur ghar ka address public nahi hota. Tutor ko sirf area, class aur budget nazar aata hai — number aap khud dete hain.',
+  },
+  {
+    icon: 'alert-triangle',
+    title: 'Report karein',
+    body: 'Har profile aur review par report button hai. Reported accounts manually review hote hain.',
+  },
+];
+---
+<section class={alt ? 'sec-alt' : ''}>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Trust aur safety</h2>
+      <p>Ye platform bachon se related hai. Isliye har badge ka matlab saaf likha hua hai.</p>
+    </div>
+
+    <div class="trust-grid reveal">
+      {items.map((it) => (
+        <div class="trust-item">
+          <Icon name={it.icon} />
+          <div>
+            <h3>{it.title}</h3>
+            <p>{it.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div style="margin-top:var(--space-3)"><SafetyCallout /></div>
+  </div>
+</section>
+
+<style>
+  .trust-grid{display:grid;grid-template-columns:1fr;gap:var(--space-2)}
+  @media(min-width:760px){.trust-grid{grid-template-columns:repeat(2,1fr)}}
+  .trust-item{background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+    padding:var(--space-3);display:flex;gap:14px;align-items:flex-start}
+  .trust-item :global(.icon){width:24px;height:24px;color:var(--primary-bright);margin-top:2px;flex:0 0 auto}
+  .trust-item h3{font-size:17px;font-weight:600}
+  .trust-item p{margin-top:6px;font-size:15px;color:var(--muted-fg)}
+</style>

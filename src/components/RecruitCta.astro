@@ -1,0 +1,30 @@
+---
+import Icon from './Icon.astro';
+---
+<section>
+  <div class="wrap">
+    <div class="recruit reveal">
+      <h2>Tutor hain? Apne area ke students tak pohanchein.</h2>
+      <p>Profile banayein, subjects aur areas set karein, aur apne ilaqay se aane wali tuition
+        requests direct apne dashboard mein dekhein.</p>
+      <div class="recruit-actions">
+        <a class="btn btn-primary" href="/tutor/register"><Icon name="user-plus" />Free profile banayein</a>
+        <a class="btn btn-outline" href="/for-tutors">Tutors ke liye tafseel</a>
+      </div>
+      <p class="recruit-free">Shuru ke tutors ke liye profile aur leads — bilkul free.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .recruit{background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 100%);
+    color:#fff;border-radius:var(--radius-lg);padding:var(--space-5) var(--space-3);text-align:center}
+  .recruit h2{font-size:clamp(24px,4vw,34px);font-weight:700;color:#fff;text-wrap:balance}
+  .recruit p{margin:14px auto 0;max-width:54ch;color:var(--on-dark-teal);font-size:17px}
+  .recruit-actions{display:flex;flex-wrap:wrap;gap:var(--space-1);justify-content:center;margin-top:var(--space-3)}
+  .recruit :global(.btn-primary){background:#fff;color:var(--primary-dark)}
+  .recruit :global(.btn-primary):hover{background:var(--on-dark-teal)}
+  .recruit :global(.btn-outline){background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+  .recruit :global(.btn-outline):hover{background:rgba(255,255,255,.12);border-color:#fff}
+  .recruit-free{margin-top:var(--space-2);font-size:14px;color:var(--on-dark-teal)}
+</style>

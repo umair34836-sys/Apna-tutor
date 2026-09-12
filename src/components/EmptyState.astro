@@ -1,0 +1,26 @@
+---
+// src/components/EmptyState.astro
+//
+// ★ Count zero ho to yahi dikhta hai — khali grid ya jhoota number kabhi nahi.
+import Icon from './Icon.astro';
+
+export interface Props {
+  title: string;
+  body: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+  icon?: string;
+}
+const {
+  title, body,
+  ctaHref = '/request-tutor',
+  ctaLabel = 'Request post karein',
+  icon = 'users',
+} = Astro.props;
+---
+<div class="empty">
+  <Icon name={icon} />
+  <h3>{title}</h3>
+  <p>{body}</p>
+  {ctaHref && <a class="btn btn-primary" href={ctaHref}>{ctaLabel}</a>}
+</div>

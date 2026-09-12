@@ -54,6 +54,15 @@ export interface City {
   areas: string[];
   /** 2–3 unique paragraphs. SEO page banane ke liye LAZMI — thin page gate isay check karta hai. */
   intro: string;
+  /**
+   * Har SEO combo page ka apna unique intro, page slug se keyed:
+   *   { "home-tutor-risalpur": "…", "female-tutor-risalpur": "…" }
+   *
+   * Iske bagair wo variant page banta hi nahi (404 rehta hai). Wajah: agar
+   * /home-tutor-risalpur aur /city/risalpur par wahi text ho to Google ke liye
+   * wo doorway pages hain. Admin panel (/admin/content) se bharte hain.
+   */
+  pageIntros?: Record<string, string>;
 }
 
 export interface Subject {

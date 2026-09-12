@@ -1,0 +1,35 @@
+---
+// src/components/Badges.astro
+//
+// ★ "ApnaTutor Verified" ek alag field nahi — teeno checks se derive hota hai.
+//   Jo check nahi hua us par badge nahi lagta. Ye is platform ka core rule hai.
+import Icon from './Icon.astro';
+import { isFullyVerified, type TutorBadges } from '../lib/types';
+
+export interface Props { badges: TutorBadges; }
+const { badges } = Astro.props;
+const full = isFullyVerified({ badges });
+---
+<div class="badges">
+  {full && (
+    <span class="badge b-full" title="Phone, identity aur qualification — teeno check ho chuke hain">
+      <Icon name="shield-check" strokeWidth={2.5} />ApnaTutor Verified
+    </span>
+  )}
+  {!full && badges?.qualChecked && (
+    <span class="badge b-qual"><Icon name="graduation-cap" strokeWidth={2.5} />Qualification checked</span>
+  )}
+  {!full && badges?.idChecked && (
+    <span class="badge b-id"><Icon name="id-card" strokeWidth={2.5} />Identity checked</span>
+  )}
+  {!full && badges?.phoneChecked && (
+    <span class="badge b-phone"><Icon name="phone" strokeWidth={2.5} />Phone verified</span>
+  )}
+  {!full && !badges?.phoneChecked && !badges?.idChecked && !badges?.qualChecked && (
+    <span class="badge b-none"><Icon name="clock" strokeWidth={2.5} />Verification jari hai</span>
+  )}
+</div>
+
+<style>
+  .b-none{background:var(--bg-alt);border-color:var(--border-strong);color:var(--muted-fg)}
+</style>
