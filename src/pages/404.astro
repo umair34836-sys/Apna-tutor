@@ -1,8 +1,51 @@
 ---
 import { url } from '../lib/site';
-// src/pages/404.astro — GitHub Pages isay 404.html se serve karta hai
+// =============================================================================
+// src/pages/404.astro — GitHub Pages isay har un-mila path par serve karta hai
+//
+// ★ Is site ke kuch pages DATA se bante hain, file system se nahi:
+//
+//     /teacher/{slug}   — sirf approved tutors ke
+//     /city/{slug}      — 3+ tutors aur 120+ words intro ke baad
+//     /subject/{slug}   — wahi gate
+//     /{combo}          — SEO pages, wahi gate
+//
+//   Iska matlab hai ke ek waqfa hamesha rahega: tutor approve hote hi search
+//   results (jo Firestore se live aate hain) us ke profile par link karte
+//   hain, magar wo page agli build tak banta nahi. Pehle wahan seedha
+//   "page nahi mila" aata tha — parent ke liye ye dead end tha.
+//
+//   Ab ye page us raaste ko pehchanta hai aur aage ka rasta deta hai:
+//     city/subject/combo → wahi filters laga kar /find-tutor par
+//     teacher            → Firestore se dekhta hai ke tutor waqai mojood hai
+//
+//   Static hosting par yahi ek jagah hai jahan ye ho sakta hai, kyunki 404
+//   hi wo file hai jo har un-mile path par chalti hai.
+// =============================================================================
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
+import { cities, subjects } from '../lib/data';
+import { BOARDS, CLASSES, GENDERS, MODES } from '../lib/taxonomy';
+
+// Build ke waqt jo kuch maloom hai wo page mein hi rakh dete hain — 404 par
+// Firestore se taxonomy poochna fuzool hoga.
+//
+// ★ Har term ke DO naam hote hain: urlSlug (jo URL mein hai, misal "class-9")
+//   aur slug (jo filter ki value hai, misal "9"). Dono rakhna lazmi hai —
+//   warna redirect to ho jata hai magar filter kuch match nahi karta, aur
+//   parent ko khali natija milta hai. Ye 404 se bhi zyada uljhan wali baat
+//   hoti.
+const pairs = (terms: { urlSlug: string; slug: string }[]) =>
+  terms.map((t) => [t.urlSlug, t.slug] as [string, string]);
+
+const known = {
+  cities: cities.map((c) => c.slug),
+  subjects: subjects.map((s) => s.slug),
+  classes: pairs(CLASSES),
+  boards: pairs(BOARDS),
+  genders: pairs(GENDERS),
+  modes: pairs(MODES),
+};
 ---
 <Base
   title="Page Not Found | ApnaTutor"
@@ -10,27 +53,226 @@ import Icon from '../components/Icon.astro';
   path="/404"
   noindex
 >
-  <div class="wrap notfound">
-    <Icon name="search" />
-    <h1>Ye page nahi mila</h1>
-    <p>
-      Ho sakta hai link purana ho, ya wo tutor ab available na ho.
-      Neeche se apna rasta chunein.
-    </p>
-    <div class="actions">
-      <a class="btn btn-primary" href={url('/find-tutor')}><Icon name="search" />Tutor dhoondein</a>
-      <a class="btn btn-outline" href={url('/request-tutor')}><Icon name="send" />Request post karein</a>
-      <a class="btn btn-ghost" href={url('/')}>Homepage</a>
+  <div class="wrap notfound" data-known={JSON.stringify(known)}>
+    {/* Default haalat — JS kuch pehchan le to isay chhupa deta hai. */}
+    <div data-plain>
+      <Icon name="search" />
+      <h1>Ye page nahi mila</h1>
+      <p>
+        Ho sakta hai link purana ho, ya wo tutor ab available na ho.
+        Neeche se apna rasta chunein.
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href={url('/find-tutor')}><Icon name="search" />Tutor dhoondein</a>
+        <a class="btn btn-outline" href={url('/request-tutor')}><Icon name="send" />Request post karein</a>
+        <a class="btn btn-ghost" href={url('/')}>Homepage</a>
+      </div>
+
+      <nav class="sitemap" aria-label="Saare pages">
+        <h2>Site ke saare pages</h2>
+        <ul>
+          <li><a href={url('/')}>Homepage</a></li>
+          <li><a href={url('/find-tutor')}>Tutor dhoondein</a></li>
+          <li><a href={url('/request-tutor')}>Request post karein</a></li>
+          <li><a href={url('/teachers')}>Saare tutors</a></li>
+          <li><a href={url('/how-it-works')}>Kaise kaam karta hai</a></li>
+          <li><a href={url('/for-tutors')}>Tutors ke liye</a></li>
+          <li><a href={url('/about')}>Hamare baare mein</a></li>
+          <li><a href={url('/faq')}>FAQ</a></li>
+          <li><a href={url('/safety')}>Safety</a></li>
+          <li><a href={url('/contact')}>Rabta karein</a></li>
+          <li><a href={url('/login')}>Login</a></li>
+          <li><a href={url('/signup')}>Naya account</a></li>
+          <li><a href={url('/privacy')}>Privacy</a></li>
+          <li><a href={url('/terms')}>Terms</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    {/* Tutor ka profile page abhi bana nahi — magar tutor mojood hai. */}
+    <div data-tutor hidden>
+      <Icon name="clock" />
+      <h1>Ye profile abhi taiyar ho rahi hai</h1>
+      <p>
+        <strong data-tutor-name></strong> hamare paas mojood hain, magar unka
+        page abhi banaya ja raha hai. Ye kuch hi dair ka kaam hai.
+      </p>
+      <p class="muted" data-tutor-meta></p>
+      <div class="actions">
+        <a class="btn btn-primary" data-tutor-search><Icon name="search" />Inhe search mein dekhein</a>
+        <a class="btn btn-outline" href={url('/request-tutor')}><Icon name="send" />Request post karein</a>
+      </div>
+    </div>
+
+    {/* Raasta pehchana gaya — search par bhej rahe hain. */}
+    <div data-sending hidden>
+      <Icon name="loader" />
+      <h1>Aapko search par le ja rahe hain…</h1>
+      <p>Is page ki jagah abhi search behtar jawab dega.</p>
+      <p><a data-sending-link>Agar khud na khule to yahan tap karein</a></p>
     </div>
   </div>
 
   <style>
     .notfound{padding:var(--space-6) var(--space-2);text-align:center;
       display:flex;flex-direction:column;align-items:center;gap:var(--space-2)}
+    .notfound > div{display:flex;flex-direction:column;align-items:center;gap:var(--space-2)}
     .notfound :global(.icon){width:44px;height:44px;color:var(--icon-muted)}
     .notfound h1{font-size:clamp(26px,5vw,38px);font-weight:700}
     .notfound p{color:var(--muted-fg);font-size:17px;max-width:46ch}
+    .notfound p.muted{font-size:15.5px}
     .actions{display:flex;flex-wrap:wrap;gap:var(--space-1);justify-content:center;
       margin-top:var(--space-2)}
+
+    .sitemap{margin-top:var(--space-5);border-top:1px solid var(--border);
+      padding-top:var(--space-3);width:100%;max-width:640px}
+    .sitemap h2{font-size:15px;font-weight:600;color:var(--muted-fg);
+      text-transform:uppercase;letter-spacing:.06em;margin-bottom:var(--space-2)}
+    .sitemap ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;
+      gap:8px 0;justify-content:center}
+    .sitemap li{padding:0 14px;border-right:1px solid var(--border)}
+    .sitemap li:last-child{border-right:0}
+    .sitemap a{font-size:15px}
   </style>
+
+  <script>
+    import { url } from '../lib/site';
+
+    const root = document.querySelector<HTMLElement>('.notfound')!;
+    type Pair = [string, string];
+    const known = JSON.parse(root.dataset.known || '{}') as {
+      cities: string[]; subjects: string[];
+      classes: Pair[]; boards: Pair[]; genders: Pair[]; modes: Pair[];
+    };
+
+    /** urlSlug → filter ki value. Na mile to null. */
+    const valueOf = (list: Pair[], urlSlug: string) =>
+      list.find(([u]) => u === urlSlug)?.[1] ?? null;
+
+    const show = (name: 'plain' | 'tutor' | 'sending') => {
+      (['plain', 'tutor', 'sending'] as const).forEach((n) => {
+        root.querySelector<HTMLElement>(`[data-${n}]`)!.hidden = n !== name;
+      });
+    };
+
+    /** Base path hata kar saaf raasta. */
+    function currentPath(): string {
+      const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+      let p = window.location.pathname;
+      if (base && p.startsWith(base)) p = p.slice(base.length);
+      return p.replace(/\.html$/, '').replace(/\/+$/, '') || '/';
+    }
+
+    function goto(target: string) {
+      const href = url(target);
+      root.querySelector<HTMLAnchorElement>('[data-sending-link]')!.href = href;
+      show('sending');
+      window.location.replace(href);
+    }
+
+    /**
+     * SEO combo slug ko filters mein torta hai.
+     *
+     *   maths-tutor-gunderi-payan     → subject=maths,  city=gunderi-payan
+     *   class-9-tutor-gunderi-payan   → class=9,        city=…
+     *   tuition-at-tutor-home-gunderi-payan → mode=tutorhome, city=…
+     *
+     * City ka slug khud dashes rakhta hai, isliye seedha split kaam nahi
+     * karta — pehle city pehchante hain, phir baqi hissa facet hota hai.
+     */
+    function parseCombo(slug: string): URLSearchParams | null {
+      const city = known.cities.find((c) => slug.endsWith(`-${c}`));
+      if (!city) return null;
+
+      const facet = slug.slice(0, -(city.length + 1));
+      const q = new URLSearchParams({ city });
+
+      // Ye ek hi combo hai jo "-tutor" par khatam nahi hota.
+      if (facet === 'tuition-at-tutor-home') {
+        q.set('mode', 'tutorhome');
+        return q;
+      }
+
+      if (!facet.endsWith('-tutor')) return null;
+      const term = facet.slice(0, -'-tutor'.length);
+
+      const mode = valueOf(known.modes, term);
+      const gender = valueOf(known.genders, term);
+      const cls = valueOf(known.classes, term);
+      const board = valueOf(known.boards, term);
+
+      if (known.subjects.includes(term)) q.set('subject', term);
+      else if (mode) q.set('mode', mode);
+      else if (gender) q.set('gender', gender);
+      else if (cls) q.set('class', cls);
+      else if (board) q.set('board', board);
+      else return null;
+
+      return q;
+    }
+
+    /**
+     * Tutor mojood hai ya nahi — Firestore se.
+     *
+     * Rules ke mutabiq query mein `status == 'approved'` hona lazmi hai,
+     * warna poori list reject ho jati hai.
+     */
+    async function findTutor(slug: string) {
+      const { getFirebase } = await import('../lib/firebase');
+      const { db } = await getFirebase();
+      const { collection, getDocs, limit, query, where } = await import('firebase/firestore');
+
+      const snap = await getDocs(
+        query(
+          collection(db, 'tutors'),
+          where('status', '==', 'approved'),
+          where('slug', '==', slug),
+          limit(1)
+        )
+      );
+      return snap.empty ? null : (snap.docs[0].data() as {
+        name?: string; city?: string; areas?: string[]; subjects?: string[];
+      });
+    }
+
+    // -----------------------------------------------------------------------
+
+    const path = currentPath();
+    const seg = path.replace(/^\//, '').split('/');
+
+    if (seg[0] === 'city' && seg[1]) {
+      goto(`/find-tutor?city=${encodeURIComponent(seg[1])}`);
+    } else if (seg[0] === 'subject' && seg[1]) {
+      goto(`/find-tutor?subject=${encodeURIComponent(seg[1])}`);
+    } else if (seg[0] === 'teacher' && seg[1]) {
+      const slug = seg[1];
+      findTutor(slug)
+        .then((tutor) => {
+          if (!tutor) return; // waqai mojood nahi — aam 404 hi theek hai
+
+          root.querySelector('[data-tutor-name]')!.textContent = tutor.name || 'Ye tutor';
+
+          const meta = [
+            tutor.subjects?.length ? tutor.subjects.join(', ') : '',
+            tutor.areas?.length ? tutor.areas.join(', ') : '',
+          ].filter(Boolean).join(' · ');
+          root.querySelector('[data-tutor-meta]')!.textContent = meta;
+
+          const q = new URLSearchParams();
+          if (tutor.city) q.set('city', tutor.city);
+          if (tutor.subjects?.[0]) q.set('subject', tutor.subjects[0]);
+          root.querySelector<HTMLAnchorElement>('[data-tutor-search]')!.href =
+            url(`/find-tutor?${q.toString()}`);
+
+          show('tutor');
+        })
+        .catch(() => {
+          // Firestore tak na pohanch sakein to aam 404 dikhta rahe — ye page
+          // pehle se sahi haalat mein hai, kuch karne ki zarurat nahi.
+        });
+    } else if (seg.length === 1 && seg[0]) {
+      const q = parseCombo(seg[0]);
+      if (q) goto(`/find-tutor?${q.toString()}`);
+    }
+  </script>
 </Base>

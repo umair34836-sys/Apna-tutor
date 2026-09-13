@@ -191,6 +191,49 @@ hain. Isliye modes teen hain (`src/lib/taxonomy.ts`):
 `tutorhome` ko `home` ke saath mila dena parent ko ghalat tutor tak le jata —
 do bilkul alag cheezein hain. `firestore.rules` bhi teeno qabool karti hai.
 
+## "Ye page nahi mila" — kab aata hai aur kyun
+
+Is site ke chaar raaste **data se** bante hain, file system se nahi:
+
+| Raasta | Kab banta hai |
+|---|---|
+| `/teacher/{slug}` | tutor approved ho, aur uske baad ek build chali ho |
+| `/city/{slug}` | 3+ tutors aur 120+ words ka intro |
+| `/subject/{slug}` | wahi gate |
+| `/{combo}` (SEO pages) | wahi gate |
+
+Is liye ek waqfa hamesha rahega: tutor approve hote hi search results — jo
+Firestore se **live** aate hain — uske profile par link karte hain, magar wo
+page **agli build tak banta nahi**. Pehle wahan seedha 404 aata tha.
+
+Ab `src/pages/404.astro` un raaston ko pehchanta hai (GitHub Pages har
+un-mile path par wahi file deta hai):
+
+- `/city/…`, `/subject/…`, aur SEO combo slugs → wahi filters laga kar
+  `/find-tutor` par bhej deta hai
+- `/teacher/…` → Firestore se dekhta hai ke tutor waqai mojood hai; ho to
+  "profile abhi ban rahi hai" dikhata hai, warna aam 404
+
+★ Combo slug torte waqt **urlSlug aur slug dono** chahiye (`class-9` → `9`),
+warna redirect to ho jata hai magar filter kuch match nahi karta — aur wo
+404 se bhi zyada uljhan wali baat hoti hai.
+
+Tutor approve karne ke baad **/admin/rebuild** se build chala dein — us se
+profile page ban jata hai aur ye waqfa khatam.
+
+### Ye dobara na ho, is ke liye
+
+`scripts/validate-links.mjs` ab teen check karta hai:
+
+1. har HTML link base path ke andar ho
+2. har HTML link kisi asli file par jaye
+3. **source ka har `url('/kuch')` literal kisi bane hue page par jaye** —
+   data wale raaste (`/teacher/`, `/city/`, `/subject/`) mustasna hain
+
+Teesra check khaas taur par un links ke liye hai jo JS banata hai (search
+results, dashboards, admin) — wo build ke waqt HTML mein hote hi nahi, is
+liye pehle do check unhe kabhi nahi pakarte thay.
+
 ## Architecture ek nazar mein
 
 ```

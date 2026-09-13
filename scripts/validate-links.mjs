@@ -144,6 +144,48 @@ if (existsSync(SRC)) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Source lint 2 — url('/kuch') ka target waqai banta hai?
+//
+// Upar wala check sirf un links ko dekhta hai jo HTML mein chhap chuke. Magar
+// bohat se links JS banata hai (search results, dashboards, admin), aur wo
+// build ke waqt kahin nazar nahi aate. Ek ghalat raasta wahan mahinon chhupa
+// reh sakta tha — parent ko sirf "page nahi mila" milta.
+//
+// Yahan har LITERAL url('/x') ka target dist mein dhoondte hain. Jo raaste
+// data se bante hain (tutor profile, city, subject, SEO combo) wo is list se
+// mustasna hain — unka na hona normal hai, aur 404 page unhe khud sambhalta
+// hai (src/pages/404.astro).
+// ---------------------------------------------------------------------------
+
+/** Ye raaste data se bante hain — na milna ghalti nahi. */
+const DATA_ROUTES = [/^\/teacher\//, /^\/city\//, /^\/subject\//];
+
+if (existsSync(SRC)) {
+  const seenPath = new Set();
+
+  for (const file of sourceFiles(SRC)) {
+    const rel = relative(process.cwd(), file).split(sep).join('/');
+    const code = readFileSync(file, 'utf8');
+
+    // Sirf saade literal: url('/x') aur url("/x"). Template strings mein
+    // ${} hota hai — wo build ke waqt maloom hi nahi, is liye chhor dete hain.
+    for (const m of code.matchAll(/\burl\(\s*['"](\/[^'"`${}]*)['"]\s*\)/g)) {
+      const target = m[1];
+      if (DATA_ROUTES.some((re) => re.test(target))) continue;
+      if (seenPath.has(target)) continue;
+      seenPath.add(target);
+
+      if (!resolveTarget(`${BASE}${target}`)) {
+        failures.push(
+          `${rel}\n    → url('${target}') kisi page par nahi jata.\n` +
+          '       Ya to wo page banayein, ya link theek karein.'
+        );
+      }
+    }
+  }
+}
+
 console.log(`\nLink check — ${files.length} pages, base path "${BASE || '/'}".`);
 
 if (failures.length) {
