@@ -14,6 +14,7 @@ import { url } from '../lib/site';
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import { cities, subjects } from '../lib/data';
+import { AREA_LABEL, AREA_WORD, ONLY_AREA } from '../lib/site';
 import { CLASSES, GENDERS, MODES } from '../lib/taxonomy';
 
 const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
@@ -78,18 +79,18 @@ const ready = cities.length > 0 && subjects.length > 0;
 
               <div class="field-grid">
                 <div class="field">
-                  <label for="city">Sheher</label>
+                  <label for="city">{AREA_LABEL}</label>
                   <select id="city" required>
-                    <option value="">Select karein</option>
-                    {cities.map((c) => <option value={c.slug}>{c.name}</option>)}
+                    {!ONLY_AREA && <option value="">Select karein</option>}
+                    {cities.map((c) => <option value={c.slug} selected={Boolean(ONLY_AREA)}>{c.name}</option>)}
                   </select>
                   <p class="err" id="e-city"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
                 </div>
 
                 <div class="field">
-                  <label for="area">Area</label>
+                  <label for="area">Mohalla</label>
                   <select id="area" required disabled>
-                    <option value="">Pehle sheher select karein</option>
+                    <option value="">Pehle {AREA_WORD} select karein</option>
                   </select>
                   <p class="hint">Sirf area — poora ghar ka pata kabhi na likhein.</p>
                   <p class="err" id="e-area"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
@@ -100,7 +101,7 @@ const ready = cities.length > 0 && subjects.length > 0;
                 <div class="field">
                   <label for="mode">Teaching mode</label>
                   <select id="mode">
-                    <option value="any">Dono theek hain</option>
+                    <option value="any">Koi bhi theek hai</option>
                     {MODES.map((m) => <option value={m.slug}>{m.labelUrdu}</option>)}
                   </select>
                 </div>

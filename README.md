@@ -1,6 +1,6 @@
 # ApnaTutor
 
-Pakistan ke liye tutor marketplace. **Astro (SSG) → GitHub Pages · Firebase Spark (free).**
+**Gunderi Payan (Nowshera)** ke liye tutor marketplace. **Astro (SSG) → GitHub Pages · Firebase Spark (free).**
 
 Poori specification [`docs/`](docs/) mein hai — koi bhi kaam shuru karne se pehle
 [`docs/README.md`](docs/README.md) padho.
@@ -49,25 +49,52 @@ PUBLIC_BASE_PATH = /
 
 CNAME file build khud bana leti hai jab domain github.io ka na ho.
 
-## Areas — Nowshera aur Risalpur
+## Areas — site kahan chalti hai
 
-Phase 1 mein site sirf **Nowshera aur Risalpur** tak mehdood hai. Villages
-`data/areas-nowshera.csv` mein hain aur wahan se Firestore mein jate hain:
+Site filhaal **sirf Gunderi Payan (Nowshera)** mein chalti hai. Poore Pakistan
+ka daawa karna asaan tha, magar us se hota ye hai ke parent search karta hai
+aur khali page milta hai. Ek gaon theek se cover karna behtar hai.
+
+Ye daira ek hi jagah define hota hai — [`src/lib/site.ts`](src/lib/site.ts) ki
+`SERVICE_AREAS` list:
+
+```ts
+export const SERVICE_AREAS: ServiceArea[] = [
+  { slug: 'gunderi-payan', name: 'Gunderi Payan', district: 'Nowshera', … },
+];
+```
+
+`src/lib/data.ts` is list ke bahar ka **sab kuch filter kar deti hai** — tutors
+bhi, cities bhi. Isliye Firestore mein purana ya doosre sheher ka data mojood
+ho to bhi site par nahi aata, aur "site ka daira" aur "data ka daira" kabhi
+alag nahi ho sakte.
+
+### Naya gaon add karna ho to
+
+1. `SERVICE_AREAS` mein entry barhayein.
+2. Firestore mein `cities/{slug}` ka `intro` likhein — 120+ words, unique.
+   **Iske bagair us area ka SEO page nahi banega** (thin-page gate,
+   `src/lib/seo.ts`). Ye jaan boojh kar hai.
+3. Mohallay CSV se import kar lein.
+
+### Mohallay
 
 ```bash
-node scripts/import-areas.mjs data/areas-nowshera.csv           # preview
-FIREBASE_SERVICE_ACCOUNT='…' node scripts/import-areas.mjs data/areas-nowshera.csv --write
+node scripts/import-areas.mjs data/areas-gunderi-payan.csv           # preview
+FIREBASE_SERVICE_ACCOUNT='…' node scripts/import-areas.mjs data/areas-gunderi-payan.csv --write
 ```
 
 **CSV ka `source` column khali ho to wo row import nahi hoti.** Ye jaan boojh
 kar hai: dropdown mein ghalat gaon ka naam aana us gaon ke parents ka bharosa
-toranay ke barabar hai.
+toranay ke barabar hai. Gaon ke apne logon ki maloomat ke liye
+`source=local-knowledge` bilkul kaafi hai.
 
-### Poori mouza list kahan se milegi
+### Aage ke areas (backlog)
 
-CSV mein abhi sirf wo naam hain jo confirm ho sake. Nowshera District mein
-saikron mauzas hain — poori list in mein se kisi ek se lein aur CSV mein
-bhar dein:
+[`data/areas-nowshera.csv`](data/areas-nowshera.csv) mein Nowshera aur Risalpur
+ke 37 tasdeeq-shuda village naam pade hain. **Wo abhi live nahi hain** — jab
+Gunderi Payan theek se cover ho jayega, agla area wahan se aayega. Poori mouza
+list in mein se kisi ek source se milegi:
 
 | Source | Kya milega |
 |---|---|
@@ -75,6 +102,20 @@ bhar dein:
 | [ETEA school list (Nowshera)](https://etea.edu.pk/esed_pst/Revised_Nowshera_Male.pdf) | Tehsil + Union Council + school ke naam (school aksar gaon ke naam par hote hain) |
 | [LGKP notification](https://lgkp.gov.pk/wp-content/uploads/2015/04/DROs-ROs-AROS-notificationsGeneral-Seats.pdf) | District/Tehsil council wards |
 | Patwari ya Tehsil office | Mouza record — sabse mustanad, aur local |
+
+## Teaching modes — teen, do nahi
+
+Gaon ki asli soorat-e-haal ye hai ke bachay **teacher ke ghar** parhne jate
+hain. Isliye modes teen hain (`src/lib/taxonomy.ts`):
+
+| slug | Matlab | SEO page |
+|---|---|---|
+| `home` | Teacher student ke ghar aata hai | `/home-tutor-{area}` |
+| `tutorhome` | Student teacher ke ghar jata hai | `/tuition-at-tutor-home-{area}` |
+| `online` | Video par | `/online-tutor-{area}` |
+
+`tutorhome` ko `home` ke saath mila dena parent ko ghalat tutor tak le jata —
+do bilkul alag cheezein hain. `firestore.rules` bhi teeno qabool karti hai.
 
 ## Architecture ek nazar mein
 

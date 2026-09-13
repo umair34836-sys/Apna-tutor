@@ -9,7 +9,13 @@
 
 export type TutorStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 export type Gender = 'male' | 'female';
-export type Mode = 'home' | 'online';
+/**
+ * Teen tareeqe — gaon mein teeno chalte hain:
+ *   home      teacher student ke ghar aata hai
+ *   tutorhome student teacher ke ghar jata hai  ← gaon mein ye sabse aam hai
+ *   online    video par
+ */
+export type Mode = 'home' | 'tutorhome' | 'online';
 
 export interface TutorBadges {
   phoneChecked: boolean;

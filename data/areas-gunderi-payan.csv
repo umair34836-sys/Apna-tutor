@@ -1,0 +1,27 @@
+# ApnaTutor — Gunderi Payan ke mohallay
+#
+# Site filhaal SIRF Gunderi Payan mein chalti hai (src/lib/site.ts →
+# SERVICE_AREAS). Ye file us gaon ke mohallon ki list hai — wahi jo tutor
+# registration aur parent request ke dropdown mein aate hain.
+#
+#   node scripts/import-areas.mjs data/areas-gunderi-payan.csv          # preview
+#   node scripts/import-areas.mjs data/areas-gunderi-payan.csv --write  # Firestore
+#
+# ★ IS FILE MEIN SIRF WO NAAM AAYEIN JO WAQAI MOJOOD HAIN.
+#   `source` column lazmi hai — khali ho to row import nahi hoti. Gaon ke apne
+#   logon ke liye "local-knowledge" bilkul theek source hai; andaza nahi.
+#
+# Abhi ek hi entry hai — poora gaon. Jaise hi mohallon ke asli naam mil jayein
+# (Umair ki apni maloomat kaafi hai), unhe neeche barha dein aur import kar
+# dein. Us waqt src/lib/site.ts ki default `areas` list apne aap bekaar ho
+# jayegi, kyunki Firestore ki list us par bhaari hai.
+#
+# Columns:
+#   city            — service area ka slug (src/lib/site.ts se match kare)
+#   village         — mohalle ka naam, jo dropdown mein dikhega
+#   union_council   — grouping (khali chhora ja sakta hai)
+#   tehsil          — Nowshera
+#   source          — kahan se confirm hua (LAZMI)
+
+city,village,union_council,tehsil,source
+gunderi-payan,Gunderi Payan,,Nowshera,local-knowledge

@@ -10,7 +10,7 @@
 // =============================================================================
 
 import { getFirebase } from './firebase';
-import type { Tutor, TutorStatus } from './types';
+import type { Mode, Tutor, TutorStatus } from './types';
 
 export const LIST_CAP = 50;      // rules: leads, requests, connections, users
 export const TUTOR_CAP = 30;     // rules: tutors, reviews
@@ -28,7 +28,7 @@ export interface TutorDraft {
   subjects: string[];
   classes: string[];
   boards: string[];
-  modes: ('home' | 'online')[];
+  modes: Mode[];
   feeMin: number;
   feeMax: number;
   qualification: string;
@@ -252,7 +252,7 @@ export function applyFilters(tutors: Tutor[], f: SearchFilters): Tutor[] {
   return tutors.filter((t) => {
     if (f.classLevel && !t.classes.includes(f.classLevel)) return false;
     if (f.board && !t.boards.includes(f.board)) return false;
-    if (f.mode && !t.modes.includes(f.mode as 'home' | 'online')) return false;
+    if (f.mode && !t.modes.includes(f.mode as Mode)) return false;
     if (f.gender && t.gender !== f.gender) return false;
     if (f.area && !t.areas.includes(f.area)) return false;
     // Budget: tutor ki kam az kam fee parent ke budget se zyada na ho.
@@ -280,7 +280,7 @@ export interface RequestInput {
   subject: string;
   city: string;
   area: string;
-  mode: 'home' | 'online' | 'any';
+  mode: Mode | 'any';
   genderPref: 'male' | 'female' | 'any';
   budgetMax: number;
   timing: string;

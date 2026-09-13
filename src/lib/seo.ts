@@ -25,7 +25,7 @@ import { isFeatured, type City, type Subject, type Tutor } from './types';
 export const MIN_TUTORS_PER_PAGE = 3;
 export const MIN_INTRO_WORDS = 120;
 
-export type ComboKind = 'subject' | 'home' | 'online' | 'gender' | 'class' | 'board';
+export type ComboKind = 'subject' | 'home' | 'tutorhome' | 'online' | 'gender' | 'class' | 'board';
 
 export interface ComboPage {
   slug: string;
@@ -131,6 +131,24 @@ function candidates(): Candidate[] {
         `${cityName} mein ${n} verified home tutors jo aapke ghar aa kar parhate hain. Subject, class aur budget ke hisaab se dekhein. Parents ke liye free.`,
     });
 
+    // /tuition-at-tutor-home-[city]
+    //
+    // Gaon ki asli soorat-e-haal: bachay teacher ke ghar jate hain. Iska apna
+    // page isliye hai ke parent jo search karta hai ("tutor ke ghar tuition")
+    // wo "home tutor" se bilkul alag cheez hai — aur dono ko ek page par
+    // milana parent ko ghalat tutor tak le jata.
+    out.push({
+      slug: `tuition-at-tutor-home-${city.slug}`,
+      kind: 'tutorhome',
+      city,
+      match: (t) => t.city === city.slug && t.modes.includes('tutorhome'),
+      h1: `Tuition at Tutor's Home in ${cityName}`,
+      lead: `${cityName} ke wo verified teachers jinke ghar ja kar bachay parh sakte hain.`,
+      titleText: (n) => `Tuition at Tutor's Home in ${cityName} — ${n}`,
+      descText: (n) =>
+        `${cityName} mein ${n} verified teachers jinke ghar ja kar tuition li ja sakti hai. Subject, class aur budget ke hisaab se dekhein. Parents ke liye free.`,
+    });
+
     // /online-tutor-[city]
     out.push({
       slug: `online-tutor-${city.slug}`,
@@ -152,7 +170,7 @@ function candidates(): Candidate[] {
         city,
         match: (t) => t.city === city.slug && t.gender === g.slug,
         h1: `${g.label} Tutors in ${cityName}`,
-        lead: `${cityName} ki verified ${g.labelUrdu.toLowerCase()}s — home tuition aur online, dono.`,
+        lead: `${cityName} ki verified ${g.labelUrdu.toLowerCase()}s — ghar par, teacher ke ghar, ya online.`,
         titleText: (n) => `${g.label} Tutors in ${cityName} — ${n} Verified`,
         descText: (n) =>
           `${cityName} mein ${n} verified ${g.label.toLowerCase()} tutors. Subject, class aur area ke hisaab se filter karein. Parents ke liye free.`,

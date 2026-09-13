@@ -10,6 +10,7 @@ import { url } from '../lib/site';
 import Icon from './Icon.astro';
 import { CLASSES, MODES, GENDERS } from '../lib/taxonomy';
 import { cities, subjects } from '../lib/data';
+import { AREA_WORD, ONLY_AREA } from '../lib/site';
 import { comboPages } from '../lib/seo';
 
 // Build-time manifest: kaun se combo pages waqai bane hain.
@@ -48,16 +49,33 @@ const manifest = comboPages().map((p) => p.slug);
         </div>
 
         <div class="field" id="f-area">
-          <label for="s-area">Area / City</label>
+          <label for="s-area">Area</label>
+          {/* Ek hi service area ho to dropdown mein sheher chunne ka koi matlab
+              nahi — seedha uske mohallay dikhate hain, aur poora area pehle se
+              select hota hai. */}
           <select id="s-area" name="area" required disabled={cities.length === 0}>
-            <option value="">Select karein</option>
-            {cities.map((c) => (
-              <optgroup label={c.name}>
-                <option value={`${c.slug}|`}>{c.name} (poora sheher)</option>
-                {c.areas.map((a) => <option value={`${c.slug}|${a}`}>{a}</option>)}
-              </optgroup>
-            ))}
-            <option value="|online">Online (any city)</option>
+            {ONLY_AREA ? (
+              <>
+                {cities.map((c) => (
+                  <>
+                    <option value={`${c.slug}|`} selected>{c.name} (poora {AREA_WORD})</option>
+                    {c.areas.filter((a) => a !== c.name).map((a) => <option value={`${c.slug}|${a}`}>{a}</option>)}
+                  </>
+                ))}
+                <option value={`${cities[0]?.slug ?? ''}|__online`}>Online (kahin se bhi)</option>
+              </>
+            ) : (
+              <>
+                <option value="">Select karein</option>
+                {cities.map((c) => (
+                  <optgroup label={c.name}>
+                    <option value={`${c.slug}|`}>{c.name} (poora {AREA_WORD})</option>
+                    {c.areas.map((a) => <option value={`${c.slug}|${a}`}>{a}</option>)}
+                  </optgroup>
+                ))}
+                <option value="|__online">Online (kahin se bhi)</option>
+              </>
+            )}
           </select>
           <p class="err" id="e-area"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> Area select karna zaroori hai</p>
         </div>
@@ -96,7 +114,7 @@ const manifest = comboPages().map((p) => p.slug);
             <label for="r-mode">Teaching mode</label>
             <select id="r-mode" name="mode">
               {MODES.map((m) => <option value={m.slug}>{m.labelUrdu}</option>)}
-              <option value="any">Dono theek hain</option>
+              <option value="any">Koi bhi theek hai</option>
             </select>
           </div>
           <div class="field">
@@ -207,14 +225,20 @@ const manifest = comboPages().map((p) => p.slug);
 
     const classLevel = (document.getElementById('s-class') as HTMLSelectElement).value;
     const subject = (document.getElementById('s-subject') as HTMLSelectElement).value;
-    const [city, area] = (document.getElementById('s-area') as HTMLSelectElement).value.split('|');
+    const [city, rawArea] = (document.getElementById('s-area') as HTMLSelectElement).value.split('|');
     const budget = (document.getElementById('s-budget') as HTMLSelectElement).value;
+
+    // "Online" ek area nahi, teaching MODE hai. Pehle ye area ki tarah bheja
+    // jata tha, is liye search hamesha khali aati thi — kisi tutor ke `areas`
+    // mein "online" hota hi nahi.
+    const onlineOnly = rawArea === '__online';
+    const area = onlineOnly ? '' : rawArea;
 
     track('search_tutors', { city, subject, class_level: classLevel, results_count: -1 });
 
     // Pre-rendered page mojood hai? Wahan bhejo — tez, free aur SEO'd.
     const manifest: string[] = JSON.parse(form.dataset.manifest || '[]');
-    const comboSlug = `${subject}-tutor-${city}`;
+    const comboSlug = onlineOnly ? `online-tutor-${city}` : `${subject}-tutor-${city}`;
     if (city && manifest.includes(comboSlug)) {
       window.location.href = url(`/${comboSlug}`);
       return;
@@ -223,6 +247,7 @@ const manifest = comboPages().map((p) => p.slug);
     const q = new URLSearchParams({ class: classLevel, subject });
     if (city) q.set('city', city);
     if (area) q.set('area', area);
+    if (onlineOnly) q.set('mode', 'online');
     if (budget) q.set('budget', budget);
     window.location.href = url(`/find-tutor?${q.toString()}`);
   });

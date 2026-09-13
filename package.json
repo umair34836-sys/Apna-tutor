@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "ApnaTutor \u2014 Pakistan ka tutor marketplace. Astro SSG + Firebase Spark + GitHub Pages.",
+  "description": "ApnaTutor \u2014 Gunderi Payan (Nowshera) ka tutor marketplace. Astro SSG + Firebase Spark + GitHub Pages.",
   "scripts": {
     "fetch-data": "node scripts/fetch-data.mjs",
     "dev": "npm run fetch-data && astro dev",

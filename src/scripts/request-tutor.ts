@@ -57,7 +57,9 @@ if (root && root.dataset.ready === '1') {
       const el = $(key) as HTMLInputElement | HTMLSelectElement;
       if (el) el.value = v;
     });
-    if (p.get('city')) renderAreas();
+    // Ek hi service area ho to city pehle se selected aati hai — mohallay
+    // fauran bharna chahiye, warna parent ek khali dropdown dekhta hai.
+    if (($('city') as HTMLSelectElement).value) renderAreas();
   }
 
   function renderAreas() {
@@ -68,7 +70,7 @@ if (root && root.dataset.ready === '1') {
     select.disabled = areas.length === 0;
     select.innerHTML = areas.length
       ? `<option value="">Select karein</option>${areas.map((a) => `<option value="${a.replace(/"/g, '&quot;')}">${a}</option>`).join('')}`
-      : '<option value="">Pehle sheher select karein</option>';
+      : '<option value="">Pehle ilaqa select karein</option>';
   }
 
   // -------------------------------------------------------------------------
@@ -99,8 +101,8 @@ if (root && root.dataset.ready === '1') {
 
     check('classLevel', !val('classLevel') ? 'Class select karein' : null);
     check('subject', !val('subject') ? 'Subject select karein' : null);
-    check('city', !val('city') ? 'Sheher select karein' : null);
-    check('area', !val('area') ? 'Area select karein' : null);
+    check('city', !val('city') ? 'Ilaqa select karein' : null);
+    check('area', !val('area') ? 'Mohalla select karein' : null);
     check('budgetMax',
       !val('budgetMax') ? 'Budget likhein'
       : !Number.isInteger(budget) || budget <= 0 ? 'Budget theek nahi lag raha' : null);

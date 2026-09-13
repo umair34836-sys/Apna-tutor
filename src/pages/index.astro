@@ -19,18 +19,22 @@ import HowItWorks from '../components/HowItWorks.astro';
 import TrustSection from '../components/TrustSection.astro';
 import RecruitCta from '../components/RecruitCta.astro';
 import { cities, stats, tutors } from '../lib/data';
+import { AREA_WORD, ONLY_AREA, SERVICE_AREA_LABEL, SERVICE_AREA_NAME } from '../lib/site';
 import { rank } from '../lib/seo';
 import { isFeatured } from '../lib/types';
 
 const hasTutors = tutors.length > 0;
 
-// Sirf wo cities jahan waqai tutor mojood hai.
+// Sirf wo areas jahan waqai tutor mojood hai.
 const liveCities = cities
   .filter((c) => tutors.some((t) => t.city === c.slug))
   .map((c) => c.name);
 
+// Eyebrow hamesha dikhta hai — pehla sawaal jo har parent ka hota hai wo yahi
+// hai ke "ye meray ilaqe mein chalta bhi hai ya nahi". Tutor na hone par bhi
+// jawab dena behtar hai, chhupane se nahi.
 const liveLine =
-  liveCities.length === 0 ? null
+  liveCities.length === 0 ? `${SERVICE_AREA_LABEL} ke liye`
   : liveCities.length === 1 ? `Abhi ${liveCities[0]} mein live`
   : `Abhi ${liveCities.slice(0, -1).join(', ')} aur ${liveCities.at(-1)} mein live`;
 
@@ -39,12 +43,12 @@ const featured = tutors.filter((t) => isFeatured(t));
 const showcase = rank(featured.length > 0 ? featured : tutors).slice(0, 6);
 
 const title = hasTutors
-  ? `Verified Home & Online Tutors in Pakistan — ${stats.tutorCount} Tutors | ApnaTutor`
-  : 'Verified Home & Online Tutors in Pakistan | ApnaTutor';
+  ? `Home & Online Tutors in ${SERVICE_AREA_NAME} — ${stats.tutorCount} Verified | ApnaTutor`
+  : `Home & Online Tutors in ${SERVICE_AREA_NAME} | ApnaTutor`;
 
 const description = hasTutors
-  ? `Pakistan mein ${stats.tutorCount} verified home aur online tutors, ${stats.cityCount} cities mein. Class, subject aur budget ke hisaab se dhoondein. Parents ke liye free.`
-  : 'Pakistan mein apne area ka verified home tutor ya online tutor dhoondein. Class, subject, area aur budget ke hisaab se filter karein. Parents ke liye bilkul free.';
+  ? `${SERVICE_AREA_LABEL} mein ${stats.tutorCount} verified home aur online tutors. Class, subject aur budget ke hisaab se dhoondein. Parents ke liye free.`
+  : `${SERVICE_AREA_LABEL} mein verified home tutor ya online tutor dhoondein. Class, subject aur budget ke hisaab se filter karein. Parents ke liye bilkul free.`;
 ---
 <Base title={title} description={description} path="/" showStickyCta bodyClass="has-sticky-cta">
   <!-- HERO — search hi primary CTA hai -->
@@ -54,10 +58,14 @@ const description = hasTutors
         {liveLine && (
           <span class="eyebrow"><Icon name="map-pin" size={16} />{liveLine}</span>
         )}
-        <h1>Apne area ka <em>right tutor</em>, ek jagah.</h1>
+        {ONLY_AREA
+          ? <h1>{SERVICE_AREA_NAME} ka <em>right tutor</em>, ek jagah.</h1>
+          : <h1>Apne area ka <em>right tutor</em>, ek jagah.</h1>}
         <p class="hero-sub">
-          Class, subject, area aur budget batayein — ApnaTutor aapke liye matching tutors
-          dhoondega. Home tuition ho ya online, verified profiles ke saath.
+          Class, subject aur budget batayein — ApnaTutor aapke liye matching tutors
+          dhoondega. Teacher aapke ghar aaye, bacha teacher ke ghar jaye, ya online —
+          teeno soortein, verified profiles ke saath.
+          {ONLY_AREA && <> Filhaal hum sirf <strong>{SERVICE_AREA_LABEL}</strong> mein kaam kar rahe hain — apne {AREA_WORD} ko theek se cover karna pehle zaroori hai.</>}
         </p>
       </div>
       <SearchForm />
@@ -85,7 +93,7 @@ const description = hasTutors
       <TutorGrid
         tutors={showcase}
         emptyTitle="Abhi koi tutor live nahi hai"
-        emptyBody="Pehle tutors onboard ho rahe hain. Aap apni requirement post kar dein — jaise hi aapke area mein matching tutor aayega, hum aapko bata denge."
+        emptyBody={`Pehle tutors onboard ho rahe hain. Aap apni requirement post kar dein — ${SERVICE_AREA_NAME} mein jaise hi matching tutor aayega, hum aapko bata denge.`}
       />
     </div>
   </section>

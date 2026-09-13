@@ -1,5 +1,5 @@
 ---
-import { url } from '../../lib/site';
+import { AREA_LABEL, ONLY_AREA, url } from '../../lib/site';
 // src/pages/tutor/profile.astro — apni profile edit karein
 //
 // ★ Trust fields (status, badges, ratings, featured placement, approved photo)
@@ -71,15 +71,15 @@ const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
         </div>
 
         <div class="field">
-          <label for="city">Sheher</label>
+          <label for="city">{AREA_LABEL}</label>
           <select id="city" required>
-            {cities.map((c) => <option value={c.slug}>{c.name}</option>)}
+            {cities.map((c) => <option value={c.slug} selected={Boolean(ONLY_AREA)}>{c.name}</option>)}
           </select>
           <p class="err" id="e-city"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
         </div>
 
         <fieldset class="pickers">
-          <legend>Areas</legend>
+          <legend>Mohallay</legend>
           <div class="chips-input" id="areas-box"></div>
           <p class="hint">Zyada se zyada 6.</p>
           <p class="err" id="e-areas"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>

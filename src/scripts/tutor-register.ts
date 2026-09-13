@@ -11,6 +11,7 @@ import { firestoreError } from '../lib/firebase';
 import { createTutorProfile, getMyTutorProfile, makeSlug, setMyContact, setMyPhotoSubmission } from '../lib/queries';
 import { dataUrlKb, preparePhoto, validatePhoto } from '../lib/photo';
 import { track } from '../lib/analytics';
+import type { Mode } from '../lib/types';
 
 const DRAFT_KEY = 'apnatutor:tutor-draft:v1';
 const LAST_STEP = 7;
@@ -143,14 +144,14 @@ if (wizard) {
     if (draft.photoDataUrl) showPhoto(draft.photoDataUrl);
   }
 
-  /** Areas sirf us sheher ke jo select hua hai. */
+  /** Mohallay sirf us ilaqe ke jo select hua hai. */
   function renderAreas() {
     const box = $('areas-box');
     const city = $<HTMLSelectElement>('city').value;
     const areas = cityAreas[city] ?? [];
 
-    if (!city) { box.innerHTML = '<p class="hint">Pehle sheher select karein.</p>'; return; }
-    if (areas.length === 0) { box.innerHTML = '<p class="hint">Is sheher ke areas abhi set nahi hue.</p>'; return; }
+    if (!city) { box.innerHTML = '<p class="hint">Pehle ilaqa select karein.</p>'; return; }
+    if (areas.length === 0) { box.innerHTML = '<p class="hint">Is ilaqe ke mohallay abhi set nahi hue.</p>'; return; }
 
     box.innerHTML = areas
       .map((a) => {
@@ -213,7 +214,7 @@ if (wizard) {
     if (n === 1) {
       check('name', draft.name.length < 3 ? 'Naam kam az kam 3 characters ka hona chahiye' : null);
       check('gender', !draft.gender ? 'Gender select karna zaroori hai' : null);
-      check('city', !draft.city ? 'Sheher select karna zaroori hai' : null);
+      check('city', !draft.city ? 'Ilaqa select karna zaroori hai' : null);
       check('areas',
         draft.areas.length === 0 ? 'Kam az kam ek area select karein'
         : draft.areas.length > 6 ? 'Zyada se zyada 6 areas' : null);
@@ -297,7 +298,7 @@ if (wizard) {
     const rows: [string, string][] = [
       ['Naam', draft.name || '—'],
       ['Gender', draft.gender || '—'],
-      ['Sheher', draft.city || '—'],
+      ['Ilaqa', draft.city || '—'],
       ['Areas', label(draft.areas)],
       ['Subjects', label(draft.subjects)],
       ['Classes', label(draft.classes)],
@@ -447,7 +448,7 @@ if (wizard) {
         subjects: draft.subjects,
         classes: draft.classes,
         boards: draft.boards,
-        modes: draft.modes as ('home' | 'online')[],
+        modes: draft.modes as Mode[],
         feeMin: Number(draft.feeMin),
         feeMax: Number(draft.feeMax),
         qualification: draft.qualification,

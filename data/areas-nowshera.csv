@@ -1,4 +1,12 @@
-# ApnaTutor — Nowshera aur Risalpur ke areas (villages / mohallay)
+# ApnaTutor — Nowshera aur Risalpur ke areas (BACKLOG, abhi live nahi)
+#
+# ★ Ye file abhi SITE PAR NAHI hai. Site filhaal sirf Gunderi Payan mein
+#   chalti hai (src/lib/site.ts → SERVICE_AREAS). Ye us research ka record hai
+#   jo aage ke liye jama ki gayi — jab Gunderi Payan theek se cover ho jayega,
+#   agla area isi list mein se aayega.
+#
+#   Import kar bhi lein to in cities ka data site par nahi aayega: src/lib/data.ts
+#   SERVICE_AREAS ke bahar ka sab kuch filter kar deti hai.
 #
 # Ye file `scripts/import-areas.mjs` Firestore mein load karti hai.
 #

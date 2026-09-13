@@ -10,7 +10,7 @@ import { url } from '../lib/site';
 import { firestoreError } from '../lib/firebase';
 import { getMyContact, getMyPhotoSubmission, getMyTutorProfile, setMyContact, updateTutorProfile } from '../lib/queries';
 import { statusLabel } from '../lib/queries';
-import { isFeatured, isFullyVerified, type Tutor } from '../lib/types';
+import { isFeatured, isFullyVerified, type Mode, type Tutor } from '../lib/types';
 
 const root = document.getElementById('profile-page');
 
@@ -53,7 +53,7 @@ if (root) {
 
     box.innerHTML = areas.length
       ? areas.map((a) => `<label class="pick"><input type="checkbox" name="areas" value="${esc(a)}"><span>${esc(a)}</span></label>`).join('')
-      : '<p class="hint">Is sheher ke areas abhi set nahi hue.</p>';
+      : '<p class="hint">Is ilaqe ke mohallay abhi set nahi hue.</p>';
 
     setChecked('areas', selected.filter((a) => areas.includes(a)));
     capAreas();
@@ -136,7 +136,7 @@ if (root) {
     const whatsapp = $<HTMLInputElement>('whatsapp').value.replace(/\D/g, '');
 
     check('name', name.length < 3 ? 'Naam kam az kam 3 characters ka hona chahiye' : null);
-    check('city', !$<HTMLSelectElement>('city').value ? 'Sheher select karein' : null);
+    check('city', !$<HTMLSelectElement>('city').value ? 'Ilaqa select karein' : null);
     check('areas', areas.length === 0 ? 'Kam az kam ek area' : areas.length > 6 ? 'Zyada se zyada 6 areas' : null);
     check('subjects', subjects.length === 0 ? 'Kam az kam ek subject' : subjects.length > 8 ? 'Zyada se zyada 8 subjects' : null);
     check('classes', checkedValues('classes').length === 0 ? 'Kam az kam ek class' : null);
@@ -198,7 +198,7 @@ if (root) {
         subjects: checkedValues('subjects'),
         classes: checkedValues('classes'),
         boards: checkedValues('boards'),
-        modes: checkedValues('modes') as ('home' | 'online')[],
+        modes: checkedValues('modes') as Mode[],
         qualification: $<HTMLInputElement>('qualification').value.trim(),
         experienceYears: Number($<HTMLInputElement>('experienceYears').value),
         bio: $<HTMLTextAreaElement>('bio').value,

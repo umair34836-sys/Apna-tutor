@@ -1,5 +1,5 @@
 ---
-import { url } from '../../lib/site';
+import { AREA_LABEL, AREA_WORD, ONLY_AREA, url } from '../../lib/site';
 // =============================================================================
 // src/pages/tutor/register.astro — tutor profile banane ka 7-step form
 //
@@ -116,17 +116,17 @@ const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
           </fieldset>
 
           <div class="field">
-            <label for="city">Sheher</label>
+            <label for="city">{AREA_LABEL}</label>
             <select id="city" name="city" required>
-              <option value="">Select karein</option>
-              {cities.map((c) => <option value={c.slug}>{c.name}</option>)}
+              {!ONLY_AREA && <option value="">Select karein</option>}
+              {cities.map((c) => <option value={c.slug} selected={Boolean(ONLY_AREA)}>{c.name}</option>)}
             </select>
             <p class="err" id="e-city"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
           </div>
 
           <fieldset class="pickers">
-            <legend>Areas — kahan parha sakte hain?</legend>
-            <div class="chips-input" id="areas-box"><p class="hint">Pehle sheher select karein.</p></div>
+            <legend>Mohallay — kahan parha sakte hain?</legend>
+            <div class="chips-input" id="areas-box"><p class="hint">Pehle {AREA_WORD} select karein.</p></div>
             <p class="hint">Zyada se zyada 6.</p>
             <p class="err" id="e-areas"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
           </fieldset>

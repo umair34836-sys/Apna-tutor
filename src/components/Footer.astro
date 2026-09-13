@@ -7,6 +7,7 @@ import { url } from '../lib/site';
 // hard-coded links 404 dete aur SEO ko nuqsan dete.
 import Logo from './Logo.astro';
 import { cities, subjects, tutors } from '../lib/data';
+import { AREA_WORD, SERVICE_AREA_LABEL } from '../lib/site';
 
 const MIN_TUTORS = 3; // thin-page gate (docs/02-PAGES-SPEC.md)
 
@@ -38,7 +39,7 @@ const year = new Date().getFullYear();
     <div class="foot-grid">
       <div class="foot-about">
         <Logo href={null} dark size={38} />
-        <p>Apne area ka right tutor, ek jagah. Home tuition, online tuition aur verified tutors — Pakistan bhar mein.</p>
+        <p>Apne {AREA_WORD} ka right tutor, ek jagah. Teacher aapke ghar aaye, bacha teacher ke ghar jaye, ya online — filhaal sirf {SERVICE_AREA_LABEL} mein.</p>
       </div>
 
       {cityLinks.length > 0 && (
@@ -68,7 +69,7 @@ const year = new Date().getFullYear();
     </div>
 
     <div class="foot-bottom">
-      <span>&copy; {year} ApnaTutor. Pakistan.</span>
+      <span>&copy; {year} ApnaTutor. {SERVICE_AREA_LABEL}.</span>
       <span><a href={url('/privacy')}>Privacy</a> &nbsp;·&nbsp; <a href={url('/terms')}>Terms</a></span>
     </div>
   </div>

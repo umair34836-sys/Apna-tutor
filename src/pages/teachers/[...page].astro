@@ -6,7 +6,7 @@ import TutorGrid from '../../components/TutorGrid.astro';
 import Icon from '../../components/Icon.astro';
 import { tutors } from '../../lib/data';
 import { rank } from '../../lib/seo';
-import { TUTORS_PER_PAGE, url } from '../../lib/site';
+import { SERVICE_AREA_LABEL, SERVICE_AREA_NAME, TUTORS_PER_PAGE, url } from '../../lib/site';
 import type { Tutor } from '../../lib/types';
 
 export const getStaticPaths = (async ({ paginate }) => {
@@ -32,13 +32,13 @@ const total = tutors.length;
 
 const title =
   page.currentPage === 1
-    ? `All Verified Tutors in Pakistan — ${total} Profiles | ApnaTutor`
+    ? `All Verified Tutors in ${SERVICE_AREA_NAME} — ${total} Profiles | ApnaTutor`
     : `All Verified Tutors — Page ${page.currentPage} of ${page.lastPage} | ApnaTutor`;
 
 const description =
   page.currentPage === 1
-    ? `ApnaTutor par ${total} verified home aur online tutors. Subject, class, city aur budget ke hisaab se dekhein. Parents ke liye bilkul free.`
-    : `Verified tutors ki list, page ${page.currentPage}. Subject, class aur city ke hisaab se filter karein.`;
+    ? `${SERVICE_AREA_LABEL} ke ${total} verified home aur online tutors. Subject, class aur budget ke hisaab se dekhein. Parents ke liye bilkul free.`
+    : `${SERVICE_AREA_NAME} ke verified tutors, page ${page.currentPage}. Subject, class aur budget ke hisaab se filter karein.`;
 ---
 <Base title={title} description={description} path={path}>
   <div class="wrap head">

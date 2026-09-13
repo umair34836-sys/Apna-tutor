@@ -14,7 +14,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { SITE, absoluteUrl, env, url } from '../lib/site';
+import { AREA_SERVED, SITE, absoluteUrl, env, url } from '../lib/site';
 
 export interface Props {
   title: string;
@@ -64,7 +64,7 @@ const baseJsonLd: Record<string, unknown>[] = [
     name: SITE.name,
     url: SITE.url,
     logo: absoluteUrl('/logo-mark.svg'),
-    areaServed: 'Pakistan',
+    areaServed: AREA_SERVED,
     ...(SITE.sameAs.length ? { sameAs: SITE.sameAs } : {}),
   },
 ];

@@ -3,22 +3,23 @@ import { url } from '../lib/site';
 import Base from '../layouts/Base.astro';
 import Prose from '../components/Prose.astro';
 import { cities, stats } from '../lib/data';
+import { AREA_WORD, SERVICE_AREA_LABEL, SERVICE_AREA_NAME } from '../lib/site';
 
 const liveCities = cities.filter((c) => c.slug).map((c) => c.name);
 ---
 <Base
-  title="About ApnaTutor — Local Tutor Marketplace in Pakistan | ApnaTutor"
-  description="ApnaTutor Pakistan ke chhote sheheron ke liye banaya gaya tutor marketplace hai. Verified profiles, area-level search, aur parents ke liye bilkul free."
+  title={`About ApnaTutor — Tutor Marketplace for ${SERVICE_AREA_NAME} | ApnaTutor`}
+  description={`ApnaTutor ${SERVICE_AREA_LABEL} ke liye banaya gaya tutor marketplace hai. Verified profiles, mohalla-level search, aur parents ke liye bilkul free.`}
   path="/about"
 >
   <Prose
     title="ApnaTutor ke baare mein"
-    lead="Ek chhoti si koshish: apne ilaqay ka theek tutor dhoondna itna mushkil nahi hona chahiye."
+    lead={`Ek chhoti si koshish: apne ${AREA_WORD} ka theek tutor dhoondna itna mushkil nahi hona chahiye.`}
   >
     <section>
       <h2>Masla kya hai</h2>
-      <p>Pakistan ke chhote sheheron aur cantonment areas mein tutor dhoondne ka tareeqa abhi bhi wahi hai — kisi se poochna, Facebook group mein post karna, ya school ke bahar poster dekhna. Na koi tareeqa hai ye jaanne ka ke banda waqai wo parhata hai jo kehta hai, na fee ka andaza, na ye pata ke wo aapke mohalle tak aayega ya nahi.</p>
-      <p>Baray shehron ke liye kuch platforms hain, magar wo Risalpur, Nowshera jaise ilaqon ko cover nahi karte — jahan zarurat shayad zyada hai.</p>
+      <p>Gaon aur cantonment areas mein tutor dhoondne ka tareeqa abhi bhi wahi hai — kisi se poochna, Facebook group mein post karna, ya school ke bahar poster dekhna. Na koi tareeqa hai ye jaanne ka ke banda waqai wo parhata hai jo kehta hai, na fee ka andaza, na ye pata ke wo aapke mohalle tak aayega ya nahi.</p>
+      <p>Baray shehron ke liye kuch platforms hain, magar wo {SERVICE_AREA_LABEL} jaise ilaqon ko cover nahi karte — jahan zarurat shayad zyada hai.</p>
     </section>
 
     <section>
@@ -38,15 +39,21 @@ const liveCities = cities.filter((c) => c.slug).map((c) => c.name);
     </section>
 
     <section>
+      <h2>Hum abhi sirf ek {AREA_WORD} mein hain — jaan boojh kar</h2>
+      <p>ApnaTutor filhaal sirf <strong>{SERVICE_AREA_LABEL}</strong> mein chalta hai. Poore Pakistan ka daawa karna asaan tha, magar us se hota ye hai ke parent search karta hai aur khali page milta hai.</p>
+      <p>Is liye ulta kiya hai: ek {AREA_WORD} — apna {AREA_WORD} — theek se cover karo. Jab yahan itnay tutors ho jayein ke har class aur subject ke liye asli option mojood ho, tab agla ilaqa. Agle areas Nowshera aur Risalpur ke aas-paas ke gaon hi honge.</p>
+    </section>
+
+    <section>
       <h2>Abhi kahan tak hain</h2>
       {stats.tutorCount > 0 ? (
         <p>Is waqt <strong>{stats.tutorCount} approved tutors</strong> hain
           {stats.cityCount > 0 && <> aur <strong>{`${stats.cityCount} ${stats.cityCount === 1 ? 'city' : 'cities'}`}</strong> cover hoti hain</>}.
           Hum jaan boojh kar dheere barh rahe hain — har tutor ki verification khud karte hain, aur ye kaam automate nahi hota.</p>
       ) : (
-        <p>Hum abhi shuruaat mein hain — pehle tutors onboard aur verify ho rahe hain. Jab tak aapke area mein tutors na aayein, aap apni requirement post kar sakte hain; hum aapko bata denge.</p>
+        <p>Hum abhi shuruaat mein hain — pehle tutors onboard aur verify ho rahe hain. Jab tak {SERVICE_AREA_NAME} mein tutors na aayein, aap apni requirement post kar sakte hain; hum aapko bata denge.</p>
       )}
-      {liveCities.length > 0 && <p>Cities: {liveCities.join(', ')}.</p>}
+      {liveCities.length > 0 && <p>Areas: {liveCities.join(', ')}.</p>}
     </section>
 
     <section>

@@ -13,6 +13,7 @@ import Base from '../layouts/Base.astro';
 import AuthCard from '../components/AuthCard.astro';
 import Icon from '../components/Icon.astro';
 import { cities } from '../lib/data';
+import { AREA_LABEL, AREA_WORD, ONLY_AREA, SERVICE_AREA_NAME } from '../lib/site';
 ---
 <Base title="Create Account | ApnaTutor" description="ApnaTutor par naya account banayein — parent ya tutor." path="/signup" noindex>
   <AuthCard heading="Naya account" sub="Parents ke liye bilkul free. Tutors ke liye bhi.">
@@ -45,22 +46,24 @@ import { cities } from '../lib/data';
       </div>
 
       <div class="field">
-        <label for="city">Sheher</label>
+        <label for="city">{AREA_LABEL}</label>
         {cities.length > 0 ? (
           <select id="city" name="city" required>
-            <option value="">Select karein</option>
-            {cities.map((c) => <option value={c.slug}>{c.name}</option>)}
-            <option value="__other">Koi aur sheher</option>
+            {!ONLY_AREA && <option value="">Select karein</option>}
+            {cities.map((c) => <option value={c.slug} selected={Boolean(ONLY_AREA)}>{c.name}</option>)}
+            {/* Aas-paas ke gaon se aane wale parents — inhi se pata chalta hai
+                ke agla area kaun sa hona chahiye. */}
+            <option value="__other">Koi aur {AREA_WORD}</option>
           </select>
         ) : (
-          <input type="text" id="city" name="city" required maxlength="60" placeholder="Misal: Risalpur" />
+          <input type="text" id="city" name="city" required maxlength="60" placeholder={`Misal: ${SERVICE_AREA_NAME}`} />
         )}
-        <p class="err" id="e-city"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> <span>Sheher select karna zaroori hai</span></p>
+        <p class="err" id="e-city"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> <span>{AREA_LABEL} select karna zaroori hai</span></p>
       </div>
 
       <div class="field" id="city-other-field" hidden>
-        <label for="city-other">Sheher ka naam</label>
-        <input type="text" id="city-other" maxlength="60" placeholder="Misal: Charsadda" />
+        <label for="city-other">Aap kahan se hain?</label>
+        <input type="text" id="city-other" maxlength="60" placeholder="Gaon ya sheher ka naam" />
       </div>
 
       <div id="credentials">
@@ -176,7 +179,7 @@ import { cities } from '../lib/data';
       submit.textContent = 'Jari rakhein';
       document.querySelector('.auth-card h1')!.textContent = 'Thora sa aur';
       const sub = document.querySelector('.auth-sub');
-      if (sub) sub.textContent = 'Bas do cheezein — aap kaun hain aur kis sheher se.';
+      if (sub) sub.textContent = 'Bas do cheezein — aap kaun hain aur kahan se.';
 
       currentUser().then((user) => {
         if (!user) { window.location.replace(url('/signup')); return; }
@@ -189,7 +192,7 @@ import { cities } from '../lib/data';
       });
     }
 
-    // ---- "Koi aur sheher" ----
+    // ---- "Koi aur gaon / sheher" ----
     cityInput.addEventListener('change', () => {
       const other = cityInput.value === '__other';
       cityOtherField.hidden = !other;

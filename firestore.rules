@@ -274,7 +274,7 @@ service cloud.firestore {
         && request.resource.data.notes.size() <= 1000
         && request.resource.data.budgetMax is int
         && request.resource.data.budgetMax > 0
-        && request.resource.data.mode in ['home', 'online', 'any']
+        && request.resource.data.mode in ['home', 'tutorhome', 'online', 'any']
         && request.resource.data.genderPref in ['male', 'female', 'any']
         && serverTime('createdAt');
 

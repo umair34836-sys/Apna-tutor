@@ -57,8 +57,13 @@ if (root && root.dataset.ready === '1') {
   function urlToForm() {
     const p = readUrl();
     // City pehle — usi se areas bharte hain.
-    const city = p.get('city') ?? '';
-    ($('f-city') as HTMLSelectElement).value = city;
+    //
+    // Param na ho to select ki apni value rakho: ek hi service area hone par
+    // wo pehle se selected hoti hai, aur usay khali kar dene se parent ko
+    // bina wajah "ilaqa select karein" wala khali page dikhta.
+    const cityEl = $('f-city') as HTMLSelectElement;
+    const city = p.get('city') ?? cityEl.value;
+    cityEl.value = city;
     renderAreas(p.get('area') ?? '');
 
     Object.entries(MAP).forEach(([param, id]) => {
@@ -155,7 +160,7 @@ if (root && root.dataset.ready === '1') {
       q('[data-zero-tip]').textContent =
         n > 0
           ? `Aap ne ${n} extra ${n === 1 ? 'filter' : 'filters'} lagaye hain. Unhe hata kar dekhein — ya request post kar dein, hum aap ke liye tutor dhoondenge.`
-          : 'Is sheher mein is subject ka koi tutor abhi nahi hai. Request post kar dein — jaise hi koi aayega, hum aap ko bata denge.';
+          : 'Is ilaqe mein is subject ka koi tutor abhi nahi hai. Request post kar dein — jaise hi koi aayega, hum aap ko bata denge.';
 
       track('zero_results', { city: f.city, subject: f.subject, class_level: f.classLevel ?? '' });
       return;

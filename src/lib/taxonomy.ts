@@ -44,8 +44,12 @@ export const BOARDS: Term[] = [
 ];
 
 export const MODES: Term[] = [
-  { slug: 'home',   urlSlug: 'home',   label: 'Home tuition', labelUrdu: 'Home tuition (teacher ghar aaye)' },
-  { slug: 'online', urlSlug: 'online', label: 'Online',       labelUrdu: 'Online tuition' },
+  { slug: 'home',      urlSlug: 'home',       label: 'Home tuition',          labelUrdu: 'Teacher aapke ghar aaye' },
+  // Gaon mein ye sabse aam soorat hai — bachay teacher ke ghar parhne jate
+  // hain. Isay chhorna ka matlab tha ke asli tutors "home tuition" par tick
+  // laga kar ghalat waada karte, ya kuch bhi tick na kar patay.
+  { slug: 'tutorhome', urlSlug: 'tutor-home', label: "Tuition at tutor's home", labelUrdu: 'Student teacher ke ghar jaye' },
+  { slug: 'online',    urlSlug: 'online',     label: 'Online',                labelUrdu: 'Online tuition' },
 ];
 
 export const GENDERS: Term[] = [

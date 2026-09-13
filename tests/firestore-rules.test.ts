@@ -413,6 +413,24 @@ describe('requests/{id}', () => {
     );
   });
 
+  it('"tutor ke ghar" wala mode qabool hota hai', async () => {
+    // Gaon mein bachay teacher ke ghar parhne jate hain — ye teesra mode
+    // rules mein bhi hona chahiye, warna asli request reject ho jati.
+    await assertSucceeds(
+      addDoc(collection(db(PARENT_UID), 'requests'), {
+        ...validRequest(PARENT_UID), mode: 'tutorhome',
+      })
+    );
+  });
+
+  it('bana hua mode reject hota hai', async () => {
+    await assertFails(
+      addDoc(collection(db(PARENT_UID), 'requests'), {
+        ...validRequest(PARENT_UID), mode: 'academy',
+      })
+    );
+  });
+
   it('ghalat phone format wali request reject hoti hai', async () => {
     await assertFails(
       addDoc(collection(db(PARENT_UID), 'requests'), {

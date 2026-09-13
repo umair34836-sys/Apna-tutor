@@ -15,6 +15,7 @@ import { url } from '../lib/site';
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import { cities, subjects } from '../lib/data';
+import { AREA_LABEL, ONLY_AREA, SERVICE_AREA_LABEL } from '../lib/site';
 import { BOARDS, CLASSES, GENDERS, MODES } from '../lib/taxonomy';
 
 const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
@@ -22,7 +23,7 @@ const ready = cities.length > 0 && subjects.length > 0;
 ---
 <Base
   title="Find a Tutor — Search by Class, Subject and Area | ApnaTutor"
-  description="Apne area ke verified tutors dhoondein. Class, subject, board, gender, mode aur budget ke hisaab se filter karein."
+  description={`${SERVICE_AREA_LABEL} ke verified tutors dhoondein. Class, subject, board, gender, mode aur budget ke hisaab se filter karein.`}
   path="/find-tutor"
   noindex
 >
@@ -46,10 +47,10 @@ const ready = cities.length > 0 && subjects.length > 0;
 
         <form id="filter-form">
           <div class="field">
-            <label for="f-city">Sheher</label>
+            <label for="f-city">{AREA_LABEL}</label>
             <select id="f-city" name="city">
-              <option value="">Select karein</option>
-              {cities.map((c) => <option value={c.slug}>{c.name}</option>)}
+              {!ONLY_AREA && <option value="">Select karein</option>}
+              {cities.map((c) => <option value={c.slug} selected={Boolean(ONLY_AREA)}>{c.name}</option>)}
             </select>
           </div>
 
@@ -141,7 +142,7 @@ const ready = cities.length > 0 && subjects.length > 0;
       <div data-prompt hidden>
         <div class="empty">
           <Icon name="search" />
-          <h3>Sheher aur subject select karein</h3>
+          <h3>{ONLY_AREA ? 'Subject select karein' : `${AREA_LABEL} aur subject select karein`}</h3>
           <p>Ye do cheezein zaroori hain — baqi filters marzi ke hain.</p>
         </div>
       </div>

@@ -58,7 +58,10 @@ export function tutorCardHtml(tutor: Tutor): string {
     : `<div class="avatar" aria-hidden="true">${esc(initials(tutor.name))}</div>`;
 
   const modes = (tutor.modes ?? [])
-    .map((m) => `<span class="chip chip-mode">${svg(m === 'online' ? 'monitor' : 'home')}${esc(modeLabel(m).split(' (')[0])}</span>`)
+    .map((m) => {
+      const icon = m === 'online' ? 'monitor' : m === 'tutorhome' ? 'map-pin' : 'home';
+      return `<span class="chip chip-mode">${svg(icon)}${esc(modeLabel(m).split(' (')[0])}</span>`;
+    })
     .join('');
 
   const classes = (tutor.classes ?? [])

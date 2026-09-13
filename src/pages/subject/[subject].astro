@@ -5,7 +5,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import SeoIntro from '../../components/SeoIntro.astro';
 import TutorGrid from '../../components/TutorGrid.astro';
 import { subjectPages, breadcrumbJsonLd, comboPages } from '../../lib/seo';
-import { SITE, url } from '../../lib/site';
+import { AREA_WORD, SERVICE_AREA_LABEL, SERVICE_AREA_NAME, SITE, url } from '../../lib/site';
 import type { Subject, Tutor } from '../../lib/types';
 
 export function getStaticPaths() {
@@ -23,16 +23,16 @@ const n = tutors.length;
 const crumbs = [{ name: 'Home', url: '/' }, { name: subject.name, url: path }];
 const related = comboPages().filter((p) => p.subject?.slug === subject.slug).slice(0, 8);
 
-const title = `${subject.name} Tutors in Pakistan — ${n} Verified | ApnaTutor`;
+const title = `${subject.name} Tutors in ${SERVICE_AREA_NAME} — ${n} Verified | ApnaTutor`;
 const description =
-  `Pakistan mein ${n} verified ${subject.name.toLowerCase()} tutors — home tuition aur online. City, class aur budget ke hisaab se filter karein. Parents ke liye free.`;
+  `${SERVICE_AREA_LABEL} mein ${n} verified ${subject.name.toLowerCase()} tutors — ghar par, teacher ke ghar, ya online. Class aur budget ke hisaab se filter karein.`;
 ---
 <Base title={title} description={description} path={path} jsonLd={[breadcrumbJsonLd(crumbs, SITE.url)]}>
   <div class="wrap"><Breadcrumbs items={crumbs} /></div>
 
   <div class="wrap head">
-    <h1>{subject.name} Tutors</h1>
-    <p class="lead">{n} verified {subject.name.toLowerCase()} tutors — home tuition aur online, dono.</p>
+    <h1>{subject.name} Tutors in {SERVICE_AREA_NAME}</h1>
+    <p class="lead">{n} verified {subject.name.toLowerCase()} tutors — aapke ghar, teacher ke ghar, ya online.</p>
   </div>
 
   <section><div class="wrap"><TutorGrid tutors={tutors} /></div></section>
@@ -40,7 +40,7 @@ const description =
   {related.length > 0 && (
     <section class="sec-alt">
       <div class="wrap">
-        <div class="sec-head"><h2>Sheher ke hisaab se</h2></div>
+        <div class="sec-head"><h2>{AREA_WORD === 'gaon' ? 'Gaon ke hisaab se' : 'Sheher ke hisaab se'}</h2></div>
         <ul class="links">
           {related.map((p) => (
             <li><a href={url(`/${p.slug}`)}>{p.h1}&#32;<span>({p.tutors.length})</span></a></li>

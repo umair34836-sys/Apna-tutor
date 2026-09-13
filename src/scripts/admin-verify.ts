@@ -147,7 +147,7 @@ if (rootEl) {
       status.dataset.status = tutor.status === 'approved' ? 'open' : tutor.status === 'pending' ? 'matched' : 'closed';
 
       const facts: [string, string][] = [
-        ['Sheher', tutor.city],
+        ['Ilaqa', tutor.city],
         ['Areas', (tutor.areas ?? []).join(', ')],
         ['Subjects', (tutor.subjects ?? []).join(', ')],
         ['Classes', (tutor.classes ?? []).map(classLabel).join(', ')],
