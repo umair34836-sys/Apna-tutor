@@ -268,7 +268,12 @@ export async function requireAdmin(): Promise<Session | null> {
     return null;
   }
 
-  return { user, profile: await getProfile(user.uid) };
+  // getProfile khud nishan likhta hai; admin ka flag uske BAAD lagate hain
+  // taake wo mit na jaye (writeAuthHint merge karta hai, is liye mehfooz hai).
+  const profile = await getProfile(user.uid);
+  writeAuthHint({ signedIn: true, admin: true });
+
+  return { user, profile };
 }
 
 let adminOnce: Promise<Session | null> | null = null;

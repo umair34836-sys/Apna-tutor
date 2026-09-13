@@ -1,33 +1,149 @@
 ---
 import { url } from '../lib/site';
+// =============================================================================
 // src/components/Header.astro
 //
+// Menu ke teen hissay hain, aur ye taqseem jaan boojh kar hai:
+//
+//   1. IS SECTION KA        — page ke hisaab se badalta hai. Admin panel mein
+//                             admin ke pages, tutor ke area mein tutor ke.
+//                             Ye build ke waqt tay hota hai (path se), is liye
+//                             JS ke bagair bhi theek hai.
+//   2. AAPKE ROLE KA        — tutor ko tutor ka dashboard, parent/student ko
+//                             apna. Ye browser mein tay hota hai (auth hint),
+//                             kyunki static page ko pata nahi hota kaun aaya.
+//   3. HAR JAGAH WALE       — chaar buniyadi links jo har haal mein chahiye.
+//
+// ★ Pehle teeno hissay ek hi thay: har page par, har role ko, bilkul wahi
+//   saat links. Admin panel mein khare ho kar admin ke baqi pages tak
+//   pohanchne ka koi raasta hi nahi tha.
+//
 // ★ Auth state yahan localStorage ke hint se aati hai, Firebase se nahi.
-//   Header har page par hai — static pages par bhi — aur wahan Firebase SDK
-//   (300 KB) load karna poori architecture ke khilaf hai. Hint sirf ye tay
-//   karta hai ke "Login / Sign up" dikhein ya "Mera dashboard"; koi ijazat
-//   uspar mabni nahi. Tafseel src/lib/auth-hint.ts mein.
+//   Header har page par hai — static pages par bhi — aur wahan 300 KB ka SDK
+//   load karna poori architecture ke khilaf hai. Tafseel src/lib/auth-hint.ts.
+// =============================================================================
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 
-const links = [
-  { href: '/find-tutor',    label: 'Tutor dhoondein',     icon: 'search' },
-  { href: '/request-tutor', label: 'Request post karein', icon: 'send' },
+interface Link { href: string; label: string; icon: string }
+
+/** Har jagah — chahe kaun bhi ho, kahin bhi ho. */
+const universal: Link[] = [
+  { href: '/find-tutor',    label: 'Tutor dhoondein',      icon: 'search' },
+  { href: '/request-tutor', label: 'Request post karein',  icon: 'send' },
   { href: '/how-it-works',  label: 'Kaise kaam karta hai', icon: 'help' },
-  { href: '/teachers',      label: 'Saare tutors',        icon: 'users' },
+  { href: '/teachers',      label: 'Saare tutors',         icon: 'users' },
 ];
+
+interface Section { title: string; match: (p: string) => boolean; links: Link[] }
+
+/**
+ * Section kaun sa hai — page ke raaste se. Pehla match jeet jata hai, is liye
+ * khaas raaste (admin, tutor, parent) aam raaston se pehle likhe hain.
+ */
+const sections: Section[] = [
+  {
+    title: 'Admin',
+    match: (p) => p === '/admin' || p.startsWith('/admin/'),
+    links: [
+      { href: '/admin',          label: 'Overview', icon: 'trending-up' },
+      { href: '/admin/tutors',   label: 'Tutors',   icon: 'users' },
+      { href: '/admin/reviews',  label: 'Reviews',  icon: 'star-outline' },
+      { href: '/admin/reports',  label: 'Reports',  icon: 'flag' },
+      { href: '/admin/featured', label: 'Featured', icon: 'award' },
+      { href: '/admin/content',  label: 'Content',  icon: 'file-text' },
+      { href: '/admin/rebuild',  label: 'Rebuild',  icon: 'refresh' },
+    ],
+  },
+  {
+    title: 'Mera tutor account',
+    match: (p) => p.startsWith('/tutor/') && p !== '/tutor/register',
+    links: [
+      { href: '/tutor/dashboard', label: 'Dashboard',    icon: 'trending-up' },
+      { href: '/tutor/leads',     label: 'Leads',        icon: 'inbox' },
+      { href: '/tutor/profile',   label: 'Meri profile', icon: 'user' },
+    ],
+  },
+  {
+    title: 'Mera account',
+    match: (p) => p.startsWith('/parent/'),
+    links: [
+      { href: '/parent/dashboard',    label: 'Dashboard',     icon: 'trending-up' },
+      { href: '/parent/requests',     label: 'Meri requests', icon: 'file-text' },
+      { href: '/parent/saved-tutors', label: 'Saved tutors',  icon: 'bookmark' },
+    ],
+  },
+  {
+    title: 'Tutors ke liye',
+    match: (p) => p === '/for-tutors' || p === '/tutor/register',
+    links: [
+      { href: '/for-tutors',     label: 'Tutors ke liye',    icon: 'graduation-cap' },
+      { href: '/tutor/register', label: 'Tutor banein',      icon: 'user-plus' },
+      { href: '/how-it-works',   label: 'Kaise kaam karta hai', icon: 'help' },
+    ],
+  },
+  {
+    title: 'Account',
+    match: (p) => ['/login', '/signup', '/forgot-password'].includes(p),
+    links: [
+      { href: '/login',           label: 'Login',              icon: 'user' },
+      { href: '/signup',          label: 'Naya account',       icon: 'user-plus' },
+      { href: '/forgot-password', label: 'Password bhool gaye', icon: 'lock' },
+    ],
+  },
+  {
+    title: 'Maloomat',
+    match: (p) => ['/about', '/faq', '/safety', '/contact', '/privacy', '/terms'].includes(p),
+    links: [
+      { href: '/about',   label: 'Hamare baare mein', icon: 'info' },
+      { href: '/faq',     label: 'FAQ',               icon: 'help' },
+      { href: '/safety',  label: 'Safety',            icon: 'shield-check' },
+      { href: '/contact', label: 'Rabta karein',      icon: 'mail' },
+      { href: '/privacy', label: 'Privacy',           icon: 'lock' },
+      { href: '/terms',   label: 'Terms',             icon: 'file-text' },
+    ],
+  },
+  {
+    title: 'Tutor dhoondna',
+    // Search, listing, profile aur saare SEO pages — sab isi kaam ke hain.
+    match: (p) =>
+      p === '/find-tutor' || p === '/teachers' ||
+      p.startsWith('/teachers/') || p.startsWith('/teacher/') ||
+      p.startsWith('/city/') || p.startsWith('/subject/') ||
+      /-tutor-|^\/tuition-at-tutor-home-/.test(p),
+    links: [
+      { href: '/find-tutor',    label: 'Filters ke saath search', icon: 'filter' },
+      { href: '/teachers',      label: 'Saare tutors',            icon: 'users' },
+      { href: '/request-tutor', label: 'Request post karein',     icon: 'send' },
+    ],
+  },
+];
+
+// Base path hata kar saaf raasta — sections isi par match karte hain.
+const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+let path = Astro.url.pathname;
+if (base && path.startsWith(base)) path = path.slice(base.length);
+path = path.replace(/\.html$/, '').replace(/\/+$/, '') || '/';
+
+const section = sections.find((s) => s.match(path));
+
+// Jo link section mein aa chuka, usay dobara neeche na dikhayein.
+const inSection = new Set(section?.links.map((l) => l.href) ?? []);
+const rest = universal.filter((l) => !inSection.has(l.href));
 ---
 <header>
   <div class="wrap nav">
     <Logo href={url('/')} size={38} />
 
     <nav class="nav-links" aria-label="Main">
-      {links.map((l) => <a href={url(l.href)}>{l.label}</a>)}
+      {universal.map((l) => (
+        <a href={url(l.href)} aria-current={l.href === path ? 'page' : undefined}>{l.label}</a>
+      ))}
     </nav>
 
     <div class="nav-cta">
       {/* Login ke baad ye do button hat jate hain — JS hint dekh kar. */}
-      <div class="auth-out" data-auth="out">
+      <div class="auth-out" data-for="out">
         <a class="btn btn-ghost btn-sm" href={url('/login')}>Login</a>
         <a class="btn btn-primary btn-sm" href={url('/signup')}>
           <Icon name="user-plus" />
@@ -35,13 +151,11 @@ const links = [
         </a>
       </div>
 
-      <a class="btn btn-primary btn-sm" href={url('/login')} data-auth="in" data-home-link hidden>
+      <a class="btn btn-primary btn-sm" href={url('/login')} data-for="in" data-home-link hidden>
         <Icon name="trending-up" />
         Dashboard
       </a>
 
-      {/* Teen lakeerein. Logout yahan andar rehta hai — milta asani se hai,
-          magar har page par saamne khara nahi rehta. */}
       <button
         type="button"
         class="menu-btn"
@@ -57,27 +171,63 @@ const links = [
 
   <div class="menu" id="site-menu" hidden>
     <div class="wrap menu-inner">
-      <nav aria-label="Saare pages">
-        {links.map((l) => (
-          <a class="menu-link" href={url(l.href)}><Icon name={l.icon} size={18} />{l.label}</a>
-        ))}
-      </nav>
 
-      <hr />
+      {/* 1. Is section ka — page ke hisaab se */}
+      {section && (
+        <div class="menu-group">
+          <p class="menu-title">{section.title}</p>
+          {section.links.map((l) => (
+            <a
+              class="menu-link"
+              href={url(l.href)}
+              aria-current={l.href === path ? 'page' : undefined}
+            >
+              <Icon name={l.icon} size={18} />{l.label}
+            </a>
+          ))}
+        </div>
+      )}
 
-      <div class="menu-group" data-auth="in" hidden>
-        <a class="menu-link" href={url('/login')} data-home-link>
-          <Icon name="trending-up" size={18} />Mera dashboard
-        </a>
-        <button type="button" class="menu-link danger" data-menu-signout>
-          <Icon name="log-out" size={18} />Logout
-        </button>
+      {/* 2. Role ka — browser mein tay hota hai */}
+      <div class="menu-group" data-for="tutor" hidden>
+        <p class="menu-title">Mera tutor account</p>
+        <a class="menu-link" href={url('/tutor/dashboard')}><Icon name="trending-up" size={18} />Dashboard</a>
+        <a class="menu-link" href={url('/tutor/leads')}><Icon name="inbox" size={18} />Leads</a>
+        <a class="menu-link" href={url('/tutor/profile')}><Icon name="user" size={18} />Meri profile</a>
       </div>
 
-      <div class="menu-group" data-auth="out">
+      <div class="menu-group" data-for="learner" hidden>
+        <p class="menu-title">Mera account</p>
+        <a class="menu-link" href={url('/parent/dashboard')}><Icon name="trending-up" size={18} />Dashboard</a>
+        <a class="menu-link" href={url('/parent/requests')}><Icon name="file-text" size={18} />Meri requests</a>
+        <a class="menu-link" href={url('/parent/saved-tutors')}><Icon name="bookmark" size={18} />Saved tutors</a>
+      </div>
+
+      <div class="menu-group" data-for="admin" hidden>
+        <p class="menu-title">Admin</p>
+        <a class="menu-link" href={url('/admin')}><Icon name="settings" size={18} />Admin panel</a>
+      </div>
+
+      {/* 3. Har jagah wale */}
+      {rest.length > 0 && (
+        <div class="menu-group">
+          <p class="menu-title">ApnaTutor</p>
+          {rest.map((l) => (
+            <a class="menu-link" href={url(l.href)}><Icon name={l.icon} size={18} />{l.label}</a>
+          ))}
+        </div>
+      )}
+
+      <div class="menu-group" data-for="out">
         <a class="menu-link" href={url('/login')}><Icon name="user" size={18} />Login</a>
         <a class="menu-link" href={url('/signup')}><Icon name="user-plus" size={18} />Naya account banayein</a>
         <a class="menu-link" href={url('/for-tutors')}><Icon name="graduation-cap" size={18} />Tutors ke liye</a>
+      </div>
+
+      <div class="menu-group" data-for="in" hidden>
+        <button type="button" class="menu-link danger" data-menu-signout>
+          <Icon name="log-out" size={18} />Logout
+        </button>
       </div>
     </div>
   </div>
@@ -92,6 +242,7 @@ const links = [
   .nav-links a{padding:10px 12px;border-radius:var(--radius);color:var(--muted-fg);
     font-weight:500;white-space:nowrap;font-size:15px}
   .nav-links a:hover{background:var(--bg-alt);color:var(--fg);text-decoration:none}
+  .nav-links a[aria-current="page"]{color:var(--primary-dark);background:var(--primary-soft)}
 
   .nav-cta{display:flex;gap:var(--space-1);align-items:center}
   .auth-out{display:flex;gap:var(--space-1);align-items:center}
@@ -126,11 +277,19 @@ const links = [
     border-top:1px solid var(--border);
     background:var(--card);
     box-shadow:var(--shadow-lg);
-    max-height:min(70vh,560px);
+    max-height:min(72vh,620px);
     overflow-y:auto;
   }
-  .menu-inner{padding-block:var(--space-2);display:grid;gap:var(--space-1)}
-  .menu nav,.menu-group{display:grid;gap:2px}
+  .menu-inner{padding-block:var(--space-2);display:grid;gap:var(--space-2)}
+
+  .menu-group{display:grid;gap:2px}
+  .menu-group + .menu-group{border-top:1px solid var(--border);padding-top:var(--space-2)}
+
+  .menu-title{
+    font-family:var(--font-heading);font-size:12px;font-weight:600;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--muted-fg);
+    padding:0 12px 6px;
+  }
 
   .menu-link{
     display:flex;align-items:center;gap:12px;
@@ -142,11 +301,11 @@ const links = [
   }
   .menu-link:hover{background:var(--bg-alt);text-decoration:none}
   .menu-link :global(.icon){color:var(--icon-muted);flex:none}
+  .menu-link[aria-current="page"]{background:var(--primary-soft);color:var(--primary-dark)}
+  .menu-link[aria-current="page"] :global(.icon){color:var(--primary)}
   .menu-link.danger{color:var(--destructive)}
   .menu-link.danger :global(.icon){color:var(--destructive)}
   .menu-link.danger:hover{background:#FEF2F2}
-
-  .menu hr{border:0;border-top:1px solid var(--border);margin:var(--space-1) 0}
 
   @media (prefers-reduced-motion: reduce){
     .bars span{transition:none}
@@ -155,19 +314,29 @@ const links = [
 
 <script>
   import { url } from '../lib/site';
-  import { homeForRole, readAuthHint } from '../lib/auth-hint';
+  import { isLearner, readAuthHint } from '../lib/auth-hint';
+  import { homeForRole } from '../lib/auth-hint';
 
   const btn = document.getElementById('menu-btn');
   const menu = document.getElementById('site-menu');
 
   if (btn && menu) {
-    // ---- Kaun sa header dikhe: logged in ya logged out ----
-    // Default markup logged-out hai. Hint hone par swap kar dete hain — is
-    // tarah pehli dafa aane wale ko kuch flash nahi hota.
+    // ---- Kaun sa hissa kisay dikhe ----
+    // Default markup logged-out hai, is liye pehli dafa aane wale ko kuch
+    // flash nahi hota. Hint hone par hi swap hota hai.
     const hint = readAuthHint();
 
-    document.querySelectorAll<HTMLElement>('[data-auth]').forEach((el) => {
-      el.hidden = (el.dataset.auth === 'in') !== hint.signedIn;
+    const visible: Record<string, boolean> = {
+      out: !hint.signedIn,
+      in: hint.signedIn,
+      tutor: hint.signedIn && hint.role === 'tutor',
+      learner: hint.signedIn && isLearner(hint.role),
+      admin: Boolean(hint.admin),
+    };
+
+    document.querySelectorAll<HTMLElement>('[data-for]').forEach((el) => {
+      const key = el.dataset.for ?? '';
+      if (key in visible) el.hidden = !visible[key];
     });
 
     if (hint.signedIn) {

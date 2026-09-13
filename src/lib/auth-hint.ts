@@ -27,7 +27,13 @@ const KEY = 'apnatutor-auth';
 export interface AuthHint {
   signedIn: boolean;
   role?: Role;
+  /** `admins/{uid}` doc mila tha — menu mein Admin ka hissa dikhane ke liye. */
+  admin?: boolean;
 }
+
+/** parent aur student ek hi taraf ke hain — dono tutor dhoondte hain. */
+export const isLearner = (role: Role | undefined) =>
+  role === 'parent' || role === 'student';
 
 const SIGNED_OUT: AuthHint = { signedIn: false };
 
@@ -43,10 +49,20 @@ export function readAuthHint(): AuthHint {
   }
 }
 
-export function writeAuthHint(hint: AuthHint | null): void {
+/**
+ * Nishan mein kuch add ya update karta hai. `null` dene se poora mit jata hai.
+ *
+ * ★ Merge karta hai, replace nahi. Wajah: `admin` flag sirf /admin khulne par
+ *   set hota hai, magar `role` har guarded page par likha jata hai. Replace
+ *   karte to admin ka menu apne hi dashboard par jate hi ghayab ho jata.
+ */
+export function writeAuthHint(patch: Partial<AuthHint> | null): void {
   try {
-    if (hint) localStorage.setItem(KEY, JSON.stringify(hint));
-    else localStorage.removeItem(KEY);
+    if (!patch) {
+      localStorage.removeItem(KEY);
+      return;
+    }
+    localStorage.setItem(KEY, JSON.stringify({ ...readAuthHint(), ...patch }));
   } catch {
     // Na likh sake to header ek page load peeche reh jayega. Bas itna hi.
   }
