@@ -157,19 +157,50 @@ export async function currentUser() {
  * Ye UI ke liye hai. Asli protection firestore.rules mein hai — UI mein admin
  * links chhupana security nahi hai, sirf tidiness hai.
  */
-export async function isAdmin(): Promise<boolean> {
+export type AdminCheck =
+  | { ok: true; uid: string }
+  | { ok: false; uid: string | null; reason: 'signed-out' | 'no-doc' | 'denied' | 'error'; detail: string };
+
+/**
+ * Admin check, magar WAJAH ke saath.
+ *
+ * ★ Pehle ye sirf `false` lautata tha aur error nigal jata tha. Natija ye ke
+ *   pehla admin banate waqt "redirect ho gaya" ke siwa koi maloomat nahi
+ *   milti thi — na ye ke document nahi mila, na ye ke rules ne roka, aur na
+ *   hi apna UID. Setup ka sab se pehla qadam hi sab se andhera hissa tha.
+ *
+ *   `no-doc` aur `denied` mein farq ahem hai:
+ *     no-doc  → login theek hai, bas `admins/{uid}` mojood nahi
+ *     denied  → rules ne read hi nahi karne di (aksar rules deploy nahi huin)
+ */
+export async function adminCheck(): Promise<AdminCheck> {
   const user = await currentUser();
-  if (!user) return false;
+  if (!user) return { ok: false, uid: null, reason: 'signed-out', detail: 'Login nahi hai.' };
 
   const { db } = await getFirebase();
   const { doc, getDoc } = await import('firebase/firestore');
 
   try {
     const snap = await getDoc(doc(db, 'admins', user.uid));
-    return snap.exists();
-  } catch {
-    return false;
+    return snap.exists()
+      ? { ok: true, uid: user.uid }
+      : { ok: false, uid: user.uid, reason: 'no-doc', detail: `admins/${user.uid} mojood nahi.` };
+  } catch (err) {
+    const code = (err as { code?: string })?.code ?? '';
+    // permission-denied yahan "aap admin nahi" ka matlab NAHI hai — admin ko
+    // apna document parhne ki ijazat rules deti hain. Iska matlab aksar ye
+    // hota hai ke firestore.rules deploy hi nahi huin.
+    return code === 'permission-denied'
+      ? { ok: false, uid: user.uid, reason: 'denied', detail: 'Firestore ne read block kar di (permission-denied).' }
+      : { ok: false, uid: user.uid, reason: 'error', detail: firestoreError(err) };
   }
+}
+
+/**
+ * Sirf haan/na chahiye to ye. Wajah chahiye to `adminCheck()`.
+ */
+export async function isAdmin(): Promise<boolean> {
+  return (await adminCheck()).ok;
 }
 
 /**

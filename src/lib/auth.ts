@@ -215,6 +215,17 @@ export async function requireSession(role?: Role): Promise<Session | null> {
  * ★ Ye sirf UI ke liye hai. Asli protection firestore.rules hai: non-admin ye
  *   pages khol bhi le to har read/write reject ho jayegi.
  */
+export interface AdminBlock {
+  reason: 'no-doc' | 'denied' | 'error';
+  uid: string;
+  detail: string;
+}
+
+let lastAdminBlock: AdminBlock | null = null;
+
+/** Admin gate kyun nahi khula — App.astro ye screen par dikhata hai. */
+export const adminBlock = (): AdminBlock | null => lastAdminBlock;
+
 export async function requireAdmin(): Promise<Session | null> {
   const user = await currentUser();
 
@@ -224,10 +235,21 @@ export async function requireAdmin(): Promise<Session | null> {
     return null;
   }
 
-  const { isAdmin } = await import('./firebase');
-  if (!(await isAdmin())) {
-    const profile = await getProfile(user.uid);
-    window.location.replace(url(homeFor(profile?.role)));
+  const { adminCheck } = await import('./firebase');
+  const check = await adminCheck();
+
+  if (!check.ok) {
+    // ★ Yahan pehle chupke se dashboard par bhej dete thay. Pehla admin
+    //   banate waqt wo sab se bura lamha tha: banda `admins` document bana
+    //   chuka hota tha, bounce phir bhi hota tha, aur koi wajah nahi milti
+    //   thi — na apna UID dikhta tha jo document ki ID hona chahiye.
+    //   Ab rukte hain aur saaf batate hain. Ismein koi raaz nahi khulta:
+    //   banda apna hi UID dekhta hai.
+    lastAdminBlock = {
+      reason: check.reason === 'signed-out' ? 'error' : check.reason,
+      uid: check.uid ?? user.uid,
+      detail: check.detail,
+    };
     return null;
   }
 

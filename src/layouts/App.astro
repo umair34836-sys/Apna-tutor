@@ -76,6 +76,28 @@ const current = path;
       <span class="sr-only">Load ho raha hai…</span>
     </div>
 
+    <!-- Admin gate na khule to — wajah, aur usay theek karne ka tareeqa -->
+    <div class="wrap gate-block" data-app-blocked hidden>
+      <div class="gate-card">
+        <Icon name="lock" />
+        <h1 data-gate-title>Ye page nahi khul saka</h1>
+        <p data-gate-detail></p>
+
+        <div class="gate-uid">
+          <span>Aapka UID</span>
+          <code data-gate-uid></code>
+          <button type="button" class="btn btn-outline btn-sm" data-gate-copy>Copy</button>
+        </div>
+
+        <div data-gate-fix></div>
+
+        <p class="gate-actions">
+          <a class="btn btn-primary btn-sm" href={url('/')}>Home</a>
+          <button type="button" class="btn btn-ghost btn-sm" data-signout>Logout</button>
+        </p>
+      </div>
+    </div>
+
     <!-- Content — gate pass hone par -->
     <div data-app-content hidden>
       <div class="wrap app-head">
@@ -129,11 +151,30 @@ const current = path;
       background:var(--primary-soft)}
 
     .app-body{margin-top:var(--space-4)}
+
+    /* Gate block — pehla admin banate waqt yahi screen raasta dikhati hai */
+    .gate-block{padding-block:var(--space-4)}
+    .gate-card{max-width:640px;margin:0 auto;background:var(--card);border:1px solid var(--border);
+      border-radius:var(--radius-lg);padding:var(--space-3)}
+    .gate-card :global(.icon){width:28px;height:28px;color:var(--icon-muted)}
+    .gate-card h1{font-size:clamp(21px,4vw,26px);margin-top:10px}
+    /* Detail line mein `admins/<uid>` jaisa lamba token hota hai — bina is ke
+       chhoti screen par poora page side mein khisak jata hai. */
+    .gate-card p{margin-top:10px;color:var(--muted-fg);overflow-wrap:anywhere}
+    .gate-uid{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:var(--space-2);
+      padding:12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius)}
+    .gate-uid span{font-size:13.5px;color:var(--muted-fg)}
+    .gate-uid code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;
+      word-break:break-all;flex:1;min-width:0}
+    .gate-card :global(ol){margin-top:var(--space-2);padding-left:20px;display:grid;gap:8px;color:var(--muted-fg)}
+    .gate-card :global(ol code){font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      background:var(--bg-alt);padding:1px 5px;border-radius:4px;word-break:break-all}
+    .gate-actions{display:flex;gap:var(--space-1);margin-top:var(--space-3)}
   </style>
 
   <script>
     import { url } from '../lib/site';
-    import { getAdminSession, getSession, signOut } from '../lib/auth';
+    import { adminBlock, getAdminSession, getSession, signOut } from '../lib/auth';
     import type { Role } from '../lib/auth';
 
     const root = document.querySelector<HTMLElement>('[data-app]');
@@ -148,9 +189,14 @@ const current = path;
       const gate = isAdminPage ? getAdminSession() : getSession(role);
 
       gate.then((session) => {
-        // null ka matlab: redirect ho chuka hai. Screen loading par hi rehne do,
-        // warna ek pal ke liye galat content flash karta hai.
-        if (!session) return;
+        if (!session) {
+          // Admin gate ruka ho to wajah dikhao. Baqi surton mein redirect ho
+          // chuka hai — screen loading par hi rehne do, warna ek pal ke liye
+          // ghalat content flash karta hai.
+          const block = isAdminPage ? adminBlock() : null;
+          if (block) showBlocked(block);
+          return;
+        }
 
         loading.hidden = true;
         content.hidden = false;
@@ -159,10 +205,62 @@ const current = path;
         // memoized hai, isliye na extra read hoti hai na event ki race.
       });
 
-      root.querySelector('[data-signout]')?.addEventListener('click', async () => {
-        await signOut();
-        window.location.href = url('/');
-      });
+      function showBlocked(block: { reason: string; uid: string; detail: string }) {
+        const panel = root!.querySelector<HTMLElement>('[data-app-blocked]')!;
+        const set = (sel: string, text: string) => {
+          panel.querySelector<HTMLElement>(sel)!.textContent = text;
+        };
+
+        set('[data-gate-title]', block.reason === 'no-doc' ? 'Aap abhi admin nahi hain' : 'Admin check nahi ho saka');
+        set('[data-gate-detail]', block.detail);
+        set('[data-gate-uid]', block.uid);
+
+        const fix = panel.querySelector<HTMLElement>('[data-gate-fix]')!;
+        fix.innerHTML =
+          block.reason === 'no-doc'
+            ? `<ol>
+                 <li>Firebase Console → Firestore Database kholein.</li>
+                 <li><code>admins</code> collection mein naya document banayein.</li>
+                 <li><strong>Document ID</strong> wahi UID ho jo upar likha hai —
+                     UID ko field mein daalne se kaam nahi chalta, ID hi dekhi jati hai.</li>
+                 <li>Fields khali chhor dein. Document ka mojood hona hi kaafi hai.</li>
+                 <li>Page refresh karein.</li>
+               </ol>`
+            : `<ol>
+                 <li>Firestore rules deploy karein:
+                     <code>firebase deploy --only firestore:rules</code></li>
+                 <li>Phir <code>admins</code> mein us UID ka document banayein
+                     (Document ID = UID).</li>
+                 <li>Page refresh karein.</li>
+               </ol>`;
+
+        panel.querySelector('[data-gate-copy]')?.addEventListener('click', async (e) => {
+          const btn = e.currentTarget as HTMLButtonElement;
+          try {
+            await navigator.clipboard.writeText(block.uid);
+            btn.textContent = 'Copy ho gaya';
+          } catch {
+            // Clipboard permission na ho to UID select kar dena hi kaafi hai.
+            const code = panel.querySelector('[data-gate-uid]')!;
+            const range = document.createRange();
+            range.selectNodeContents(code);
+            const sel = window.getSelection();
+            sel?.removeAllRanges();
+            sel?.addRange(range);
+            btn.textContent = 'Select ho gaya — copy karein';
+          }
+        });
+
+        loading.hidden = true;
+        panel.hidden = false;
+      }
+
+      root.querySelectorAll('[data-signout]').forEach((btn) =>
+        btn.addEventListener('click', async () => {
+          await signOut();
+          window.location.href = url('/');
+        })
+      );
     }
   </script>
 </Base>
