@@ -6,6 +6,14 @@
 @import './tokens.css';
 
 *,*::before,*::after{box-sizing:border-box}
+
+/* ★ `hidden` attribute har haal mein jeetna chahiye.
+   Browser ka default `[hidden]{display:none}` bohat kamzor hai — `.state`
+   jaisi koi bhi class jo `display` set karti hai, usay hara deti hai. Nateeja:
+   `<p class="state state-error" hidden>` chhupta hi nahi, aur kyunki uska text
+   JS bharta hai, page par ek khali laal box (sirf icon) nazar aata hai.
+   Ye har us page par hota tha jahan error ya success ka message hai. */
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 body{
   margin:0;background:var(--bg);color:var(--fg);
