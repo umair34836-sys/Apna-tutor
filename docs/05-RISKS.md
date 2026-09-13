@@ -169,7 +169,7 @@ Main lawyer nahi hoon, ye legal advice nahi hai. Lekin ye cheezein launch se
 pehle chahiye hongi:
 
 - **Privacy Policy** — kya data jama karte ho, kyun, kitni der rakhte ho, kis ke
-  saath share karte ho (Firebase/Google, Cloudinary, GA4, Meta). Ads platforms
+  saath share karte ho (Firebase/Google, GA4, Meta). Ads platforms
   iske bagair approve nahi karte
 - **Terms of Service** — saaf likho ke ApnaTutor ek introduction platform hai,
   tutors employees ya agents nahi hain, aur tuition ka arrangement parent aur

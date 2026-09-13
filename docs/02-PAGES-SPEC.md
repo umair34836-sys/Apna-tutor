@@ -158,7 +158,7 @@ Multi-step, ek waqt ek step:
 3. Experience — qualification, experience, bio
 4. Fee + availability
 5. Contact — phone (`tutors/{uid}/private/contact` mein jata hai)
-6. Photo — optional, Cloudinary upload → `private/photoSubmission`
+6. Photo — optional, browser mein simat kar base64 → `private/photoSubmission`
 7. Review & submit → `status: 'pending'`
 
 **Acceptance:**
