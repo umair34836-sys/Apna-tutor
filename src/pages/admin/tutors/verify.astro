@@ -1,0 +1,167 @@
+---
+// src/pages/admin/tutors/verify.astro
+//
+// Spec mein /admin/tutors/[id]/verify tha; site SSG hai aur build time par
+// tutor IDs (jo pending hain) maloom nahi hotin — isliye ?id= .
+//
+// ★ Is page par document upload ka koi feature NAHI hai aur na hona chahiye.
+//   Process: WhatsApp par document mangein → apni aankh se dekhein → yahan
+//   boolean set karein → WhatsApp se message delete kar dein.
+//   Jo data hum store nahi karte, wo leak nahi ho sakta (docs/05-RISKS.md §2).
+import App from '../../../layouts/App.astro';
+import Icon from '../../../components/Icon.astro';
+---
+<App
+  title="Admin — Verify Tutor | ApnaTutor"
+  heading="Verification"
+  sub="Har check alag hai. Jo verify nahi hua, us par badge nahi lagta."
+  admin
+  path="/admin/tutors/verify"
+>
+  <div id="verify-page">
+    <a class="back-link" href="/admin/tutors"><Icon name="chevron-left" size={16} />Tutors queue</a>
+
+    <div class="skeleton sk-box" data-loading></div>
+    <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+
+    <div data-content hidden>
+      <!-- Profile -->
+      <section class="card">
+        <div class="card-head">
+          <h2 data-t-name>—</h2>
+          <span class="req-status" data-t-status>—</span>
+        </div>
+        <dl class="facts" data-t-facts></dl>
+        <p class="admin-note" data-t-bio hidden></p>
+      </section>
+
+      <!-- Contact -->
+      <section class="card">
+        <h2>Rabta <span class="tag">Private</span></h2>
+        <p class="card-sub">Ye number kisi public page par nahi jata. Verification ke liye isi par rabta karein.</p>
+        <div class="contact-row" data-t-contact>—</div>
+      </section>
+
+      <!-- Photo -->
+      <section class="card" data-photo-card hidden>
+        <h2>Photo approve karein</h2>
+        <p class="card-sub">Chehra saaf nazar aana chahiye. Approve karne par ye profile par live ho jayegi.</p>
+        <div class="photo-review">
+          <img data-photo-img alt="Tutor ki submit ki hui photo" width="140" height="140" />
+          <div class="photo-btns">
+            <button type="button" class="btn btn-primary btn-sm" data-photo-approve><Icon name="check" />Approve</button>
+            <button type="button" class="btn btn-ghost btn-sm" data-photo-reject>Reject</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Badges -->
+      <section class="card">
+        <h2>Verification checks</h2>
+
+        <p class="state state-error">
+          <Icon name="alert-triangle" />
+          <span>
+            <strong>Document kahin save na karein.</strong> WhatsApp par dekhein, naam match karein,
+            phir message delete kar dein. Yahan sirf boolean, tareekh aur note jata hai.
+          </span>
+        </p>
+
+        <div class="checks-form">
+          <label class="check-row">
+            <input type="checkbox" data-badge="phoneChecked" />
+            <span>
+              <b>Phone verified</b>
+              <small>Aap ne number par rabta kiya aur tutor se baat hui</small>
+            </span>
+          </label>
+
+          <label class="check-row">
+            <input type="checkbox" data-badge="idChecked" />
+            <span>
+              <b>Identity checked</b>
+              <small>Shanakhti document dekha, naam profile se match kiya, message delete kar diya</small>
+            </span>
+          </label>
+
+          <label class="check-row">
+            <input type="checkbox" data-badge="qualChecked" />
+            <span>
+              <b>Qualification checked</b>
+              <small>Degree ya certificate dekha, jo profile par claim hai wahi</small>
+            </span>
+          </label>
+        </div>
+
+        <p class="derived" data-derived>—</p>
+
+        <div class="field">
+          <label for="verify-note">Verification note <span class="hint">(audit ke liye)</span></label>
+          <input type="text" id="verify-note" maxlength="200"
+            placeholder="Misal: CNIC dekha, naam match kiya — copy nahi rakhi" />
+        </div>
+
+        <div class="save-row">
+          <p class="state state-success" data-saved hidden><Icon name="check-circle" />Save ho gaya</p>
+          <p class="state state-error" data-save-error hidden><Icon name="alert-circle" /><span></span></p>
+          <button type="button" class="btn btn-primary" data-save-badges><Icon name="check" />Checks save karein</button>
+        </div>
+      </section>
+
+      <!-- Decision -->
+      <section class="card">
+        <h2>Faisla</h2>
+        <div class="decision-row" data-decision></div>
+        <p class="state state-error" data-decision-error hidden><Icon name="alert-circle" /><span></span></p>
+      </section>
+    </div>
+  </div>
+
+  <style>
+    #verify-page{display:flex;flex-direction:column;gap:var(--space-3)}
+    .sk-box{height:280px}
+    .back-link{display:inline-flex;align-items:center;gap:5px;font-size:14.5px;
+      color:var(--muted-fg);min-height:44px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+    .card h2{font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px}
+    .card-sub{color:var(--muted-fg);font-size:15px;max-width:66ch}
+    .card-head{display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+    .tag{font-family:var(--font-body);font-size:12px;font-weight:600;text-transform:uppercase;
+      letter-spacing:.05em;background:var(--b-id-bg);color:var(--b-id-fg);
+      border:1px solid var(--b-id-border);border-radius:var(--radius-pill);padding:3px 9px}
+    .facts{display:grid;grid-template-columns:1fr;gap:8px;margin:0}
+    @media(min-width:560px){.facts{grid-template-columns:1fr 1fr}}
+    .facts > div{padding:10px 12px;background:var(--bg-alt);border:1px solid var(--border);
+      border-radius:var(--radius)}
+    .facts dt{font-size:12px;color:var(--muted-fg);text-transform:uppercase;
+      letter-spacing:.04em;font-weight:600}
+    .facts dd{margin:2px 0 0;font-size:15px;color:var(--fg);font-weight:500}
+
+    .contact-row{display:flex;gap:var(--space-1);flex-wrap:wrap}
+    .photo-review{display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap}
+    .photo-review img{width:140px;height:140px;object-fit:cover;border-radius:var(--radius);
+      border:1px solid var(--border)}
+    .photo-btns{display:flex;flex-direction:column;gap:8px}
+
+    .checks-form{display:flex;flex-direction:column;gap:10px}
+    .check-row{display:flex;gap:12px;align-items:flex-start;padding:14px;cursor:pointer;
+      border:1px solid var(--border-strong);border-radius:var(--radius);background:#fff;
+      transition:border-color .2s var(--ease),background-color .2s var(--ease)}
+    .check-row:hover{border-color:var(--primary-border)}
+    .check-row:has(input:checked){border-color:var(--primary);background:var(--primary-soft)}
+    .check-row input{width:22px;height:22px;flex:0 0 auto;margin-top:2px;accent-color:var(--primary)}
+    .check-row b{display:block;font-family:var(--font-heading);font-size:15.5px}
+    .check-row small{display:block;color:var(--muted-fg);font-size:13.5px;margin-top:2px}
+
+    .derived{padding:12px 14px;border-radius:var(--radius);font-size:15px;font-weight:600;
+      background:var(--bg-alt);border:1px solid var(--border);color:var(--muted-fg)}
+    .derived[data-full="1"]{background:var(--accent-soft);border-color:var(--b-full-border);
+      color:var(--accent-text)}
+
+    .save-row,.decision-row{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
+    .save-row .btn{margin-left:auto}
+  </style>
+
+  <script src="../../../scripts/admin-verify.ts"></script>
+</App>

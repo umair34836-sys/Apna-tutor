@@ -1,13 +1,11 @@
 ---
 // src/components/Header.astro — index.html ka header, waisa ka waisa
 import Icon from './Icon.astro';
+import Logo from './Logo.astro';
 ---
 <header>
   <div class="wrap nav">
-    <a class="logo" href="/">
-      <span class="logo-mark" aria-hidden="true"><Icon name="graduation-cap" /></span>
-      ApnaTutor
-    </a>
+    <Logo href="/" size={38} />
 
     <nav class="nav-links" aria-label="Main">
       <a href="/find-tutor">Tutor dhoondein</a>
@@ -30,17 +28,13 @@ import Icon from './Icon.astro';
   header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);
     backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
   .nav{display:flex;align-items:center;justify-content:space-between;min-height:68px;gap:var(--space-2)}
-  .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-heading);
-    font-weight:700;font-size:21px;color:var(--primary-dark);letter-spacing:-.02em}
-  .logo:hover{text-decoration:none}
-  .logo-mark{width:36px;height:36px;border-radius:10px;background:var(--primary);
-    display:grid;place-items:center;color:#fff;flex:0 0 auto}
   .nav-links{display:none;gap:4px}
-  .nav-links a{padding:10px 14px;border-radius:var(--radius);color:var(--muted-fg);font-weight:500}
+  .nav-links a{padding:10px 12px;border-radius:var(--radius);color:var(--muted-fg);
+    font-weight:500;white-space:nowrap;font-size:15px}
   .nav-links a:hover{background:var(--bg-alt);color:var(--fg);text-decoration:none}
   .nav-cta{display:flex;gap:var(--space-1);align-items:center}
   .nav-cta :global(.btn-ghost){display:none}
-  @media(min-width:900px){
+  @media(min-width:1040px){
     .nav-links{display:flex}
     .nav-cta :global(.btn-ghost){display:inline-flex}
   }

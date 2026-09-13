@@ -1,0 +1,77 @@
+---
+// =============================================================================
+// src/components/Logo.astro — ApnaTutor ka logo
+//
+// Mark inline SVG hai (network request nahi, aur dono themes mein saaf), aur
+// wordmark asli text hai — image nahi. Isliye wo select ho sakta hai, screen
+// readers parh lete hain, aur har screen par crisp rehta hai.
+//
+// ★ Logo ke rang (navy/green/gold) site ke primary teal se alag hain. Ye jaan
+//   boojh kar hai — logo apna rang rakhta hai, UI apna. DESIGN-NOTES.md dekho.
+// =============================================================================
+
+export interface Props {
+  /** 'full' = mark + wordmark · 'mark' = sirf mark */
+  variant?: 'full' | 'mark';
+  /** Dark background (footer) par wordmark safed ho jata hai. */
+  dark?: boolean;
+  size?: number;
+  href?: string | null;
+  class?: string;
+}
+
+const { variant = 'full', dark = false, size = 36, href = '/', class: className = '' } = Astro.props;
+const Tag = href ? 'a' : 'span';
+---
+<Tag
+  class:list={['logo', className, { 'logo-dark': dark }]}
+  {...href ? { href } : {}}
+  aria-label={variant === 'mark' ? 'ApnaTutor' : undefined}
+>
+  <svg class="logo-mark" viewBox="0 0 64 64" width={size} height={size} aria-hidden="true">
+    <path d="M49.4 11.3A27 27 0 1 0 49.4 52.7" fill="none" stroke="var(--brand-navy)" stroke-width="5.5" stroke-linecap="round"/>
+    <path d="M44.3 14.8A21.5 21.5 0 1 0 44.3 49.2" fill="none" stroke="var(--brand-green)" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M32 47c-4.5-3.6-10-4.6-15.5-3.2v-6.4C22 36 27.5 37 32 40.6z" fill="var(--brand-navy)"/>
+    <path d="M32 47c4.5-3.6 10-4.6 15.5-3.2v-6.4C42 36 36.5 37 32 40.6z" fill="var(--brand-green)"/>
+    <path d="M32 38s-8.5-8.5-8.5-13.5a8.5 8.5 0 0 1 17 0C40.5 29.5 32 38 32 38z" fill="var(--brand-green)"/>
+    <circle cx="32" cy="24.5" r="3.6" fill="#FFFFFF"/>
+    <path d="M32 5.5l13.5 5.2-13.5 5.2-13.5-5.2z" fill="var(--brand-gold)"/>
+    <path d="M45 11.2v5.4" stroke="var(--brand-gold)" stroke-width="1.7" stroke-linecap="round"/>
+    <circle cx="45" cy="17.4" r="1.6" fill="var(--brand-gold)"/>
+  </svg>
+
+  {variant === 'full' && (
+    <span class="logo-text">
+      <span class="logo-name">ApnaTutor<span class="logo-tld">.com</span></span>
+    </span>
+  )}
+</Tag>
+
+<style>
+  .logo{display:inline-flex;align-items:center;gap:9px;text-decoration:none}
+  .logo:hover{text-decoration:none}
+  .logo-mark{flex:0 0 auto}
+  /* Dark ground par navy stroke gayab ho jata hai — safed kar dete hain */
+  .logo-dark .logo-mark path[stroke="var(--brand-navy)"]{stroke:#FFFFFF}
+  .logo-dark .logo-mark path[fill="var(--brand-navy)"]{fill:#FFFFFF}
+
+  .logo-name{font-family:var(--font-heading);font-weight:700;font-size:21px;
+    letter-spacing:-.02em;color:var(--brand-navy);line-height:1.1;white-space:nowrap}
+  .logo-tld{color:var(--brand-green)}
+  .logo-dark .logo-name{color:#FFFFFF}
+  .logo-dark .logo-tld{color:var(--brand-green)}
+
+  /* Chhoti screens par pehle ".com" jata hai, phir poora wordmark — mark
+     akela bhi brand pehchanwa deta hai, aur header ko overflow nahi karne
+     dete. Footer (dark) par jagah hoti hai, isliye wahan poora rehta hai. */
+  @media(max-width:560px){
+    .logo:not(.logo-dark) .logo-name{font-size:18px}
+    .logo:not(.logo-dark) .logo-tld{display:none}
+  }
+  @media(max-width:400px){
+    .logo:not(.logo-dark) .logo-text{
+      position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+      clip:rect(0,0,0,0);white-space:nowrap;border:0;
+    }
+  }
+</style>

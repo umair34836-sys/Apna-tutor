@@ -1,0 +1,153 @@
+---
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+---
+<App
+  title="Admin — Reports | ApnaTutor"
+  heading="Reports"
+  sub="Users ki bheji hui shikayaat."
+  admin
+  path="/admin/reports"
+>
+  <div id="admin-reports">
+    <div class="tabs-row" role="tablist" aria-label="Report status">
+      <button type="button" role="tab" class="filter" data-status="open" aria-selected="true">Open</button>
+      <button type="button" role="tab" class="filter" data-status="actioned" aria-selected="false" tabindex="-1">Actioned</button>
+      <button type="button" role="tab" class="filter" data-status="dismissed" aria-selected="false" tabindex="-1">Dismissed</button>
+    </div>
+
+    <p class="state state-error">
+      <Icon name="alert-triangle" />
+      <span>
+        <strong>Safety ka masla sabse pehle.</strong> Shak bhi ho to pehle account suspend karein,
+        tehqeeq baad mein. Ek bhi safety incident chhote market mein brand khatam kar deta hai.
+      </span>
+    </p>
+
+    <div class="skeleton sk-box" data-loading></div>
+    <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+    <div data-list hidden></div>
+  </div>
+
+  <style>
+    #admin-reports{display:flex;flex-direction:column;gap:var(--space-3)}
+    .sk-box{height:200px}
+    .tabs-row{display:flex;gap:6px;flex-wrap:wrap}
+    .filter{min-height:44px;padding:10px 18px;border-radius:var(--radius-pill);
+      border:1px solid var(--border-strong);background:#fff;cursor:pointer;
+      font-family:var(--font-heading);font-size:14.5px;font-weight:600;color:var(--muted-fg)}
+    .filter:hover{border-color:var(--primary-border)}
+    .filter[aria-selected="true"]{background:var(--primary);border-color:var(--primary);color:#fff}
+  </style>
+
+  <script>
+    import { getAdminSession } from '../../lib/auth';
+    import { firestoreError } from '../../lib/firebase';
+    import { listReports, setReportStatus, type Report } from '../../lib/admin';
+    import { svg } from '../../lib/icons';
+
+    const root = document.getElementById('admin-reports')!;
+    const q = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+    const esc = (s: unknown) =>
+      String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+
+    let adminUid = '';
+    let active: Report['status'] = 'open';
+
+    const REASONS: Record<string, string> = {
+      'fake-profile': 'Profile jhooti lagti hai',
+      'wrong-info': 'Maloomat ghalat hain',
+      unprofessional: 'Ghair-munasib rawaiya',
+      'not-reachable': 'Number par rabta nahi hota',
+      safety: 'SAFETY ka masla',
+      other: 'Koi aur wajah',
+    };
+
+    function card(r: Report): string {
+      const target =
+        r.targetType === 'tutor'
+          ? `<a class="btn btn-outline btn-sm" href="/admin/tutors/verify?id=${encodeURIComponent(r.targetId)}">Tutor dekhein</a>`
+          : `<span class="hint">${esc(r.targetType)}: ${esc(r.targetId)}</span>`;
+
+      const actions = active === 'open'
+        ? `<button type="button" class="btn btn-primary btn-sm" data-act="actioned" data-id="${esc(r.id)}">Action le liya</button>
+           <button type="button" class="btn btn-ghost btn-sm" data-act="dismissed" data-id="${esc(r.id)}">Dismiss</button>`
+        : `<button type="button" class="btn btn-ghost btn-sm" data-act="open" data-id="${esc(r.id)}">Wapas open karein</button>`;
+
+      const safety = r.reason === 'safety';
+
+      return `
+        <article class="admin-row${safety ? ' safety' : ''}" data-row="${esc(r.id)}">
+          <div class="admin-row-main">
+            <div>
+              <b>${esc(REASONS[r.reason] ?? r.reason)}</b>
+              <span>${esc(r.targetType)} · ${esc(r.createdAt ? r.createdAt.toDate().toLocaleDateString('en-PK') : '')}</span>
+            </div>
+            ${target}
+          </div>
+          ${r.detail ? `<p class="admin-note">${esc(r.detail)}</p>` : ''}
+          <div class="admin-row-actions">${actions}</div>
+          <p class="state state-error row-error" hidden><span></span></p>
+        </article>`;
+    }
+
+    async function render() {
+      q('[data-loading]').hidden = false;
+      q('[data-list]').hidden = true;
+
+      try {
+        const reports = await listReports(active);
+        q('[data-list]').innerHTML = reports.length
+          ? `<div class="admin-list">${reports.map(card).join('')}</div>`
+          : `<div class="empty">${svg('check-circle')}<h3>Koi report nahi</h3><p>Is status mein kuch nahi hai.</p></div>`;
+        q('[data-loading]').hidden = true;
+        q('[data-list]').hidden = false;
+      } catch (err) {
+        q('[data-loading]').hidden = true;
+        q('[data-error]').querySelector('span')!.textContent = firestoreError(err);
+        q('[data-error]').hidden = false;
+      }
+    }
+
+    q('[data-list]').addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-act]');
+      if (!btn) return;
+
+      const id = btn.dataset.id!;
+      const article = root.querySelector<HTMLElement>(`[data-row="${id}"]`)!;
+      const errEl = article.querySelector<HTMLElement>('.row-error')!;
+      errEl.hidden = true;
+      article.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+
+      try {
+        await setReportStatus(id, btn.dataset.act as Report['status'], adminUid);
+        await render();
+      } catch (err) {
+        errEl.querySelector('span')!.textContent = firestoreError(err);
+        errEl.hidden = false;
+        article.querySelectorAll('button').forEach((b) => { b.disabled = false; });
+      }
+    });
+
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('.filter'));
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((t) => { t.setAttribute('aria-selected', String(t === tab)); t.tabIndex = t === tab ? 0 : -1; });
+        active = tab.dataset.status as Report['status'];
+        render();
+      });
+      tab.addEventListener('keydown', (e) => {
+        let next: HTMLButtonElement | undefined;
+        if (e.key === 'ArrowRight') next = tabs[(i + 1) % tabs.length];
+        else if (e.key === 'ArrowLeft') next = tabs[(i - 1 + tabs.length) % tabs.length];
+        if (next) { e.preventDefault(); next.click(); next.focus(); }
+      });
+    });
+
+    getAdminSession().then((session) => {
+      if (!session) return;
+      adminUid = session.user.uid;
+      render();
+    });
+  </script>
+</App>

@@ -26,6 +26,8 @@ export interface Props {
   sub?: string;
   /** Dashboard nav dikhana hai? Login/signup jaisi pages par nahi. */
   nav?: boolean;
+  /** Admin pages — role ke bajaye `admins/{uid}` doc se gate hoti hain. */
+  admin?: boolean;
 }
 
 const {
@@ -36,6 +38,7 @@ const {
   heading,
   sub,
   nav = true,
+  admin = false,
 } = Astro.props;
 
 const tutorNav = [
@@ -48,11 +51,21 @@ const parentNav = [
   { href: '/parent/requests', label: 'Meri requests', icon: 'file-text' },
   { href: '/parent/saved-tutors', label: 'Saved tutors', icon: 'bookmark' },
 ];
-const links = role === 'tutor' ? tutorNav : role === 'parent' ? parentNav : [];
+const adminNav = [
+  { href: '/admin', label: 'Overview', icon: 'trending-up' },
+  { href: '/admin/tutors', label: 'Tutors', icon: 'users' },
+  { href: '/admin/reviews', label: 'Reviews', icon: 'star-outline' },
+  { href: '/admin/reports', label: 'Reports', icon: 'flag' },
+  { href: '/admin/featured', label: 'Featured', icon: 'award' },
+  { href: '/admin/content', label: 'Content', icon: 'file-text' },
+  { href: '/admin/rebuild', label: 'Rebuild', icon: 'refresh' },
+];
+
+const links = admin ? adminNav : role === 'tutor' ? tutorNav : role === 'parent' ? parentNav : [];
 const current = path;
 ---
 <Base title={title} description={description} path={path} noindex>
-  <div class="app" data-app data-role={role ?? ''}>
+  <div class="app" data-app data-role={role ?? ''} data-admin={admin ? '1' : ''}>
     <!-- Loading — auth state restore hone tak -->
     <div class="wrap app-loading" data-app-loading>
       <div class="skeleton sk-title"></div>
@@ -77,7 +90,10 @@ const current = path;
         <div class="wrap">
           <nav class="app-nav" aria-label="Account">
             {links.map((l) => (
-              <a href={l.href} aria-current={current.startsWith(l.href) ? 'page' : undefined}>
+              <a
+                href={l.href}
+                aria-current={(l.href === '/admin' ? current === '/admin' : current.startsWith(l.href)) ? 'page' : undefined}
+              >
                 <Icon name={l.icon} size={17} />{l.label}
               </a>
             ))}
@@ -114,7 +130,7 @@ const current = path;
   </style>
 
   <script>
-    import { getSession, signOut } from '../lib/auth';
+    import { getAdminSession, getSession, signOut } from '../lib/auth';
     import type { Role } from '../lib/auth';
 
     const root = document.querySelector<HTMLElement>('[data-app]');
@@ -123,8 +139,12 @@ const current = path;
       const loading = root.querySelector<HTMLElement>('[data-app-loading]')!;
       const content = root.querySelector<HTMLElement>('[data-app-content]')!;
       const role = (root.dataset.role || undefined) as Role | undefined;
+      const isAdminPage = root.dataset.admin === '1';
 
-      getSession(role).then((session) => {
+      // Admin pages `admins/{uid}` doc se gate hoti hain, role se nahi.
+      const gate = isAdminPage ? getAdminSession() : getSession(role);
+
+      gate.then((session) => {
         // null ka matlab: redirect ho chuka hai. Screen loading par hi rehne do,
         // warna ek pal ke liye galat content flash karta hai.
         if (!session) return;

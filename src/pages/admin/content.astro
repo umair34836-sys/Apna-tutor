@@ -1,0 +1,51 @@
+---
+// src/pages/admin/content.astro — SEO pages ka intro text
+//
+// ★ Ye page seedha SEO gate se juda hua hai. Har intro 120+ words ka hona
+//   chahiye, aur har page ka apna alag hona chahiye — warna wo page banta hi
+//   nahi (doorway page penalty se bachne ke liye). Word counter yahan isliye
+//   hai ke likhte waqt hi pata chal jaye.
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+---
+<App
+  title="Admin — Content | ApnaTutor"
+  heading="SEO content"
+  sub="Cities aur subjects ka intro text. Yahi text pages ko banne deta hai."
+  admin
+  path="/admin/content"
+>
+  <div id="admin-content">
+    <p class="state state-info">
+      <Icon name="info" />
+      <span>
+        Har intro <strong>120 se zyada words</strong> ka hona chahiye aur <strong>har page ka apna</strong> —
+        ek hi paragraph do pages par lagane se wo Google ki nazar mein doorway pages ban jate hain,
+        aur us penalty se poori site girti hai. Jo intro chhota ya duplicate ho, us page ki build
+        hi nahi hoti.
+      </span>
+    </p>
+
+    <div class="tabs-row" role="tablist" aria-label="Content type">
+      <button type="button" role="tab" class="filter" data-kind="cities" aria-selected="true">Cities</button>
+      <button type="button" role="tab" class="filter" data-kind="subjects" aria-selected="false" tabindex="-1">Subjects</button>
+    </div>
+
+    <div class="skeleton sk-box" data-loading></div>
+    <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+    <div data-list hidden></div>
+  </div>
+
+  <style>
+    #admin-content{display:flex;flex-direction:column;gap:var(--space-3)}
+    .sk-box{height:280px}
+    .tabs-row{display:flex;gap:6px;flex-wrap:wrap}
+    .filter{min-height:44px;padding:10px 18px;border-radius:var(--radius-pill);
+      border:1px solid var(--border-strong);background:#fff;cursor:pointer;
+      font-family:var(--font-heading);font-size:14.5px;font-weight:600;color:var(--muted-fg)}
+    .filter:hover{border-color:var(--primary-border)}
+    .filter[aria-selected="true"]{background:var(--primary);border-color:var(--primary);color:#fff}
+  </style>
+
+  <script src="../../scripts/admin-content.ts"></script>
+</App>

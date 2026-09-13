@@ -190,6 +190,40 @@ export async function requireSession(role?: Role): Promise<Session | null> {
   return { user, profile };
 }
 
+/**
+ * Admin gate. Admin hona `admins/{uid}` document ke mojood hone se tay hota
+ * hai — custom claims ke liye Admin SDK chahiye hota, jo Spark par nahi.
+ *
+ * ★ Ye sirf UI ke liye hai. Asli protection firestore.rules hai: non-admin ye
+ *   pages khol bhi le to har read/write reject ho jayegi.
+ */
+export async function requireAdmin(): Promise<Session | null> {
+  const user = await currentUser();
+
+  if (!user) {
+    const next = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.replace(`/login?next=${next}`);
+    return null;
+  }
+
+  const { isAdmin } = await import('./firebase');
+  if (!(await isAdmin())) {
+    const profile = await getProfile(user.uid);
+    window.location.replace(homeFor(profile?.role));
+    return null;
+  }
+
+  return { user, profile: await getProfile(user.uid) };
+}
+
+let adminOnce: Promise<Session | null> | null = null;
+
+/** requireAdmin, magar ek page load par sirf ek baar. */
+export function getAdminSession(): Promise<Session | null> {
+  adminOnce ??= requireAdmin();
+  return adminOnce;
+}
+
 let sessionOnce: Promise<Session | null> | null = null;
 
 /**

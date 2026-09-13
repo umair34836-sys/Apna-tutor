@@ -63,7 +63,7 @@ const baseJsonLd: Record<string, unknown>[] = [
     '@type': 'Organization',
     name: SITE.name,
     url: SITE.url,
-    logo: absoluteUrl('/favicon.svg'),
+    logo: absoluteUrl('/logo-mark.svg'),
     areaServed: 'Pakistan',
     ...(SITE.sameAs.length ? { sameAs: SITE.sameAs } : {}),
   },
@@ -130,7 +130,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="twitter:image" content={ogImage} />
 
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <meta name="theme-color" content="#0F766E" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+  <meta name="theme-color" content="#1F3A63" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

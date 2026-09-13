@@ -1,0 +1,117 @@
+---
+// src/pages/admin/featured.astro
+//
+// Featured placement manual payment ke baad set hoti hai — payment gateway
+// Phase 3 ki baat hai (docs/01-ARCHITECTURE.md §1).
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+---
+<App
+  title="Admin — Featured | ApnaTutor"
+  heading="Featured placement"
+  sub="Paid placement manually set hoti hai. Profile par saaf 'Featured' likha hota hai."
+  admin
+  path="/admin/featured"
+>
+  <div id="admin-featured">
+    <p class="state state-info">
+      <Icon name="info" />
+      <span>
+        Featured tutors apne city + subject ke results mein upar aate hain aur homepage par
+        dikhte hain. Har featured card par "Featured" ka label lagta hai — chhupaya nahi jata.
+      </span>
+    </p>
+
+    <div class="skeleton sk-box" data-loading></div>
+    <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+    <div data-list hidden></div>
+  </div>
+
+  <style>
+    #admin-featured{display:flex;flex-direction:column;gap:var(--space-3)}
+    .sk-box{height:240px}
+  </style>
+
+  <script>
+    import { getAdminSession } from '../../lib/auth';
+    import { firestoreError } from '../../lib/firebase';
+    import { listTutorsByStatus, setFeaturedUntil } from '../../lib/admin';
+    import { isFeatured, type Tutor } from '../../lib/types';
+    import { svg } from '../../lib/icons';
+
+    const root = document.getElementById('admin-featured')!;
+    const q = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+    const esc = (s: unknown) =>
+      String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+
+    function row(t: Tutor): string {
+      const on = isFeatured(t);
+      const until = t.featuredUntil ? new Date(t.featuredUntil).toLocaleDateString('en-PK') : null;
+
+      return `
+        <article class="admin-row" data-row="${esc(t.id)}">
+          <div class="admin-row-main">
+            <div>
+              <b>${esc(t.name)}</b>
+              <span>${esc(t.city)} · ${esc((t.subjects ?? []).join(', '))}</span>
+              <span>${on ? `Featured — ${esc(until)} tak` : until ? `Khatam ho chuki (${esc(until)})` : 'Featured nahi'}</span>
+            </div>
+          </div>
+          <div class="admin-row-actions">
+            <button type="button" class="btn btn-outline btn-sm" data-days="30" data-id="${esc(t.id)}">+30 din</button>
+            <button type="button" class="btn btn-outline btn-sm" data-days="90" data-id="${esc(t.id)}">+90 din</button>
+            ${on ? `<button type="button" class="btn btn-ghost btn-sm" data-days="0" data-id="${esc(t.id)}">Band karein</button>` : ''}
+          </div>
+          <p class="state state-error row-error" hidden><span></span></p>
+        </article>`;
+    }
+
+    async function render() {
+      q('[data-loading]').hidden = false;
+      q('[data-list]').hidden = true;
+
+      try {
+        const tutors = await listTutorsByStatus('approved');
+        // Featured pehle — inhi ko dekhna sabse zyada hota hai.
+        tutors.sort((a, b) => Number(isFeatured(b)) - Number(isFeatured(a)));
+
+        q('[data-list]').innerHTML = tutors.length
+          ? `<div class="admin-list">${tutors.map(row).join('')}</div>`
+          : `<div class="empty">${svg('users')}<h3>Koi approved tutor nahi</h3>
+               <p>Featured sirf approved profiles par lag sakti hai.</p></div>`;
+
+        q('[data-loading]').hidden = true;
+        q('[data-list]').hidden = false;
+      } catch (err) {
+        q('[data-loading]').hidden = true;
+        q('[data-error]').querySelector('span')!.textContent = firestoreError(err);
+        q('[data-error]').hidden = false;
+      }
+    }
+
+    q('[data-list]').addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-days]');
+      if (!btn) return;
+
+      const id = btn.dataset.id!;
+      const days = Number(btn.dataset.days);
+      const article = root.querySelector<HTMLElement>(`[data-row="${id}"]`)!;
+      const errEl = article.querySelector<HTMLElement>('.row-error')!;
+
+      errEl.hidden = true;
+      article.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+
+      try {
+        const until = days > 0 ? new Date(Date.now() + days * 864e5) : null;
+        await setFeaturedUntil(id, until);
+        await render();
+      } catch (err) {
+        errEl.querySelector('span')!.textContent = firestoreError(err);
+        errEl.hidden = false;
+        article.querySelectorAll('button').forEach((b) => { b.disabled = false; });
+      }
+    });
+
+    getAdminSession().then((session) => { if (session) render(); });
+  </script>
+</App>

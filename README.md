@@ -57,6 +57,22 @@ dhyan se parho.
 | 3 | Public pages (SSG) + SEO combo pages | ✅ |
 | 4 | Auth + tutor flows | ✅ |
 | 5 | Parent flows + search + contact unlock | ✅ |
-| 6 | Admin panel | ⬜ |
+| 6 | Admin panel | ✅ |
 
-Launch gate [`docs/README.md`](docs/README.md) mein hai — us ke bagair live na karo.
+Saare 6 phases mukammal. Launch gate [`docs/README.md`](docs/README.md) mein hai —
+us ke bagair live na karo.
+
+## Launch se pehle jo abhi baqi hai
+
+Ye code ka kaam nahi — setup aur content ka hai:
+
+1. Firebase project banayein (`docs/04-DEPLOY.md` §1), rules aur indexes deploy karein
+2. Admin doc Firebase Console se haath se banayein — client se ban hi nahi sakta
+3. `.env` ki saari values bharein, aur wahi GitHub secrets mein daalein
+4. Cities aur subjects Firestore mein daalein, phir `/admin/content` se intro text likhein
+   (har intro 120+ words aur har page ka apna — warna wo page banta hi nahi)
+5. Apna asli tutor profile khud banayein aur khud approve karein — end-to-end test
+6. GTM + GA4 + Meta Pixel lagayein, Preview mode mein events verify karein
+7. Custom domain + HTTPS, phir Search Console aur Bing par sitemap submit
+8. App Check 7 din Monitor mode mein, phir Enforce
+9. Kam az kam **10 asli approved tutors** — phir launch

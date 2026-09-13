@@ -24,6 +24,10 @@ export const env = {
   contactEmail: import.meta.env.PUBLIC_CONTACT_EMAIL ?? '',
   /** ApnaTutor ka apna number. SEO gate ke phone-leak check se mustasna hai. */
   officialWhatsapp: import.meta.env.PUBLIC_OFFICIAL_WHATSAPP ?? '',
+  /** "owner/repo" — /admin/rebuild isay GitHub Actions trigger karne ke liye padhta hai. */
+  githubRepo: import.meta.env.PUBLIC_GITHUB_REPO ?? '',
+  /** Workflow ka file name. */
+  githubWorkflow: import.meta.env.PUBLIC_GITHUB_WORKFLOW ?? 'deploy.yml',
 } as const;
 
 /**

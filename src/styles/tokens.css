@@ -49,6 +49,13 @@
   --b-qual-bg:#F5F3FF;   --b-qual-border:#DDD6FE;   --b-qual-fg:#6D28D9;
   --b-full-border:#FCD34D;
 
+  /* ---- Brand (logo) ----
+     Logo ke apne rang. Site ka primary teal hai (upar) — ye navy/green/gold
+     sirf logo aur brand ke moqe par. DESIGN-NOTES.md mein wajah likhi hai. */
+  --brand-navy:#1F3A63;
+  --brand-green:#2E9E5B;
+  --brand-gold:#C9A961;
+
   --icon-muted:#94A3B8;
   --footer-bg:#0B1220;
   --footer-fg:#94A3B8;

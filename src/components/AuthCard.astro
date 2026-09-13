@@ -1,16 +1,13 @@
 ---
 // src/components/AuthCard.astro — login/signup/reset ka centered card
-import Icon from './Icon.astro';
+import Logo from './Logo.astro';
 
 export interface Props { heading: string; sub?: string; }
 const { heading, sub } = Astro.props;
 ---
 <div class="auth">
   <div class="auth-card">
-    <a class="auth-logo" href="/">
-      <span class="logo-mark" aria-hidden="true"><Icon name="graduation-cap" /></span>
-      ApnaTutor
-    </a>
+    <Logo href="/" size={34} class="auth-logo" />
     <h1>{heading}</h1>
     {sub && <p class="auth-sub">{sub}</p>}
     <slot />
@@ -25,11 +22,7 @@ const { heading, sub } = Astro.props;
   .auth-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
     padding:var(--space-4) var(--space-3);box-shadow:var(--shadow-md);
     display:flex;flex-direction:column;gap:var(--space-2)}
-  .auth-logo{display:flex;align-items:center;gap:10px;font-family:var(--font-heading);
-    font-weight:700;font-size:19px;color:var(--primary-dark);margin-bottom:var(--space-1)}
-  .auth-logo:hover{text-decoration:none}
-  .logo-mark{width:32px;height:32px;border-radius:9px;background:var(--primary);
-    display:grid;place-items:center;color:#fff;flex:0 0 auto}
+  .auth-logo{margin-bottom:var(--space-1)}
   .auth-card h1{font-size:24px;font-weight:700}
   .auth-sub{color:var(--muted-fg);font-size:15.5px}
   .auth-foot{text-align:center;margin-top:var(--space-3);font-size:14px;color:var(--muted-fg)}

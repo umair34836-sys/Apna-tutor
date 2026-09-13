@@ -25,6 +25,35 @@ education product ke liye sahi choice.
 Raw skill output (purple version) `design-system/apnatutor/MASTER.md` mein padi hai agar
 compare karna ho.
 
+## Logo aur brand colors
+
+Logo (`public/logo-mark.svg`, `src/components/Logo.astro`) ke apne teen rang hain:
+
+| Cheez | Hex | Token |
+|---|---|---|
+| Navy | `#1F3A63` | `--brand-navy` |
+| Green | `#2E9E5B` | `--brand-green` |
+| Gold | `#C9A961` | `--brand-gold` |
+
+**Ye UI ke rang nahi hain.** UI ka primary abhi bhi teal `#0F766E` hai. Wajah: teal
+ke saare text/background pairs contrast-tested hain, aur brand ke teen rang laga kar
+poora palette badalna matlab har pair dobara check karna. Logo apna rang rakhta hai,
+UI apna — ye aam practice hai aur dono saath achay lagte hain (navy + teal ek hi
+family ke hain, gold + amber bhi).
+
+Agar kabhi poora palette brand ke mutabiq karna ho to `--primary` ko navy par shift
+karna parega aur har pair ka contrast dobara calculate karna hoga (buttons, badges,
+links, footer) — wo ek alag kaam hai, chalte chalte nahi hota.
+
+**Do assets hain, jaan boojh kar:**
+- `favicon.svg` — navy ground par bold mark. Chhoti size (16–32px) par patli detail
+  gayab ho jati hai, isliye ye simplified hai aur solid background par hai.
+- `logo-mark.svg` / `Logo.astro` — poora detailed mark (swoosh, kitab, pin, cap),
+  header/footer ke liye jahan jagah hai.
+
+Wordmark asli **text** hai, image nahi — select ho sakta hai, screen readers parh lete
+hain, aur har screen par crisp rehta hai.
+
 ## Accessibility — jo verify ho chuka hai
 
 - Saare text/background pairs **4.5:1 ya zyada** (computationally check kiye gaye)

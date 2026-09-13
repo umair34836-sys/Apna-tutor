@@ -1,0 +1,140 @@
+---
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+---
+<App
+  title="Admin | ApnaTutor"
+  heading="Admin"
+  sub="Queue counts aur roz ke kaam."
+  admin
+  path="/admin"
+>
+  <div id="admin-home">
+    <div class="skeleton sk-box" data-loading></div>
+    <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+
+    <div data-content hidden>
+      <div class="queue-row">
+        <a class="queue-card" href="/admin/tutors">
+          <Icon name="users" />
+          <strong data-q-tutors>0</strong>
+          <span>Pending tutors</span>
+        </a>
+        <a class="queue-card" href="/admin/reviews">
+          <Icon name="star-outline" />
+          <strong data-q-reviews>0</strong>
+          <span>Pending reviews</span>
+        </a>
+        <a class="queue-card" href="/admin/reports">
+          <Icon name="flag" />
+          <strong data-q-reports>0</strong>
+          <span>Open reports</span>
+        </a>
+        <a class="queue-card" href="/admin/tutors?status=approved">
+          <Icon name="check-circle" />
+          <strong data-q-approved>0</strong>
+          <span>Live tutors</span>
+        </a>
+      </div>
+
+      <section class="card">
+        <h2>Verification ka tareeqa</h2>
+        <ol class="flow">
+          <li>Tutor profile submit karta hai → <b>pending</b></li>
+          <li>Aap uske number par WhatsApp/call karte hain → number chala? → <b>Phone verified</b></li>
+          <li>WhatsApp par shanakhti document mangte hain, <b>dekh kar delete kar dete hain</b> → <b>Identity checked</b></li>
+          <li>Degree ya certificate isi tarah → <b>Qualification checked</b></li>
+          <li>Teeno true → UI khud "ApnaTutor Verified" derive kar leta hai</li>
+          <li>Approve → agli build (ya manual rebuild) par live</li>
+        </ol>
+        <p class="state state-error">
+          <Icon name="alert-triangle" />
+          <span>
+            <strong>Document kabhi save na karein</strong> — na Firestore mein, na Cloudinary par, na
+            apne phone mein. Dekhein, naam match karein, WhatsApp se message delete kar dein.
+            Jo data hum store nahi karte, wo leak nahi ho sakta.
+          </span>
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>Hafta-waar kaam</h2>
+        <ul class="weekly">
+          <li><Icon name="eye" size={18} /><span><b>connections</b> dekhein — ek uid ke 50+ connections aur koi request nahi? Wo scraper hai, account suspend karein.</span></li>
+          <li><Icon name="image" size={18} /><span><b>Cloudinary usage</b> dekhein — 25 monthly credits hain. 20 se upar jayein to transformation w_400 kar dein.</span></li>
+          <li><Icon name="trending-up" size={18} /><span><b>GA4 mein zero_results</b> report dekhein — yahi aap ki tutor recruitment ki priority list hai.</span></li>
+          <li><Icon name="settings" size={18} /><span><b>Firestore usage</b> dekhein — reads 35k/day se upar jayein to Blaze ka soch lein (free quota wahan bhi shamil hai).</span></li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Mahine mein ek baar</h2>
+        <p class="card-sub">
+          Ratings ka average admin panel calculate karta hai (Cloud Functions Spark par nahi hain).
+          Agar kabhi koi bug raha ho to scratch se dobara calculate karna sab theek kar deta hai.
+        </p>
+        <a class="btn btn-outline" href="/admin/recompute-ratings">
+          <Icon name="refresh" />Saari ratings dobara calculate karein
+        </a>
+      </section>
+    </div>
+  </div>
+
+  <style>
+    #admin-home{display:flex;flex-direction:column;gap:var(--space-3)}
+    .sk-box{height:200px}
+    .queue-row{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-2)}
+    @media(min-width:760px){.queue-row{grid-template-columns:repeat(4,1fr)}}
+    .queue-card{display:flex;flex-direction:column;gap:4px;padding:var(--space-3);background:#fff;
+      border:1px solid var(--border);border-radius:var(--radius-lg);color:var(--fg)}
+    .queue-card:hover{border-color:var(--primary-border);background:var(--primary-soft);text-decoration:none}
+    .queue-card :global(.icon){width:22px;height:22px;color:var(--primary-bright)}
+    .queue-card strong{font-family:var(--font-heading);font-size:28px;font-weight:700;margin-top:6px}
+    .queue-card span{font-size:14px;color:var(--muted-fg)}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+    .card h2{font-size:18px;font-weight:600}
+    .card-sub{color:var(--muted-fg);font-size:15px;max-width:66ch}
+    .flow{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:8px;
+      color:var(--muted-fg);font-size:15.5px}
+    .flow b{color:var(--fg)}
+    .weekly{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+    .weekly li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;color:var(--muted-fg)}
+    .weekly :global(.icon){color:var(--icon-muted);flex:0 0 auto;margin-top:3px}
+    .weekly b{color:var(--fg)}
+  </style>
+
+  <script>
+    import { getAdminSession } from '../../lib/auth';
+    import { firestoreError } from '../../lib/firebase';
+    import { listReports, listReviewsByStatus, listTutorsByStatus } from '../../lib/admin';
+
+    const root = document.getElementById('admin-home')!;
+    const q = (sel: string) => root.querySelector<HTMLElement>(sel)!;
+
+    getAdminSession().then(async (session) => {
+      if (!session) return;
+
+      try {
+        const [pendingTutors, approvedTutors, reviews, reports] = await Promise.all([
+          listTutorsByStatus('pending'),
+          listTutorsByStatus('approved'),
+          listReviewsByStatus('pending'),
+          listReports('open'),
+        ]);
+
+        q('[data-q-tutors]').textContent = String(pendingTutors.length);
+        q('[data-q-approved]').textContent = String(approvedTutors.length);
+        q('[data-q-reviews]').textContent = String(reviews.length);
+        q('[data-q-reports]').textContent = String(reports.length);
+
+        q('[data-loading]').hidden = true;
+        q('[data-content]').hidden = false;
+      } catch (err) {
+        q('[data-loading]').hidden = true;
+        q('[data-error]').querySelector('span')!.textContent = firestoreError(err);
+        q('[data-error]').hidden = false;
+      }
+    });
+  </script>
+</App>

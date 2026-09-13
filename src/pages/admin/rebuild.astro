@@ -1,0 +1,221 @@
+---
+// =============================================================================
+// src/pages/admin/rebuild.astro
+//
+// Naye approved tutors agli scheduled build (har 6 ghante) par live hote hain.
+// Ye button wo build foran chala deta hai — tutor ko "24 ghante" bata kar 2
+// minute mein live kar dena behtar tajurba hai (docs/05-RISKS.md §5).
+//
+// ★ TOKEN: GitHub Actions trigger karne ke liye token chahiye. Server nahi hai,
+//   isliye wo token admin ke BROWSER mein rehta hai (localStorage) — code mein
+//   nahi, bundle mein nahi, repo mein nahi. Agar token bundle mein hota to jo
+//   bhi site kholta us ke paas repo ka access aa jata.
+// =============================================================================
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+import { env } from '../../lib/site';
+---
+<App
+  title="Admin — Rebuild | ApnaTutor"
+  heading="Site rebuild"
+  sub="Approve karne ke foran baad live karna ho to yahan se."
+  admin
+  path="/admin/rebuild"
+>
+  <div id="rebuild" data-repo={env.githubRepo} data-workflow={env.githubWorkflow}>
+    <section class="card">
+      <h2>Rebuild kab chahiye</h2>
+      <p class="card-sub">
+        Site static hai — tutor profiles build ke waqt HTML mein baked hoti hain. Isliye naya
+        approved tutor <strong>agli build tak</strong> search mein nazar nahi aata. Build khud
+        har 6 ghante chalti hai; ye button usay foran chala deta hai (~2 minute).
+      </p>
+      <ul class="when">
+        <li><Icon name="check" size={17} /><span>Naya tutor approve kiya</span></li>
+        <li><Icon name="check" size={17} /><span>Review approve kiya (rating badli)</span></li>
+        <li><Icon name="check" size={17} /><span>City ya subject ka intro likha (naye SEO pages ban sakte hain)</span></li>
+        <li><Icon name="check" size={17} /><span>Kisi tutor ko suspend kiya (uska page hatana hai)</span></li>
+      </ul>
+    </section>
+
+    {!env.githubRepo && (
+      <p class="state state-error">
+        <Icon name="alert-circle" />
+        <span>
+          <code>PUBLIC_GITHUB_REPO</code> set nahi hai. GitHub secrets mein
+          <code>owner/repo</code> daal kar dobara deploy karein — tab ye button kaam karega.
+          Tab tak GitHub par jaa kar "Run workflow" dabana parta hai.
+        </span>
+      </p>
+    )}
+
+    <section class="card" data-token-card>
+      <h2>GitHub token</h2>
+
+      <p class="state state-error">
+        <Icon name="alert-triangle" />
+        <span>
+          <strong>Token sirf is browser mein rehta hai.</strong> Wo kabhi code, bundle ya repo
+          mein nahi jata — warna site kholne wale har shakhs ke paas repo ka access aa jata.
+          Shared ya public computer par ye token na daalein.
+        </span>
+      </p>
+
+      <details class="howto">
+        <summary>Token kaise banayein (ek baar ka kaam)</summary>
+        <ol>
+          <li>GitHub → Settings → Developer settings → <b>Fine-grained personal access tokens</b> → Generate new token</li>
+          <li>Repository access: <b>Only select repositories</b> → sirf ye ek repo</li>
+          <li>Permissions → Repository permissions → <b>Actions: Read and write</b>. Aur kuch nahi.</li>
+          <li>Expiry: 90 din rakhein. Khatam hone par naya bana lein — purana khud bekaar ho jata hai.</li>
+          <li>Token copy karke neeche paste karein.</li>
+        </ol>
+        <p class="hint">
+          Itni kam permission wala token zyada se zyada build chala sakta hai — na code parh sakta
+          hai, na badal sakta hai.
+        </p>
+      </details>
+
+      <div class="field">
+        <label for="token">Fine-grained token</label>
+        <input type="password" id="token" autocomplete="off" spellcheck="false"
+          placeholder="github_pat_…" />
+        <p class="hint" data-token-state>Abhi koi token save nahi hai.</p>
+      </div>
+
+      <div class="token-actions">
+        <button type="button" class="btn btn-outline btn-sm" data-save-token>Is browser mein save karein</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-clear-token hidden>Token hata dein</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Build chalayein</h2>
+      <p class="card-sub">Ye <code>main</code> branch par <code>workflow_dispatch</code> bhejta hai.</p>
+
+      <button type="button" class="btn btn-primary" data-run disabled>
+        <Icon name="refresh" />Abhi rebuild karein
+      </button>
+
+      <p class="state state-success" data-ok hidden>
+        <Icon name="check-circle" />
+        <span>
+          Build shuru ho gayi. Taqreeban 2 minute mein live ho jayegi —
+          <a data-actions-link href="#" target="_blank" rel="noopener">GitHub par progress dekhein</a>.
+        </span>
+      </p>
+      <p class="state state-error" data-err hidden><Icon name="alert-circle" /><span></span></p>
+    </section>
+  </div>
+
+  <style>
+    #rebuild{display:flex;flex-direction:column;gap:var(--space-3)}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+    .card h2{font-size:18px;font-weight:600}
+    .card-sub{color:var(--muted-fg);font-size:15px;max-width:66ch}
+    code{background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;
+      padding:1px 6px;font-size:13.5px}
+    .when{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+    .when li{display:flex;gap:9px;align-items:flex-start;font-size:15.5px;color:var(--muted-fg)}
+    .when :global(.icon){color:var(--b-phone-fg);flex:0 0 auto;margin-top:3px}
+    .howto summary{cursor:pointer;font-family:var(--font-heading);font-weight:600;font-size:15px;
+      min-height:44px;display:flex;align-items:center}
+    .howto ol{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:8px;
+      color:var(--muted-fg);font-size:15px}
+    .howto b{color:var(--fg)}
+    .token-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}
+  </style>
+
+  <script>
+    import { getAdminSession } from '../../lib/auth';
+
+    const KEY = 'apnatutor:gh-token';
+    const root = document.getElementById('rebuild')!;
+    const q = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+
+    const repo = root.dataset.repo ?? '';
+    const workflow = root.dataset.workflow || 'deploy.yml';
+    const input = document.getElementById('token') as HTMLInputElement;
+
+    const readToken = () => {
+      try { return localStorage.getItem(KEY) ?? ''; } catch { return ''; }
+    };
+
+    function refreshTokenState() {
+      const token = readToken();
+      const has = Boolean(token);
+      q('[data-token-state]').textContent = has
+        ? 'Token is browser mein save hai.'
+        : 'Abhi koi token save nahi hai.';
+      q('[data-clear-token]').hidden = !has;
+      q<HTMLButtonElement>('[data-run]').disabled = !has || !repo;
+      if (has) input.placeholder = '•••••••••••• (save hai)';
+    }
+
+    q('[data-save-token]').addEventListener('click', () => {
+      const value = input.value.trim();
+      if (!value) { input.focus(); return; }
+      try { localStorage.setItem(KEY, value); } catch { /* storage band */ }
+      input.value = '';
+      refreshTokenState();
+    });
+
+    q('[data-clear-token]').addEventListener('click', () => {
+      try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+      input.value = '';
+      input.placeholder = 'github_pat_…';
+      refreshTokenState();
+    });
+
+    q('[data-run]').addEventListener('click', async () => {
+      const btn = q<HTMLButtonElement>('[data-run]');
+      const ok = q('[data-ok]');
+      const err = q('[data-err]');
+
+      ok.hidden = true;
+      err.hidden = true;
+      btn.disabled = true;
+      btn.textContent = 'Build shuru kar rahe hain…';
+
+      try {
+        const res = await fetch(
+          `https://api.github.com/repos/${repo}/actions/workflows/${workflow}/dispatches`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${readToken()}`,
+              Accept: 'application/vnd.github+json',
+              'X-GitHub-Api-Version': '2022-11-28',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ref: 'main' }),
+          }
+        );
+
+        // GitHub kamyabi par 204 deta hai, koi body nahi.
+        if (res.status === 204) {
+          q<HTMLAnchorElement>('[data-actions-link]').href = `https://github.com/${repo}/actions`;
+          ok.hidden = false;
+        } else if (res.status === 401 || res.status === 403) {
+          throw new Error('Token qabool nahi hua. Expire ho gaya hoga, ya us par "Actions: Read and write" permission nahi hai.');
+        } else if (res.status === 404) {
+          throw new Error(`Workflow nahi mila (${repo} → ${workflow}). Repo ka naam aur workflow file check karein.`);
+        } else {
+          const body = await res.text();
+          throw new Error(`GitHub ne ${res.status} diya. ${body.slice(0, 160)}`);
+        }
+      } catch (e) {
+        err.querySelector('span')!.textContent =
+          e instanceof Error ? e.message : 'Build shuru nahi ho saki.';
+        err.hidden = false;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Abhi rebuild karein';
+        refreshTokenState();
+      }
+    });
+
+    getAdminSession().then((session) => { if (session) refreshTokenState(); });
+  </script>
+</App>

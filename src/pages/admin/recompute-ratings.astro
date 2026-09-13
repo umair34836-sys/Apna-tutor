@@ -1,0 +1,107 @@
+---
+// src/pages/admin/recompute-ratings.astro
+//
+// ★ Ratings ka average admin panel calculate karta hai (Cloud Functions Spark
+//   par nahi hain). Iska matlab: is code ka bug seedha ghalat ratings banata
+//   hai. Isliye ye page mojood hai — mahine mein ek baar chala dein aur sab
+//   scratch se theek ho jata hai (docs/05-RISKS.md §7).
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+---
+<App
+  title="Admin — Recompute Ratings | ApnaTutor"
+  heading="Ratings dobara calculate karein"
+  sub="Har approved tutor ki rating scratch se — mahine mein ek baar chala dein."
+  admin
+  path="/admin/recompute-ratings"
+>
+  <div id="recompute">
+    <section class="card">
+      <h2>Ye kya karta hai</h2>
+      <p class="card-sub">
+        Har approved tutor ke saare <b>approved</b> reviews dobara gine jate hain aur
+        <code>ratingAvg</code> + <code>ratingCount</code> naye sire se likhe jate hain. Purane
+        number par koi shortcut nahi lagta — isliye agar kabhi koi ghalat write hui ho to ye
+        usay theek kar deta hai.
+      </p>
+      <p class="state state-info">
+        <Icon name="info" />
+        <span>
+          Har tutor par ek ya do reads aur ek write lagti hai. 300 tutors par bhi ye free quota
+          ka chhota hissa hai — magar din mein baar baar chalane ki zarurat nahi.
+        </span>
+      </p>
+
+      <button type="button" class="btn btn-primary" data-run><Icon name="refresh" />Shuru karein</button>
+    </section>
+
+    <section class="card" data-progress-card hidden>
+      <h2>Chal raha hai</h2>
+      <div class="progress"><div class="progress-bar" data-bar></div></div>
+      <p class="progress-text" data-progress-text>—</p>
+      <ul class="log" data-log></ul>
+    </section>
+
+    <p class="state state-success" data-done hidden><Icon name="check-circle" /><span></span></p>
+    <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+  </div>
+
+  <style>
+    #recompute{display:flex;flex-direction:column;gap:var(--space-3)}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+    .card h2{font-size:18px;font-weight:600}
+    .card-sub{color:var(--muted-fg);font-size:15px;max-width:66ch}
+    code{background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;
+      padding:1px 6px;font-size:13.5px}
+    .progress{height:10px;background:var(--bg-alt);border-radius:var(--radius-pill);overflow:hidden}
+    .progress-bar{height:100%;width:0;background:var(--primary);transition:width .2s var(--ease)}
+    .progress-text{font-size:14.5px;color:var(--muted-fg)}
+    .log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;
+      max-height:260px;overflow-y:auto;font-size:14px;color:var(--muted-fg)}
+  </style>
+
+  <script>
+    import { getAdminSession } from '../../lib/auth';
+    import { firestoreError } from '../../lib/firebase';
+    import { recomputeAllRatings } from '../../lib/admin';
+
+    const root = document.getElementById('recompute')!;
+    const q = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+
+    getAdminSession().then((session) => {
+      if (!session) return;
+
+      q<HTMLButtonElement>('[data-run]').addEventListener('click', async () => {
+        const btn = q<HTMLButtonElement>('[data-run]');
+        btn.disabled = true;
+        btn.textContent = 'Chal raha hai…';
+
+        q('[data-error]').hidden = true;
+        q('[data-done]').hidden = true;
+        q('[data-progress-card]').hidden = false;
+        q('[data-log]').innerHTML = '';
+
+        try {
+          const total = await recomputeAllRatings((done, all, name) => {
+            q<HTMLElement>('[data-bar]').style.width = `${Math.round((done / all) * 100)}%`;
+            q('[data-progress-text]').textContent = `${done} / ${all}`;
+            const li = document.createElement('li');
+            li.textContent = `✓ ${name}`;
+            q('[data-log]').prepend(li);
+          });
+
+          q('[data-done]').querySelector('span')!.textContent =
+            `${total} ${total === 1 ? 'tutor' : 'tutors'} ki ratings dobara calculate ho gayin.`;
+          q('[data-done]').hidden = false;
+        } catch (err) {
+          q('[data-error]').querySelector('span')!.textContent = firestoreError(err);
+          q('[data-error]').hidden = false;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Dobara chalayein';
+        }
+      });
+    });
+  </script>
+</App>
