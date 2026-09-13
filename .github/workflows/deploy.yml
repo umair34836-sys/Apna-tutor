@@ -47,6 +47,12 @@ jobs:
           PUBLIC_META_PIXEL_ID:        ${{ secrets.PUBLIC_META_PIXEL_ID }}
           PUBLIC_CLOUDINARY_CLOUD:     ${{ secrets.PUBLIC_CLOUDINARY_CLOUD }}
           PUBLIC_CLOUDINARY_PRESET:    ${{ secrets.PUBLIC_CLOUDINARY_PRESET }}
+          # Contact page aur admin ka rebuild button — in ke bagair wo pages
+          # bante to hain, magar khali/disabled rehte hain.
+          PUBLIC_CONTACT_EMAIL:        ${{ secrets.PUBLIC_CONTACT_EMAIL }}
+          PUBLIC_OFFICIAL_WHATSAPP:    ${{ secrets.PUBLIC_OFFICIAL_WHATSAPP }}
+          PUBLIC_GITHUB_REPO:          ${{ secrets.PUBLIC_GITHUB_REPO }}
+          PUBLIC_GITHUB_WORKFLOW:      deploy.yml
         run: npm run build
 
       - name: SEO gate — thin pages aur phone leaks block karo
