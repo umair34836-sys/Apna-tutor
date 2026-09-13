@@ -18,7 +18,7 @@ import Breadcrumbs from '../components/Breadcrumbs.astro';
 import SeoIntro from '../components/SeoIntro.astro';
 import TutorGrid from '../components/TutorGrid.astro';
 import Icon from '../components/Icon.astro';
-import { breadcrumbJsonLd, comboPages } from '../lib/seo';
+import { breadcrumbJsonLd, comboPages, hasCityPage } from '../lib/seo';
 import { SITE, url } from '../lib/site';
 import type { ComboPage } from '../lib/seo';
 
@@ -66,7 +66,12 @@ const siblings = comboPages()
           {siblings.map((p) => (
             <li><a href={url(`/${p.slug}`)}>{p.h1}&#32;<span>({p.tutors.length})</span></a></li>
           ))}
-          <li><a href={url(`/city/${page.city.slug}`)}>{page.city.name} ke saare tutors</a></li>
+          <li>
+            {/* City hub page sirf 3+ tutors aur intro ke saath banti hai. */}
+            <a href={hasCityPage(page.city.slug)
+              ? url(`/city/${page.city.slug}`)
+              : url(`/find-tutor?city=${page.city.slug}`)}>{page.city.name} ke saare tutors</a>
+          </li>
         </ul>
       </div>
     </section>

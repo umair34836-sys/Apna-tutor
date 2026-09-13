@@ -114,7 +114,11 @@ function candidates(): Candidate[] {
         titleText: (n) => `${subject.name} Tutors in ${cityName} — ${n} Verified`,
         descText: (n) =>
           `${cityName} mein ${n} verified ${subject.name.toLowerCase()} tutors. Class, board aur budget ke hisaab se filter karein. Parents ke liye bilkul free.`,
-        extraCrumbs: [crumb(subject.name, `/subject/${subject.slug}`)],
+        // Subject ka hub page har haal mein nahi banta — na bane to crumb
+        // hi na daalein, warna wo apne hi 404 par jata hai.
+        extraCrumbs: hasSubjectPage(subject.slug)
+          ? [crumb(subject.name, `/subject/${subject.slug}`)]
+          : [],
       });
     }
 
@@ -255,7 +259,9 @@ export function comboPages(): ComboPage[] {
       intro,
       breadcrumbs: [
         crumb('Home', '/'),
-        crumb(c.city.name, `/city/${c.city.slug}`),
+        hasCityPage(c.city.slug)
+          ? crumb(c.city.name, `/city/${c.city.slug}`)
+          : crumb('Saare tutors', '/teachers'),
         ...(c.extraCrumbs ?? []),
         crumb(c.h1, `/${c.slug}`),
       ],
@@ -295,12 +301,20 @@ export function subjectPages(): HubPage<Subject>[] {
 }
 
 const cityPageSlugs = new Set(cityPages().map((p) => p.entity.slug));
+const subjectPageSlugs = new Set(subjectPages().map((p) => p.entity.slug));
 
 /**
- * City hub page waqai bani hai? Breadcrumbs aur links isay poochte hain —
- * warna hum apne hi 404 par link kar rahe hote.
+ * Hub page waqai bani hai? Breadcrumbs aur links isay poochte hain — warna
+ * hum apne hi 404 par link kar rahe hote.
+ *
+ * ★ Ye sirf ehtiyat nahi, tajurba hai: homepage ke subject tiles seedha
+ *   /subject/{slug} par link karte thay. Jab tak koi tutor nahi tha, tile
+ *   dikhta hi nahi tha aur baat khul kar saamne nahi aayi. Pehla Urdu wala
+ *   tutor approve hote hi tile aa gaya — aur us subject ka page banta hi
+ *   nahi tha (usay 3+ tutors aur intro chahiye). Build wahin ruk gayi.
  */
 export const hasCityPage = (slug: string) => cityPageSlugs.has(slug);
+export const hasSubjectPage = (slug: string) => subjectPageSlugs.has(slug);
 
 /** Build log ke liye — kaun si pages kyun nahi banin. */
 export function comboReport(): string {

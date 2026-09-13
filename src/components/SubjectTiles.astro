@@ -6,7 +6,7 @@ import { url } from '../lib/site';
 //   hai. "148 tutors" jaisa koi placeholder number nahi.
 import Icon from './Icon.astro';
 import { subjects, tutors } from '../lib/data';
-import { comboPages } from '../lib/seo';
+import { comboPages, hasSubjectPage } from '../lib/seo';
 
 const ICON: Record<string, string> = {
   mathematics: 'math', physics: 'atom', chemistry: 'flask', biology: 'flask',
@@ -24,7 +24,15 @@ const tiles = subjects
       slug: s.slug,
       name: s.name,
       count,
-      href: combo && built.has(combo.slug) ? `/${combo.slug}` : `/subject/${s.slug}`,
+      // ★ Tarteeb ahem hai: combo page → subject hub → search.
+      //   Aakhri fallback isliye lazmi hai ke subject ka hub page 3+ tutors
+      //   aur 120+ words ke intro ke bagair banta hi nahi — aur tile to ek
+      //   tutor par bhi dikh jata hai.
+      href: combo && built.has(combo.slug)
+        ? `/${combo.slug}`
+        : hasSubjectPage(s.slug)
+          ? `/subject/${s.slug}`
+          : `/find-tutor?subject=${s.slug}`,
       icon: ICON[s.slug] ?? 'book',
     };
   })
