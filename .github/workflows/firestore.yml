@@ -109,25 +109,60 @@ jobs:
           npx firebase deploy \
             --only firestore:rules,firestore:indexes \
             --project "$FIREBASE_PROJECT" \
-            --non-interactive
-          code=$?
+            --non-interactive 2>&1 | tee "$RUNNER_TEMP/deploy.log"
+          code=${PIPESTATUS[0]}
           set -e
 
-          if [ $code -ne 0 ]; then
-            echo "::error::Deploy fail hui."
+          [ "$code" -eq 0 ] && exit 0
+
+          log="$RUNNER_TEMP/deploy.log"
+          iam="https://console.cloud.google.com/iam-admin/iam?project=$FIREBASE_PROJECT"
+
+          echo "::error::Deploy fail hui."
+          echo ""
+
+          # Service account ke paas jo roles kam hain, error unhi ka naam leta
+          # hai — magar alag alag alfaaz mein. Har surat ka apna hal hai, is
+          # liye teeno ko alag alag pehchante hain.
+          need=""
+          grep -q "serviceusage.googleapis.com\|Permission denied to get service" "$log" \
+            && need="$need  • Service Usage Consumer   (CLI pehle dekhta hai ke Firestore API on hai ya nahi)\n"
+          grep -qi "firebaserules\|Missing required permission.*rules" "$log" \
+            && need="$need  • Firebase Rules Admin     (rules likhne ke liye)\n"
+          grep -qi "datastore.indexes\|cloudfirestore.indexes\|index" "$log" \
+            && need="$need  • Cloud Datastore Index Admin  (indexes banane ke liye)\n"
+
+          if [ -n "$need" ] || grep -qi "permission\|403\|PERMISSION_DENIED" "$log"; then
+            echo "Ye permission ka masla hai — chabi theek hai, magar us service"
+            echo "account ke paas poore ikhtiyarat nahi."
             echo ""
-            echo "Agar upar 'permission' ya 'PERMISSION_DENIED' likha hai, to service"
-            echo "account ke paas ye do roles nahi hain. Ek baar dena parta hai:"
+            echo "Service account:"
+            echo "  firebase-adminsdk-…@$FIREBASE_PROJECT.iam.gserviceaccount.com"
             echo ""
-            echo "  console.cloud.google.com  →  IAM & Admin  →  IAM"
-            echo "  upar wale step mein jo 'Service acct' email chhapa hai usay dhoondein"
-            echo "  Edit (pencil)  →  Add another role  →  ye do add karein:"
-            echo "     • Firebase Rules Admin"
-            echo "     • Cloud Datastore Index Admin"
+            echo "Ye teen roles chahiye. Ek hi baar mein teeno de dein:"
+            echo ""
+            echo "  • Service Usage Consumer"
+            echo "  • Firebase Rules Admin"
+            echo "  • Cloud Datastore Index Admin"
+            echo ""
+            if [ -n "$need" ]; then
+              echo "Is run mein jo kami saaf nazar aayi:"
+              printf "$need"
+              echo ""
+            fi
+            echo "Kahan se dene hain:"
+            echo "  $iam"
+            echo ""
+            echo "  1. Upar wali list mein firebase-adminsdk-… wali row dhoondein"
+            echo "  2. Us row ke aakhir mein pencil (Edit principal)"
+            echo "  3. 'Add another role' — teen baar, har role ke liye"
+            echo "  4. Save"
             echo ""
             echo "Phir ye workflow dobara chalayein."
-            exit $code
+          else
+            echo "Ye permission ka masla nahi lagta. Upar log ki aakhri lines dekhein."
           fi
+          exit "$code"
 
       - name: Credentials mitao
         if: always()

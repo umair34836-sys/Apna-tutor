@@ -69,10 +69,21 @@ yani koi tutor nazar nahi aata). Ek baar set karna parta hai:
 nahi karni, aur repo mein commit to bilkul nahi (`.gitignore` ismein madad
 nahi karega agar naam alag ho). Sirf GitHub Secrets mein.
 
-Agar deploy "permission" ki wajah se ruke to service account ko do roles
-dene parte hain — **Firebase Rules Admin** aur **Cloud Datastore Index
-Admin** (Google Cloud Console → IAM). Workflow fail hone par ye hidayat khud
-print kar deta hai, service account ke email ke saath.
+Agar deploy "permission" ki wajah se ruke to service account ko **teen**
+roles dene parte hain (Google Cloud Console → IAM → firebase-adminsdk-… wali
+row → Edit → Add another role):
+
+| Role | Kis liye |
+|---|---|
+| **Service Usage Consumer** | CLI deploy se pehle dekhta hai ke Firestore API on hai ya nahi |
+| **Firebase Rules Admin** | rules likhne ke liye |
+| **Cloud Datastore Index Admin** | indexes banane ke liye |
+
+Default `firebase-adminsdk` service account ke paas teeno nahi hote — wo
+Admin SDK ke liye bana hota hai, deploy ke liye nahi. Workflow fail hone par
+ye list, service account ka email aur IAM ka seedha link khud print kar deta
+hai, aur jo kami us run mein saaf nazar aayi wo alag se nishan-zada karta
+hai.
 
 **Ya apne computer se:**
 
