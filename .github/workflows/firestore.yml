@@ -47,11 +47,22 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
           if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "::error::FIREBASE_SERVICE_ACCOUNT secret set nahi hai."
-            echo "Firebase Console → Project settings → Service accounts →"
-            echo "Generate new private key. Us JSON ko poora ka poora"
-            echo "GitHub → Settings → Secrets and variables → Actions mein"
-            echo "FIREBASE_SERVICE_ACCOUNT ke naam se paste karein."
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret set nahi hai — pehle wo banayein, phir ye workflow chalayein."
+            echo ""
+            echo "1) Firebase Console → Project settings (gear) → Service accounts"
+            echo "   → Generate new private key. Ek .json file download hogi."
+            echo ""
+            echo "2) Us file ka POORA text copy karein — { se } tak."
+            echo "   Phone par file ko .txt par rename kar lein, phir wo khul jati hai."
+            echo ""
+            echo "3) GitHub → repo → Settings → Secrets and variables → Actions"
+            echo "   ★ Upar do tabs hain: 'Secrets' aur 'Variables'."
+            echo "     SECRETS wale tab par 'New repository secret'."
+            echo "     Variables mein daalne se workflow usay dekh nahi payega."
+            echo "   Name (bilkul aisa hi): FIREBASE_SERVICE_ACCOUNT"
+            echo "   Secret: wahi poora JSON"
+            echo ""
+            echo "Uske baad ye workflow dobara chalayein."
             exit 1
           fi
 
