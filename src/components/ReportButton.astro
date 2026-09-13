@@ -114,7 +114,7 @@ const id = `report-${targetType}-${targetId}`;
       submit.textContent = 'Bhej rahe hain…';
 
       try {
-        const [{ getFirebase, currentUser, firestoreError }, { addDoc, collection, serverTimestamp }] =
+        const [{ getFirebase, currentUser }, { addDoc, collection, serverTimestamp }] =
           await Promise.all([import('../lib/firebase'), import('firebase/firestore')]);
 
         const user = await currentUser();

@@ -1,0 +1,434 @@
+---
+// =============================================================================
+// src/pages/tutor/register.astro — tutor profile banane ka 7-step form
+//
+// Do baatein jo is form ko kaam karti hain:
+//
+// 1. DRAFT localStorage MEIN. 7-step form mein data khona sabse bari drop-off
+//    ki wajah hai. Har tabdeeli par draft save hota hai aur wapas aane par
+//    wahin se shuru hota hai.
+//
+// 2. VALIDATION RULES SE MATCH KARTI HAI. Jo hadd firestore.rules mein hai
+//    (naam 3–60, subjects 1–8, areas 1–6, fee 500–200000, bio 600, phone
+//    +92XXXXXXXXXX) wahi yahan bhi hai. Warna user 7 step bhar kar aakhir mein
+//    "permission denied" dekhta — sabse bura tajurba.
+//
+// ★ Trust fields (status, badges, ratings, featuredUntil, photoUrl) is form se
+//   bheje hi nahi jate. Rules unhe reject kar deti hain, aur UI mein bhi inka
+//   koi input nahi hai.
+// =============================================================================
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+import { cities, subjects } from '../../lib/data';
+import { BOARDS, CLASSES, MODES } from '../../lib/taxonomy';
+
+const STEPS = [
+  'Basic',
+  'Parhai',
+  'Tajurba',
+  'Fee',
+  'Contact',
+  'Photo',
+  'Check',
+];
+
+const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
+---
+<App
+  title="Tutor Registration | ApnaTutor"
+  heading="Tutor profile banayein"
+  sub="Saat chhote steps. Beech mein chhor dein to draft khud save rehta hai — wapas aa kar wahin se shuru karein."
+  role="tutor"
+  path="/tutor/register"
+  nav={false}
+>
+  <div
+    id="wizard"
+    data-city-areas={JSON.stringify(cityAreas)}
+    data-has-content={cities.length > 0 && subjects.length > 0 ? '1' : ''}
+  >
+    <!-- Agar cities/subjects abhi Firestore mein nahi hain to form bharne ka
+         faida nahi — saaf bata dete hain, khali dropdowns dikhane se behtar. -->
+    {(cities.length === 0 || subjects.length === 0) && (
+      <p class="state state-error">
+        <Icon name="alert-circle" />
+        <span>
+          Registration abhi band hai — hum cities aur subjects set kar rahe hain.
+          Thori dair baad koshish karein, ya <a href="/contact">hamein likhein</a>.
+        </span>
+      </p>
+    )}
+
+    <!-- Email verification gate -->
+    <p class="state state-error" id="verify-gate" hidden>
+      <Icon name="mail" />
+      <span>
+        Profile bhejne se pehle apna email verify karna zaroori hai. Humne aapko link bhej diya
+        hai — inbox aur spam folder dekhein.
+        <button type="button" class="linklike" id="resend">Dobara bhejein</button>
+      </span>
+    </p>
+
+    <!-- Pehle se profile mojood ho -->
+    <div id="already" hidden>
+      <p class="state state-info">
+        <Icon name="check-circle" />
+        <span>Aap ki profile pehle se mojood hai. Use <a href="/tutor/profile">profile page</a> se edit karein.</span>
+      </p>
+    </div>
+
+    <div id="form-area" hidden>
+      <!-- Stepper -->
+      <ol class="stepper" id="stepper" aria-label="Progress">
+        {STEPS.map((label, i) => (
+          <li data-step-pip={i + 1}>
+            <span class="pip">{i + 1}</span>
+            <span class="pip-label">{label}</span>
+          </li>
+        ))}
+      </ol>
+
+      <p class="draft-note" id="draft-note" hidden>
+        <Icon name="check" size={15} />Draft save ho gaya
+      </p>
+
+      <form id="reg-form" novalidate>
+        <!-- ================= STEP 1 — Basic ================= -->
+        <fieldset class="step" data-step="1">
+          <legend><h2>Aap ke baare mein</h2></legend>
+
+          <div class="field">
+            <label for="name">Poora naam</label>
+            <input type="text" id="name" name="name" maxlength="60" autocomplete="name" required />
+            <p class="hint">Wahi naam jo aap ki profile par dikhega.</p>
+            <p class="err" id="e-name"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </div>
+
+          <fieldset class="pickers">
+            <legend>Gender</legend>
+            <div class="chips-input" role="radiogroup" aria-labelledby="gender-label">
+              <label class="pick"><input type="radio" name="gender" value="female" /><span>Female</span></label>
+              <label class="pick"><input type="radio" name="gender" value="male" /><span>Male</span></label>
+            </div>
+            <p class="hint">Bohat se parents female tutor dhoondte hain — isliye ye filter ahem hai.</p>
+            <p class="err" id="e-gender"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </fieldset>
+
+          <div class="field">
+            <label for="city">Sheher</label>
+            <select id="city" name="city" required>
+              <option value="">Select karein</option>
+              {cities.map((c) => <option value={c.slug}>{c.name}</option>)}
+            </select>
+            <p class="err" id="e-city"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </div>
+
+          <fieldset class="pickers">
+            <legend>Areas — kahan parha sakte hain?</legend>
+            <div class="chips-input" id="areas-box"><p class="hint">Pehle sheher select karein.</p></div>
+            <p class="hint">Zyada se zyada 6.</p>
+            <p class="err" id="e-areas"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </fieldset>
+        </fieldset>
+
+        <!-- ================= STEP 2 — Teaching ================= -->
+        <fieldset class="step" data-step="2" hidden>
+          <legend><h2>Aap kya parhate hain?</h2></legend>
+
+          <fieldset class="pickers">
+            <legend>Subjects</legend>
+            <div class="chips-input">
+              {subjects.map((s) => (
+                <label class="pick"><input type="checkbox" name="subjects" value={s.slug} /><span>{s.name}</span></label>
+              ))}
+            </div>
+            <p class="hint">1 se 8 tak.</p>
+            <p class="err" id="e-subjects"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </fieldset>
+
+          <fieldset class="pickers">
+            <legend>Classes</legend>
+            <div class="chips-input">
+              {CLASSES.map((c) => (
+                <label class="pick"><input type="checkbox" name="classes" value={c.slug} /><span>{c.labelUrdu}</span></label>
+              ))}
+            </div>
+            <p class="err" id="e-classes"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </fieldset>
+
+          <fieldset class="pickers">
+            <legend>Boards</legend>
+            <div class="chips-input">
+              {BOARDS.map((b) => (
+                <label class="pick"><input type="checkbox" name="boards" value={b.slug} /><span>{b.labelUrdu}</span></label>
+              ))}
+            </div>
+            <p class="err" id="e-boards"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </fieldset>
+
+          <fieldset class="pickers">
+            <legend>Teaching mode</legend>
+            <div class="chips-input">
+              {MODES.map((m) => (
+                <label class="pick"><input type="checkbox" name="modes" value={m.slug} /><span>{m.labelUrdu}</span></label>
+              ))}
+            </div>
+            <p class="err" id="e-modes"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </fieldset>
+        </fieldset>
+
+        <!-- ================= STEP 3 — Experience ================= -->
+        <fieldset class="step" data-step="3" hidden>
+          <legend><h2>Tajurba aur taleem</h2></legend>
+
+          <div class="field">
+            <label for="qualification">Sabse aala qualification</label>
+            <input type="text" id="qualification" name="qualification" maxlength="100" required
+              placeholder="Misal: MSc Mathematics" />
+            <p class="hint">Wahi likhein jo aap dikha sakein — hum verification par check karte hain.</p>
+            <p class="err" id="e-qualification"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </div>
+
+          <div class="field">
+            <label for="experienceYears">Parhane ka tajurba (saal)</label>
+            <input type="number" id="experienceYears" name="experienceYears" min="0" max="50" step="1" required />
+            <p class="err" id="e-experienceYears"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </div>
+
+          <div class="field">
+            <label for="bio">Apne baare mein</label>
+            <textarea id="bio" name="bio" maxlength="600" rows="6"
+              placeholder="Aap kaise parhate hain, kis cheez par zyada tawajjo dete hain, students ke natije kaise rahe."></textarea>
+            <p class="hint"><span id="bio-count">0</span> / 600 characters</p>
+            <p class="err" id="e-bio"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </div>
+        </fieldset>
+
+        <!-- ================= STEP 4 — Fee ================= -->
+        <fieldset class="step" data-step="4" hidden>
+          <legend><h2>Fee aur availability</h2></legend>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="feeMin">Kam az kam monthly fee (Rs.)</label>
+              <input type="number" id="feeMin" name="feeMin" min="500" max="200000" step="100" required />
+              <p class="err" id="e-feeMin"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+            </div>
+            <div class="field">
+              <label for="feeMax">Zyada se zyada monthly fee (Rs.)</label>
+              <input type="number" id="feeMax" name="feeMax" min="500" max="200000" step="100" required />
+              <p class="err" id="e-feeMax"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+            </div>
+          </div>
+          <p class="hint">Range dena behtar hai — class aur subject ke hisaab se fee alag hoti hai.</p>
+
+          <div class="field">
+            <label for="availability">Kab parha sakte hain?</label>
+            <input type="text" id="availability" name="availability" maxlength="120" required
+              placeholder="Misal: Mon–Sat, 4 PM – 9 PM" />
+            <p class="err" id="e-availability"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </div>
+        </fieldset>
+
+        <!-- ================= STEP 5 — Contact ================= -->
+        <fieldset class="step" data-step="5" hidden>
+          <legend><h2>Rabte ki maloomat</h2></legend>
+
+          <p class="state state-info">
+            <Icon name="lock" />
+            <span>
+              <strong>Ye number public nahi hota.</strong> Ye alag, mehfooz jagah rakha jata hai
+              aur sirf un parents ko nazar aata hai jo login karke aap ka contact kholte hain.
+              Kisi page ke source mein ye kabhi nahi jata.
+            </span>
+          </p>
+
+          <div class="field">
+            <label for="phone">Phone number</label>
+            <div class="phone-input">
+              <span class="prefix" aria-hidden="true">+92</span>
+              <input type="tel" id="phone" name="phone" inputmode="numeric" maxlength="11"
+                autocomplete="tel-national" placeholder="3001234567" required
+                aria-describedby="phone-hint" />
+            </div>
+            <p class="hint" id="phone-hint">0 ke bagair likhein — misal: 3001234567</p>
+            <p class="err" id="e-phone"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </div>
+
+          <label class="agree">
+            <input type="checkbox" id="same-wa" checked />
+            <span>WhatsApp bhi yahi number hai</span>
+          </label>
+
+          <div class="field" id="wa-field" hidden>
+            <label for="whatsapp">WhatsApp number</label>
+            <div class="phone-input">
+              <span class="prefix" aria-hidden="true">+92</span>
+              <input type="tel" id="whatsapp" name="whatsapp" inputmode="numeric" maxlength="11"
+                placeholder="3001234567" />
+            </div>
+            <p class="err" id="e-whatsapp"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+          </div>
+        </fieldset>
+
+        <!-- ================= STEP 6 — Photo ================= -->
+        <fieldset class="step" data-step="6" hidden>
+          <legend><h2>Profile photo <span class="optional">(optional)</span></h2></legend>
+
+          <p class="hint">
+            Photo wali profiles ko parents ka jawab kaafi zyada milta hai. Chehra saaf nazar aana
+            chahiye. Photo admin ke approve karne ke baad live hoti hai.
+          </p>
+
+          <div class="photo-row">
+            <div class="photo-preview" id="photo-preview"><Icon name="user" /></div>
+            <div class="photo-actions">
+              <label class="btn btn-outline" for="photo">
+                <Icon name="upload" />Photo chunein
+                <input type="file" id="photo" accept="image/jpeg,image/png,image/webp" hidden />
+              </label>
+              <button type="button" class="btn btn-ghost btn-sm" id="photo-remove" hidden>Hata dein</button>
+              <p class="hint">JPG, PNG ya WebP · 3 MB tak</p>
+            </div>
+          </div>
+
+          <p class="state state-error" id="photo-error" hidden><Icon name="alert-circle" /><span></span></p>
+          <p class="state state-success" id="photo-ok" hidden><Icon name="check-circle" />Photo upload ho gayi</p>
+
+          <p class="state state-info">
+            <Icon name="shield-check" />
+            <span>
+              <strong>Sirf profile photo.</strong> Shanakhti card ya degree yahan upload na karein —
+              hum wo verification ke waqt WhatsApp par dekh kar delete kar dete hain, kahin save nahi karte.
+            </span>
+          </p>
+        </fieldset>
+
+        <!-- ================= STEP 7 — Review ================= -->
+        <fieldset class="step" data-step="7" hidden>
+          <legend><h2>Ek nazar dekh lein</h2></legend>
+          <dl class="review" id="review-list"></dl>
+
+          <p class="state state-info">
+            <Icon name="info" />
+            <span>
+              Submit karne ke baad profile <strong>review</strong> mein chali jayegi. Hum 24–48 ghante
+              mein check karke aap ko WhatsApp par batayenge. Us waqt tak ye search mein nazar nahi aayegi.
+            </span>
+          </p>
+
+          <p class="state state-error" id="submit-error" hidden><Icon name="alert-circle" /><span></span></p>
+        </fieldset>
+
+        <!-- Nav -->
+        <div class="wizard-nav">
+          <button type="button" class="btn btn-ghost" id="back" hidden><Icon name="chevron-left" />Peechay</button>
+          <span class="step-count" id="step-count"></span>
+          <button type="button" class="btn btn-primary" id="next">Aage<Icon name="chevron-right" /></button>
+          <button type="submit" class="btn btn-primary" id="submit" hidden><Icon name="check" />Profile bhejein</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Done -->
+    <div id="done" hidden>
+      <div class="done-card">
+        <Icon name="check-circle" />
+        <h2>Profile review ke liye bhej di gayi hai</h2>
+        <p>
+          Hum 24–48 ghante mein check karke aap ko <strong>WhatsApp par</strong> batayenge.
+          Us waqt tak aap ki profile search mein nazar nahi aayegi.
+        </p>
+        <p class="done-next">Verification ke liye hum aap ke number par rabta karenge — apna WhatsApp dekhte rahein.</p>
+        <div class="done-actions">
+          <a class="btn btn-primary" href="/tutor/dashboard">Dashboard par jayein</a>
+          <a class="btn btn-outline" href="/for-tutors">Tutors ke liye guide</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .stepper{list-style:none;display:flex;gap:4px;padding:0;margin:0 0 var(--space-3);
+      overflow-x:auto;scrollbar-width:none}
+    .stepper::-webkit-scrollbar{display:none}
+    .stepper li{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:var(--radius-pill);
+      font-size:13.5px;color:var(--muted-fg);white-space:nowrap;flex:0 0 auto}
+    .stepper li[data-state="current"]{background:var(--primary-soft);color:var(--primary-dark);font-weight:600}
+    .stepper li[data-state="done"]{color:var(--primary)}
+    .pip{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;
+      background:var(--bg-alt);border:1px solid var(--border-strong);font-size:12.5px;font-weight:600}
+    li[data-state="current"] .pip{background:var(--primary);border-color:var(--primary);color:#fff}
+    li[data-state="done"] .pip{background:var(--primary-soft);border-color:var(--primary-border);color:var(--primary)}
+    @media(max-width:560px){.pip-label{display:none}}
+
+    .draft-note{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--primary);
+      margin-bottom:var(--space-2)}
+
+    form{display:flex;flex-direction:column;gap:var(--space-3)}
+    .step{border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-3);
+      margin:0;display:flex;flex-direction:column;gap:var(--space-3);background:#fff}
+    .step > legend{padding:0}
+    .step h2{font-size:20px;font-weight:600}
+    .optional{font-weight:400;color:var(--muted-fg);font-size:16px}
+
+    .pickers{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+    .pickers > legend{font-family:var(--font-heading);font-size:14px;font-weight:600;
+      color:var(--fg);padding:0}
+    .chips-input{display:flex;flex-wrap:wrap;gap:8px}
+    .pick{cursor:pointer}
+    .pick input{position:absolute;opacity:0;width:0;height:0}
+    .pick span{display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;
+      border:1px solid var(--border-strong);border-radius:var(--radius-pill);background:#fff;
+      font-size:14.5px;transition:border-color .2s var(--ease),background-color .2s var(--ease)}
+    .pick:hover span{border-color:var(--primary-border)}
+    .pick input:checked + span{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600}
+    .pick input:focus-visible + span{outline:3px solid var(--primary-bright);outline-offset:2px}
+    .pick input:disabled + span{opacity:.45;cursor:not-allowed}
+
+    .phone-input{display:flex;align-items:stretch}
+    .phone-input .prefix{display:grid;place-items:center;padding:0 14px;min-height:48px;
+      background:var(--bg-alt);border:1px solid var(--border-strong);border-right:0;
+      border-radius:var(--radius) 0 0 var(--radius);font-size:16px;color:var(--muted-fg);font-weight:600}
+    .phone-input input{border-radius:0 var(--radius) var(--radius) 0}
+
+    .agree{display:flex;gap:10px;align-items:center;font-size:15px;color:var(--muted-fg);cursor:pointer}
+    .agree input{width:20px;height:20px;accent-color:var(--primary)}
+
+    .photo-row{display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap}
+    .photo-preview{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;
+      background:var(--bg-alt);border:2px dashed var(--border-strong);overflow:hidden;flex:0 0 auto}
+    .photo-preview :global(.icon){width:34px;height:34px;color:var(--icon-muted)}
+    .photo-preview img{width:100%;height:100%;object-fit:cover}
+    .photo-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+
+    .review{display:grid;grid-template-columns:1fr;gap:8px;margin:0}
+    @media(min-width:620px){.review{grid-template-columns:1fr 1fr}}
+    .review > div{padding:12px 14px;background:var(--bg-alt);border:1px solid var(--border);
+      border-radius:var(--radius)}
+    .review dt{font-size:12.5px;color:var(--muted-fg);text-transform:uppercase;
+      letter-spacing:.04em;font-weight:600}
+    .review dd{margin:3px 0 0;font-size:15.5px;color:var(--fg)}
+
+    .wizard-nav{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;
+      position:sticky;bottom:0;background:var(--bg);padding:var(--space-2) 0;
+      border-top:1px solid var(--border)}
+    .step-count{font-size:14px;color:var(--muted-fg);margin-right:auto}
+    #back{order:-1}
+
+    .linklike{background:none;border:0;padding:0;color:inherit;text-decoration:underline;
+      cursor:pointer;font:inherit}
+
+    .done-card{text-align:center;padding:var(--space-5) var(--space-3);background:var(--primary-soft);
+      border:1px solid var(--primary-border);border-radius:var(--radius-lg);
+      display:flex;flex-direction:column;align-items:center;gap:var(--space-2)}
+    .done-card :global(.icon){width:44px;height:44px;color:var(--primary)}
+    .done-card h2{font-size:23px;font-weight:600}
+    .done-card p{color:var(--muted-fg);max-width:52ch}
+    .done-next{font-size:15px}
+    .done-actions{display:flex;gap:var(--space-1);flex-wrap:wrap;justify-content:center;
+      margin-top:var(--space-2)}
+  </style>
+
+  <script src="../../scripts/tutor-register.ts"></script>
+</App>

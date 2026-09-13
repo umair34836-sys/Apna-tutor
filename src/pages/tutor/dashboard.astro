@@ -1,0 +1,116 @@
+---
+// src/pages/tutor/dashboard.astro
+//
+// ★ Profile views ka counter Firestore mein NAHI rakha. Har view par ek write
+//   karna 20,000 writes/day ke budget ko bekar mein kha jata. Views GA4 mein
+//   dekhein — wahan unlimited hain aur breakdown behtar milta hai.
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+---
+<App
+  title="Tutor Dashboard | ApnaTutor"
+  heading="Dashboard"
+  sub="Aap ki profile ka haal aur nayi tuition requests."
+  role="tutor"
+  path="/tutor/dashboard"
+>
+  <div id="dash">
+    <div class="skeleton sk-box" data-loading></div>
+
+    <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+
+    <!-- Profile hi nahi bani -->
+    <div data-no-profile hidden>
+      <div class="empty">
+        <Icon name="user-plus" />
+        <h3>Abhi profile nahi bani</h3>
+        <p>Profile banaye bagair aap search mein nazar nahi aayenge aur na hi leads milengi. 10 minute ka kaam hai.</p>
+        <a class="btn btn-primary" href="/tutor/register"><Icon name="user-plus" />Profile banayein</a>
+      </div>
+    </div>
+
+    <div data-content hidden>
+      <!-- Status -->
+      <section class="status-card" data-status-card>
+        <div class="status-icon" data-status-icon><Icon name="clock" /></div>
+        <div>
+          <h2 data-status-title>—</h2>
+          <p data-status-body>—</p>
+          <div class="status-actions" data-status-actions></div>
+        </div>
+      </section>
+
+      <!-- Verification -->
+      <section class="card">
+        <h2>Verification</h2>
+        <p class="card-sub">
+          Ye checks ApnaTutor team karti hai — aap khud set nahi kar sakte. Teeno complete hon to
+          profile par "ApnaTutor Verified" badge aa jata hai.
+        </p>
+        <ul class="checks" data-checks></ul>
+        <p class="card-note">
+          <Icon name="shield-check" size={16} />
+          Verification ke liye hum aap ke number par rabta karte hain. Document dekh kar delete kar dete hain —
+          kahin save nahi karte. <a href="/safety">Tafseel</a>
+        </p>
+      </section>
+
+      <!-- Leads -->
+      <section class="card">
+        <div class="card-head">
+          <h2>Nayi leads</h2>
+          <a class="btn btn-outline btn-sm" href="/tutor/leads">Saari leads</a>
+        </div>
+        <div data-leads></div>
+      </section>
+
+      <!-- Views -->
+      <section class="card">
+        <h2>Profile views</h2>
+        <p class="card-sub">
+          Views Google Analytics mein dekhe jate hain, yahan nahi. Wajah: har view par database mein
+          likhna free quota ka bara hissa kha jata, aur GA4 mein ye data behtar shakal mein milta hai.
+        </p>
+      </section>
+    </div>
+  </div>
+
+  <style>
+    #dash{display:flex;flex-direction:column;gap:var(--space-3)}
+    .sk-box{height:180px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+    .card h2{font-size:18px;font-weight:600}
+    .card-sub{color:var(--muted-fg);font-size:15px;max-width:66ch}
+    .card-head{display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+    .card-note{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--muted-fg);
+      border-top:1px solid var(--border);padding-top:var(--space-2)}
+    .card-note :global(.icon){color:var(--icon-muted);flex:0 0 auto;margin-top:2px}
+
+    .status-card{display:flex;gap:var(--space-2);align-items:flex-start;padding:var(--space-3);
+      border-radius:var(--radius-lg);border:1px solid var(--border);background:#fff}
+    .status-card[data-tone="pending"]{background:var(--accent-soft);border-color:var(--b-full-border)}
+    .status-card[data-tone="approved"]{background:var(--primary-soft);border-color:var(--primary-border)}
+    .status-card[data-tone="bad"]{background:#FEF2F2;border-color:#FECACA}
+    .status-icon :global(.icon){width:26px;height:26px;flex:0 0 auto;margin-top:2px}
+    .status-card h2{font-size:19px;font-weight:600}
+    .status-card p{margin-top:6px;color:var(--muted-fg);font-size:15.5px;max-width:60ch}
+    .status-actions{display:flex;gap:var(--space-1);flex-wrap:wrap;margin-top:var(--space-2)}
+    .status-actions:empty{display:none}
+
+    .checks{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+    .checks li{display:flex;gap:10px;align-items:center;font-size:15.5px}
+    .checks :global(.icon){width:19px;height:19px;flex:0 0 auto}
+    .checks .yes{color:var(--b-phone-fg)}
+    .checks .no{color:var(--icon-muted)}
+    .checks small{color:var(--muted-fg);display:block;font-size:13.5px}
+
+    .lead-mini{display:flex;justify-content:space-between;gap:var(--space-2);align-items:center;
+      padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius);flex-wrap:wrap}
+    .lead-mini b{font-family:var(--font-heading);font-size:15.5px}
+    .lead-mini span{color:var(--muted-fg);font-size:14px}
+    .lead-list{display:flex;flex-direction:column;gap:10px}
+  </style>
+
+  <script src="../../scripts/tutor-dashboard.ts"></script>
+</App>

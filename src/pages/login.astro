@@ -1,0 +1,146 @@
+---
+import Base from '../layouts/Base.astro';
+import AuthCard from '../components/AuthCard.astro';
+import Icon from '../components/Icon.astro';
+---
+<Base title="Login | ApnaTutor" description="ApnaTutor account mein login karein." path="/login" noindex>
+  <AuthCard heading="Login karein" sub="Apne account mein wapas aayein.">
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" required />
+        <p class="err" id="e-email"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> Email likhna zaroori hai</p>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required />
+        <p class="err" id="e-password"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> Password likhna zaroori hai</p>
+      </div>
+
+      <p class="state state-error" id="form-error" hidden><Icon name="alert-circle" /><span></span></p>
+
+      <button type="submit" class="btn btn-primary btn-block" id="submit">Login</button>
+
+      <p class="forgot"><a href="/forgot-password">Password bhool gaye?</a></p>
+    </form>
+
+    <div class="divider"><span>ya</span></div>
+
+    <button type="button" class="btn btn-outline btn-block" id="google">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4z"/>
+        <path fill="#34A853" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z"/>
+        <path fill="#FBBC05" d="M6.4 14a6 6 0 0 1 0-3.8V7.6H3.1a10 10 0 0 0 0 8.9L6.4 14z"/>
+        <path fill="#EA4335" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.6l3.3 2.6C7.2 7.8 9.4 5.9 12 5.9z"/>
+      </svg>
+      Google se login karein
+    </button>
+
+    <p class="alt">Account nahi hai? <a href="/signup" data-signup-link>Naya account banayein</a></p>
+  </AuthCard>
+
+  <style>
+    form{display:flex;flex-direction:column;gap:var(--space-2)}
+    .forgot{text-align:center;font-size:14.5px}
+    .divider{display:flex;align-items:center;gap:12px;color:var(--muted-fg);font-size:14px;
+      margin:var(--space-1) 0}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    .alt{text-align:center;font-size:14.5px;color:var(--muted-fg);margin-top:var(--space-1)}
+  </style>
+
+  <script>
+    import { signInWithEmail, signInWithGoogle, authError, getProfile, nextUrl, homeFor } from '../lib/auth';
+    import { currentUser } from '../lib/firebase';
+
+    const form = document.getElementById('login-form') as HTMLFormElement;
+    const email = document.getElementById('email') as HTMLInputElement;
+    const password = document.getElementById('password') as HTMLInputElement;
+    const submit = document.getElementById('submit') as HTMLButtonElement;
+    const googleBtn = document.getElementById('google') as HTMLButtonElement;
+    const errorBox = document.getElementById('form-error') as HTMLElement;
+
+    // `next` signup link par bhi le jao — user wahan se wapas aa sake.
+    const nextParam = new URLSearchParams(window.location.search).get('next');
+    if (nextParam) {
+      const link = document.querySelector<HTMLAnchorElement>('[data-signup-link]');
+      if (link) link.href = `/signup?next=${encodeURIComponent(nextParam)}`;
+    }
+
+    // Pehle se logged in ho to login page dikhane ka koi matlab nahi.
+    currentUser().then(async (user) => {
+      if (!user) return;
+      const profile = await getProfile(user.uid);
+      window.location.replace(nextUrl(homeFor(profile?.role)));
+    });
+
+    const showError = (msg: string) => {
+      errorBox.querySelector('span')!.textContent = msg;
+      errorBox.hidden = false;
+    };
+
+    const fieldError = (input: HTMLInputElement, errId: string, bad: boolean) => {
+      input.closest('.field')?.classList.toggle('invalid', bad);
+      document.getElementById(errId)?.classList.toggle('show', bad);
+      if (bad) {
+        input.setAttribute('aria-invalid', 'true');
+        input.setAttribute('aria-describedby', errId);
+      } else {
+        input.removeAttribute('aria-invalid');
+      }
+    };
+
+    [email, password].forEach((input) => {
+      input.addEventListener('input', () => {
+        if (input.value) fieldError(input, `e-${input.id}`, false);
+      });
+    });
+
+    const busy = (on: boolean, label: string) => {
+      submit.disabled = on;
+      googleBtn.disabled = on;
+      submit.textContent = on ? label : 'Login';
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.hidden = true;
+
+      const noEmail = !email.value.trim();
+      const noPass = !password.value;
+      fieldError(email, 'e-email', noEmail);
+      fieldError(password, 'e-password', noPass);
+      if (noEmail) { email.focus(); return; }
+      if (noPass) { password.focus(); return; }
+
+      busy(true, 'Login ho raha hai…');
+      try {
+        const user = await signInWithEmail(email.value.trim(), password.value);
+        const profile = await getProfile(user.uid);
+        window.location.href = nextUrl(homeFor(profile?.role));
+      } catch (err) {
+        showError(authError(err));
+        busy(false, '');
+      }
+    });
+
+    googleBtn.addEventListener('click', async () => {
+      errorBox.hidden = true;
+      busy(true, 'Login ho raha hai…');
+      try {
+        const { user, isNew } = await signInWithGoogle();
+        if (isNew) {
+          // Google se naya user — role aur city abhi nahi di.
+          const next = nextUrl('');
+          window.location.href = `/signup?complete=1${next ? `&next=${encodeURIComponent(next)}` : ''}`;
+          return;
+        }
+        const profile = await getProfile(user.uid);
+        window.location.href = nextUrl(homeFor(profile?.role));
+      } catch (err) {
+        showError(authError(err));
+        busy(false, '');
+      }
+    });
+  </script>
+</Base>

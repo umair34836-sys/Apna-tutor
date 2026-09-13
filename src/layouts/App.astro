@@ -1,0 +1,145 @@
+---
+// =============================================================================
+// src/layouts/App.astro — login-required pages ka shell
+//
+// Ye pages CSR hain: static HTML sirf khaka hai, data browser mein aata hai.
+// Isliye teen baatein har aisi page par lazmi hain:
+//   1. noindex — dashboard aur admin Google mein nahi hone chahiye
+//   2. Auth gate — logged out ko /login par bhejo, screen khali na chhoro
+//   3. Loading state — warna logged-in user ko ek pal "login karein" dikhta
+//      hai, jo bura lagta hai
+//
+// ★ UI mein links chhupana security NAHI hai. Asli protection firestore.rules
+//   hai. Ye gate sirf tajurbe ke liye hai.
+// =============================================================================
+import Base from './Base.astro';
+import Icon from '../components/Icon.astro';
+import type { Role } from '../lib/auth';
+
+export interface Props {
+  title: string;
+  description?: string;
+  path?: string;
+  /** Is role ke bagair user ko uske apne dashboard par bhej diya jata hai. */
+  role?: Role;
+  heading: string;
+  sub?: string;
+  /** Dashboard nav dikhana hai? Login/signup jaisi pages par nahi. */
+  nav?: boolean;
+}
+
+const {
+  title,
+  description = 'ApnaTutor account.',
+  path = Astro.url.pathname,
+  role,
+  heading,
+  sub,
+  nav = true,
+} = Astro.props;
+
+const tutorNav = [
+  { href: '/tutor/dashboard', label: 'Dashboard', icon: 'trending-up' },
+  { href: '/tutor/leads', label: 'Leads', icon: 'inbox' },
+  { href: '/tutor/profile', label: 'Meri profile', icon: 'user' },
+];
+const parentNav = [
+  { href: '/parent/dashboard', label: 'Dashboard', icon: 'trending-up' },
+  { href: '/parent/requests', label: 'Meri requests', icon: 'file-text' },
+  { href: '/parent/saved-tutors', label: 'Saved tutors', icon: 'bookmark' },
+];
+const links = role === 'tutor' ? tutorNav : role === 'parent' ? parentNav : [];
+const current = path;
+---
+<Base title={title} description={description} path={path} noindex>
+  <div class="app" data-app data-role={role ?? ''}>
+    <!-- Loading — auth state restore hone tak -->
+    <div class="wrap app-loading" data-app-loading>
+      <div class="skeleton sk-title"></div>
+      <div class="skeleton sk-line"></div>
+      <div class="skeleton sk-box"></div>
+      <span class="sr-only">Load ho raha hai…</span>
+    </div>
+
+    <!-- Content — gate pass hone par -->
+    <div data-app-content hidden>
+      <div class="wrap app-head">
+        <div>
+          <h1>{heading}</h1>
+          {sub && <p class="app-sub">{sub}</p>}
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" data-signout>
+          <Icon name="log-out" />Logout
+        </button>
+      </div>
+
+      {nav && links.length > 0 && (
+        <div class="wrap">
+          <nav class="app-nav" aria-label="Account">
+            {links.map((l) => (
+              <a href={l.href} aria-current={current.startsWith(l.href) ? 'page' : undefined}>
+                <Icon name={l.icon} size={17} />{l.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+      )}
+
+      <div class="wrap app-body"><slot /></div>
+    </div>
+  </div>
+
+  <style>
+    .app{padding:var(--space-4) 0 var(--space-6)}
+    .app-loading{display:flex;flex-direction:column;gap:var(--space-2)}
+    .sk-title{height:36px;width:min(320px,70%)}
+    .sk-line{height:18px;width:min(460px,90%)}
+    .sk-box{height:220px;width:100%;margin-top:var(--space-2)}
+
+    .app-head{display:flex;justify-content:space-between;align-items:flex-start;
+      gap:var(--space-2);flex-wrap:wrap}
+    .app-head h1{font-size:clamp(24px,4vw,32px);font-weight:700}
+    .app-sub{margin-top:8px;color:var(--muted-fg);font-size:16px;max-width:60ch}
+
+    .app-nav{display:flex;gap:4px;flex-wrap:wrap;margin-top:var(--space-3);
+      border-bottom:1px solid var(--border);padding-bottom:2px}
+    .app-nav a{display:inline-flex;align-items:center;gap:7px;padding:11px 14px;
+      min-height:44px;color:var(--muted-fg);font-weight:500;font-size:15px;
+      border-bottom:3px solid transparent;border-radius:var(--radius) var(--radius) 0 0}
+    .app-nav a:hover{background:var(--bg-alt);color:var(--fg);text-decoration:none}
+    .app-nav a[aria-current="page"]{color:var(--primary-dark);border-bottom-color:var(--primary);
+      background:var(--primary-soft)}
+
+    .app-body{margin-top:var(--space-4)}
+  </style>
+
+  <script>
+    import { getSession, signOut } from '../lib/auth';
+    import type { Role } from '../lib/auth';
+
+    const root = document.querySelector<HTMLElement>('[data-app]');
+
+    if (root) {
+      const loading = root.querySelector<HTMLElement>('[data-app-loading]')!;
+      const content = root.querySelector<HTMLElement>('[data-app-content]')!;
+      const role = (root.dataset.role || undefined) as Role | undefined;
+
+      getSession(role).then((session) => {
+        // null ka matlab: redirect ho chuka hai. Screen loading par hi rehne do,
+        // warna ek pal ke liye galat content flash karta hai.
+        if (!session) return;
+
+        loading.hidden = true;
+        content.hidden = false;
+
+        // Page ka apna code getSession() se wahi session le leta hai —
+        // memoized hai, isliye na extra read hoti hai na event ki race.
+      });
+
+      root.querySelector('[data-signout]')?.addEventListener('click', async () => {
+        await signOut();
+        window.location.href = '/';
+      });
+    }
+  </script>
+</Base>

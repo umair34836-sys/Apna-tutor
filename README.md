@@ -53,9 +53,9 @@ dhyan se parho.
 | Phase | Kaam | Status |
 |---|---|---|
 | 1 | Foundation — config, tokens, layout, lib, scripts, CI | ✅ |
-| 2 | Firestore rules tests — 75 tests, sab pass | ✅ |
+| 2 | Firestore rules tests — 79 tests, sab pass | ✅ |
 | 3 | Public pages (SSG) + SEO combo pages | ✅ |
-| 4 | Auth + tutor flows | ⬜ |
+| 4 | Auth + tutor flows | ✅ |
 | 5 | Parent flows + search + contact unlock | ⬜ |
 | 6 | Admin panel | ⬜ |
 

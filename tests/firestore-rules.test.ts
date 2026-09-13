@@ -10,7 +10,7 @@
 // Chalane ka tareeqa:  npm run test:rules
 // =============================================================================
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import { assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import {
   addDoc, collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy,
@@ -251,6 +251,45 @@ describe('tutors/{id}/private/contact — gated phone', () => {
 
   it('admin kisi bhi tutor ka contact padh sakta hai', async () => {
     await assertSucceeds(getDoc(doc(db(ADMIN_UID), `tutors/${TUTOR_UID}/private/contact`)));
+  });
+});
+
+// =============================================================================
+// tutors/{id}/private/photoSubmission — tutor upload karta hai, admin approve
+// =============================================================================
+
+describe('tutors/{id}/private/photoSubmission', () => {
+  const cloudinaryUrl = 'https://res.cloudinary.com/demo/image/upload/v1/tutors/pending/x.jpg';
+
+  it('tutor Cloudinary URL ke saath photo submit kar sakta hai', async () => {
+    await assertSucceeds(
+      setDoc(doc(db(TUTOR_UID), `tutors/${TUTOR_UID}/private/photoSubmission`), {
+        url: cloudinaryUrl, publicId: 'tutors/pending/x', submittedAt: serverTimestamp(),
+      })
+    );
+  });
+
+  it('Cloudinary ke bahar ka URL reject hota hai', async () => {
+    // Warna koi bhi URL yahan aa sakta tha — kisi aur ki image ya phishing link.
+    await assertFails(
+      setDoc(doc(db(TUTOR_UID), `tutors/${TUTOR_UID}/private/photoSubmission`), {
+        url: 'https://evil.example.com/x.jpg', publicId: 'x', submittedAt: serverTimestamp(),
+      })
+    );
+  });
+
+  it('doosra banda kisi aur ki photo submission nahi padh sakta', async () => {
+    await seedDoc(`tutors/${TUTOR_UID}/private/photoSubmission`, {
+      url: cloudinaryUrl, publicId: 'x', submittedAt: new Date(),
+    });
+    await assertFails(getDoc(doc(db(PARENT_UID), `tutors/${TUTOR_UID}/private/photoSubmission`)));
+  });
+
+  it('admin photo submission padh sakta hai (approve karne ke liye)', async () => {
+    await seedDoc(`tutors/${TUTOR_UID}/private/photoSubmission`, {
+      url: cloudinaryUrl, publicId: 'x', submittedAt: new Date(),
+    });
+    await assertSucceeds(getDoc(doc(db(ADMIN_UID), `tutors/${TUTOR_UID}/private/photoSubmission`)));
   });
 });
 

@@ -1,0 +1,317 @@
+---
+// src/pages/signup.astro
+//
+// Do modes:
+//   - normal          → email/password se naya account
+//   - ?complete=1      → Google se aaya user, sirf role aur city chahiye
+//
+// ★ Signup par email verification bhejte hain. Email verify na hone tak tutor
+//   profile submit nahi ho sakti — ye sabse sasta spam filter hai.
+// ★ 18 saal se kam umr walon ke liye account nahi (docs/05-RISKS.md §8).
+import Base from '../layouts/Base.astro';
+import AuthCard from '../components/AuthCard.astro';
+import Icon from '../components/Icon.astro';
+import { cities } from '../lib/data';
+---
+<Base title="Create Account | ApnaTutor" description="ApnaTutor par naya account banayein — parent ya tutor." path="/signup" noindex>
+  <AuthCard heading="Naya account" sub="Parents ke liye bilkul free. Tutors ke liye bhi.">
+    <form id="signup-form" novalidate data-has-cities={cities.length > 0 ? '1' : ''}>
+      <!-- Role -->
+      <fieldset class="roles" id="role-block">
+        <legend>Aap kaun hain?</legend>
+        <label class="role">
+          <input type="radio" name="role" value="parent" checked />
+          <span class="role-body">
+            <Icon name="users" />
+            <strong>Parent</strong>
+            <small>Mujhe apne bachay ke liye tutor chahiye</small>
+          </span>
+        </label>
+        <label class="role">
+          <input type="radio" name="role" value="tutor" />
+          <span class="role-body">
+            <Icon name="graduation-cap" />
+            <strong>Tutor</strong>
+            <small>Main parhata/parhati hoon aur students chahiye</small>
+          </span>
+        </label>
+      </fieldset>
+
+      <div class="field">
+        <label for="name">Poora naam</label>
+        <input type="text" id="name" name="name" autocomplete="name" required minlength="2" maxlength="60" />
+        <p class="err" id="e-name"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> <span>Naam likhna zaroori hai</span></p>
+      </div>
+
+      <div class="field">
+        <label for="city">Sheher</label>
+        {cities.length > 0 ? (
+          <select id="city" name="city" required>
+            <option value="">Select karein</option>
+            {cities.map((c) => <option value={c.slug}>{c.name}</option>)}
+            <option value="__other">Koi aur sheher</option>
+          </select>
+        ) : (
+          <input type="text" id="city" name="city" required maxlength="60" placeholder="Misal: Risalpur" />
+        )}
+        <p class="err" id="e-city"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> <span>Sheher select karna zaroori hai</span></p>
+      </div>
+
+      <div class="field" id="city-other-field" hidden>
+        <label for="city-other">Sheher ka naam</label>
+        <input type="text" id="city-other" maxlength="60" placeholder="Misal: Charsadda" />
+      </div>
+
+      <div id="credentials">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" required />
+          <p class="err" id="e-email"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> <span>Email likhna zaroori hai</span></p>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="new-password" required minlength="6" />
+          <p class="hint">Kam az kam 6 characters.</p>
+          <p class="err" id="e-password"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> <span>Password kam az kam 6 characters ka hona chahiye</span></p>
+        </div>
+      </div>
+
+      <label class="agree">
+        <input type="checkbox" id="agree" required />
+        <span>
+          Meri umr <strong>18 saal ya zyada</strong> hai, aur main
+          <a href="/terms" target="_blank" rel="noopener">Terms</a> aur
+          <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> se ittefaq karta/karti hoon.
+        </span>
+      </label>
+      <p class="err" id="e-agree"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> <span>Aage barhne ke liye ye zaroori hai</span></p>
+
+      <p class="state state-error" id="form-error" hidden><Icon name="alert-circle" /><span></span></p>
+
+      <button type="submit" class="btn btn-primary btn-block" id="submit">Account banayein</button>
+    </form>
+
+    <div id="email-block">
+      <div class="divider"><span>ya</span></div>
+
+      <button type="button" class="btn btn-outline btn-block" id="google">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4z"/>
+          <path fill="#34A853" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z"/>
+          <path fill="#FBBC05" d="M6.4 14a6 6 0 0 1 0-3.8V7.6H3.1a10 10 0 0 0 0 8.9L6.4 14z"/>
+          <path fill="#EA4335" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.6l3.3 2.6C7.2 7.8 9.4 5.9 12 5.9z"/>
+        </svg>
+        Google se jari rakhein
+      </button>
+
+      <p class="alt">Pehle se account hai? <a href="/login" data-login-link>Login karein</a></p>
+    </div>
+  </AuthCard>
+
+  <style>
+    form{display:flex;flex-direction:column;gap:var(--space-2)}
+    .roles{border:0;padding:0;margin:0;display:grid;gap:var(--space-1)}
+    .roles legend{font-family:var(--font-heading);font-size:14px;font-weight:600;
+      color:var(--fg);padding:0;margin-bottom:6px}
+    .role{cursor:pointer}
+    .role input{position:absolute;opacity:0;width:0;height:0}
+    .role-body{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;
+      padding:14px;border:1px solid var(--border-strong);border-radius:var(--radius);
+      background:#fff;transition:border-color .2s var(--ease),background-color .2s var(--ease)}
+    .role-body :global(.icon){grid-row:1 / 3;width:24px;height:24px;color:var(--icon-muted)}
+    .role-body strong{font-family:var(--font-heading);font-size:15.5px}
+    .role-body small{color:var(--muted-fg);font-size:13.5px}
+    .role:hover .role-body{border-color:var(--primary-border)}
+    .role input:checked + .role-body{border-color:var(--primary);background:var(--primary-soft)}
+    .role input:checked + .role-body :global(.icon){color:var(--primary)}
+    .role input:focus-visible + .role-body{outline:3px solid var(--primary-bright);outline-offset:2px}
+
+    #credentials{display:flex;flex-direction:column;gap:var(--space-2)}
+    .agree{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;color:var(--muted-fg);
+      cursor:pointer;padding:4px 0}
+    .agree input{width:20px;height:20px;flex:0 0 auto;margin-top:2px;accent-color:var(--primary)}
+    .divider{display:flex;align-items:center;gap:12px;color:var(--muted-fg);font-size:14px;
+      margin:var(--space-1) 0}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    .alt{text-align:center;font-size:14.5px;color:var(--muted-fg);margin-top:var(--space-1)}
+  </style>
+
+  <script>
+    import { signUpWithEmail, signInWithGoogle, completeProfile, getProfile, authError, nextUrl, homeFor } from '../lib/auth';
+    import type { Role } from '../lib/auth';
+    import { currentUser } from '../lib/firebase';
+    import { track } from '../lib/analytics';
+
+    const params = new URLSearchParams(window.location.search);
+    const completeMode = params.get('complete') === '1';
+
+    const form = document.getElementById('signup-form') as HTMLFormElement;
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const cityInput = document.getElementById('city') as HTMLInputElement | HTMLSelectElement;
+    const cityOtherField = document.getElementById('city-other-field') as HTMLElement;
+    const cityOther = document.getElementById('city-other') as HTMLInputElement;
+    const email = document.getElementById('email') as HTMLInputElement;
+    const password = document.getElementById('password') as HTMLInputElement;
+    const agree = document.getElementById('agree') as HTMLInputElement;
+    const submit = document.getElementById('submit') as HTMLButtonElement;
+    const errorBox = document.getElementById('form-error') as HTMLElement;
+    const credentials = document.getElementById('credentials') as HTMLElement;
+    const emailBlock = document.getElementById('email-block') as HTMLElement;
+
+    const nextParam = params.get('next');
+    if (nextParam) {
+      const link = document.querySelector<HTMLAnchorElement>('[data-login-link]');
+      if (link) link.href = `/login?next=${encodeURIComponent(nextParam)}`;
+    }
+
+    // ---- "complete" mode: Google se aaya user, sirf role + city chahiye ----
+    if (completeMode) {
+      credentials.hidden = true;
+      email.required = false;
+      password.required = false;
+      emailBlock.hidden = true;
+      submit.textContent = 'Jari rakhein';
+      document.querySelector('.auth-card h1')!.textContent = 'Thora sa aur';
+      const sub = document.querySelector('.auth-sub');
+      if (sub) sub.textContent = 'Bas do cheezein — aap kaun hain aur kis sheher se.';
+
+      currentUser().then((user) => {
+        if (!user) { window.location.replace('/signup'); return; }
+        if (user.displayName) nameInput.value = user.displayName;
+      });
+    } else {
+      // Pehle se logged in ho to signup dikhane ka koi matlab nahi.
+      currentUser().then((user) => {
+        if (user) window.location.replace(nextUrl('/'));
+      });
+    }
+
+    // ---- "Koi aur sheher" ----
+    cityInput.addEventListener('change', () => {
+      const other = cityInput.value === '__other';
+      cityOtherField.hidden = !other;
+      if (other) cityOther.focus();
+    });
+
+    const showError = (msg: string) => {
+      errorBox.querySelector('span')!.textContent = msg;
+      errorBox.hidden = false;
+    };
+
+    const setErr = (el: HTMLElement, errId: string, bad: boolean, msg?: string) => {
+      el.closest('.field')?.classList.toggle('invalid', bad);
+      const err = document.getElementById(errId);
+      err?.classList.toggle('show', bad);
+      if (msg && err) err.querySelector('span')!.textContent = msg;
+      if (bad) {
+        el.setAttribute('aria-invalid', 'true');
+        el.setAttribute('aria-describedby', errId);
+      } else {
+        el.removeAttribute('aria-invalid');
+      }
+    };
+
+    [nameInput, email, password].forEach((input) =>
+      input.addEventListener('input', () => {
+        if (input.value) setErr(input, `e-${input.id}`, false);
+      })
+    );
+    agree.addEventListener('change', () => {
+      if (agree.checked) document.getElementById('e-agree')?.classList.remove('show');
+    });
+
+    function readForm() {
+      const role = (form.querySelector('input[name="role"]:checked') as HTMLInputElement).value as Role;
+      const city = cityInput.value === '__other' ? cityOther.value.trim() : cityInput.value.trim();
+      return { role, name: nameInput.value.trim(), city };
+    }
+
+    /** Pehla ghalat field focus hota hai — page ke top par error nahi. */
+    function validate(): boolean {
+      const { name, city } = readForm();
+      let firstBad: HTMLElement | null = null;
+
+      const nameBad = name.length < 2;
+      setErr(nameInput, 'e-name', nameBad, 'Naam kam az kam 2 characters ka hona chahiye');
+      if (nameBad) firstBad ??= nameInput;
+
+      const cityBad = !city;
+      setErr(cityInput, 'e-city', cityBad);
+      if (cityBad) firstBad ??= (cityInput.value === '__other' ? cityOther : cityInput);
+
+      if (!completeMode) {
+        const emailBad = !email.value.trim();
+        setErr(email, 'e-email', emailBad);
+        if (emailBad) firstBad ??= email;
+
+        const passBad = password.value.length < 6;
+        setErr(password, 'e-password', passBad);
+        if (passBad) firstBad ??= password;
+      }
+
+      if (!agree.checked) {
+        document.getElementById('e-agree')?.classList.add('show');
+        firstBad ??= agree;
+      }
+
+      if (firstBad) { firstBad.focus(); return false; }
+      return true;
+    }
+
+    const busy = (on: boolean) => {
+      submit.disabled = on;
+      submit.textContent = on ? 'Ban raha hai…' : completeMode ? 'Jari rakhein' : 'Account banayein';
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.hidden = true;
+      if (!validate()) return;
+
+      const profile = readForm();
+      busy(true);
+
+      try {
+        if (completeMode) {
+          await completeProfile(profile);
+        } else {
+          await signUpWithEmail(email.value.trim(), password.value, profile);
+        }
+        if (profile.role === 'tutor') track('tutor_register_start', {});
+        window.location.href = nextUrl(homeFor(profile.role));
+      } catch (err) {
+        showError(authError(err));
+        busy(false);
+      }
+    });
+
+    document.getElementById('google')?.addEventListener('click', async () => {
+      errorBox.hidden = true;
+      if (!agree.checked) {
+        document.getElementById('e-agree')?.classList.add('show');
+        agree.focus();
+        return;
+      }
+
+      try {
+        const { user, isNew } = await signInWithGoogle();
+
+        if (isNew) {
+          // Naya user — form par jo role/city chuni hai wahi istemal karo.
+          const chosen = readForm();
+          await completeProfile(chosen);
+          if (chosen.role === 'tutor') track('tutor_register_start', {});
+          window.location.href = nextUrl(homeFor(chosen.role));
+          return;
+        }
+
+        // Pehle se account hai — uska apna role chalega, form wala nahi.
+        const existing = await getProfile(user.uid);
+        window.location.href = nextUrl(homeFor(existing?.role));
+      } catch (err) {
+        showError(authError(err));
+      }
+    });
+  </script>
+</Base>
