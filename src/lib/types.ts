@@ -54,7 +54,13 @@ export interface City {
   nameUrdu?: string;
   district?: string;
   province?: string;
+  /** Flat list — dropdowns aur filters yahi parhte hain. */
   areas: string[];
+  /**
+   * Wahi areas, union council ke hisaab se grouped — taake 200+ villages wala
+   * dropdown qabil-e-istemal rahe. `scripts/import-areas.mjs` dono likhta hai.
+   */
+  areaGroups?: { unionCouncil: string; villages: string[] }[];
   /** 2–3 unique paragraphs. SEO page banane ke liye LAZMI — thin page gate isay check karta hai. */
   intro: string;
   /**

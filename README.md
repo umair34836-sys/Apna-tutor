@@ -49,6 +49,33 @@ PUBLIC_BASE_PATH = /
 
 CNAME file build khud bana leti hai jab domain github.io ka na ho.
 
+## Areas — Nowshera aur Risalpur
+
+Phase 1 mein site sirf **Nowshera aur Risalpur** tak mehdood hai. Villages
+`data/areas-nowshera.csv` mein hain aur wahan se Firestore mein jate hain:
+
+```bash
+node scripts/import-areas.mjs data/areas-nowshera.csv           # preview
+FIREBASE_SERVICE_ACCOUNT='…' node scripts/import-areas.mjs data/areas-nowshera.csv --write
+```
+
+**CSV ka `source` column khali ho to wo row import nahi hoti.** Ye jaan boojh
+kar hai: dropdown mein ghalat gaon ka naam aana us gaon ke parents ka bharosa
+toranay ke barabar hai.
+
+### Poori mouza list kahan se milegi
+
+CSV mein abhi sirf wo naam hain jo confirm ho sake. Nowshera District mein
+saikron mauzas hain — poori list in mein se kisi ek se lein aur CSV mein
+bhar dein:
+
+| Source | Kya milega |
+|---|---|
+| [FBR valuation table (Nowshera)](https://download1.fbr.gov.pk/SROs/20241029Nowshera1709.pdf) | **Sabse behtar** — Tehsil / Qanungoi / har Village-Mouza ka naam |
+| [ETEA school list (Nowshera)](https://etea.edu.pk/esed_pst/Revised_Nowshera_Male.pdf) | Tehsil + Union Council + school ke naam (school aksar gaon ke naam par hote hain) |
+| [LGKP notification](https://lgkp.gov.pk/wp-content/uploads/2015/04/DROs-ROs-AROS-notificationsGeneral-Seats.pdf) | District/Tehsil council wards |
+| Patwari ya Tehsil office | Mouza record — sabse mustanad, aur local |
+
 ## Architecture ek nazar mein
 
 ```

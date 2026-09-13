@@ -14,7 +14,8 @@
     "check": "astro check",
     "test": "npm run test:rules",
     "test:rules": "firebase emulators:exec --project=apnatutor-rules-test --only firestore \"vitest run\"",
-    "validate-links": "node scripts/validate-links.mjs"
+    "validate-links": "node scripts/validate-links.mjs",
+    "import-areas": "node scripts/import-areas.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",

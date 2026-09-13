@@ -1,0 +1,57 @@
+# ApnaTutor — Nowshera aur Risalpur ke areas (villages / mohallay)
+#
+# Ye file `scripts/import-areas.mjs` Firestore mein load karti hai.
+#
+# ★ IS FILE MEIN SIRF WO NAAM AAYEIN JO KISI ASLI SOURCE SE CONFIRM HON.
+#   `source` column isi liye hai. Jahan source na ho, wo row import nahi hoti.
+#   Andaze se naam likhna is poore project ke usool ke khilaf hai — ghalat gaon
+#   ka naam dropdown mein aana us gaon ke parents ka bharosa toranay ke barabar
+#   hai.
+#
+# Columns:
+#   city            — nowshera ya risalpur (site par yahi do cities hain)
+#   village         — jo naam dropdown mein dikhega
+#   union_council   — grouping ke liye (khali chhora ja sakta hai)
+#   tehsil          — Nowshera / Pabbi / Jehangira
+#   source          — kahan se confirm hua (LAZMI — warna row skip ho jayegi)
+#
+# Poori mouza list kahan se milegi — README ka "Areas" section dekhein.
+
+city,village,union_council,tehsil,source
+risalpur,Risalpur Cantt,Risalpur,Nowshera,wikipedia-risalpur-cantonment
+risalpur,Gunderi,,Nowshera,search-verified
+nowshera,Nowshera Kalan,,Nowshera,wikipedia-nowshera-district
+nowshera,Nowshera Cantt,,Nowshera,wikipedia-nowshera-district
+nowshera,Akora Khattak,Akora Khattak,Jehangira,wikipedia-akora-khattak
+nowshera,Pir Piai,Pir Piai,Nowshera,dbpedia-pir-piai
+nowshera,Manki Sharif,Manki Sharif,Nowshera,wikipedia-manki-sharif
+nowshera,Pir Sabaq,Pirsabaq,Nowshera,wikipedia-pir-sabaq
+nowshera,Amangarh,Aman Garh,Nowshera,wikipedia-nowshera-district
+nowshera,Rashakai,Rashakai,Nowshera,search-verified
+nowshera,Azakhel Bala,Aza Khel,Nowshera,wikipedia-azakhel-bala
+nowshera,Azakhel Payan,Aza Khel,Nowshera,wikipedia-azakhel-payan
+nowshera,Kheshgi Bala,Kheshgi,Nowshera,search-verified
+nowshera,Kheshgi Payan,Kheshgi,Nowshera,search-verified
+nowshera,Badrashi,Badrashi,Nowshera,search-verified
+nowshera,Ziarat Kaka Sahib,Ziarat Kaka Saib,Nowshera,search-verified
+nowshera,Zara Miana,Zara Miana,Nowshera,search-verified
+nowshera,Mughalki,Mughalki,Nowshera,search-verified
+nowshera,Misri Banda,Misri Banda,Nowshera,search-verified
+nowshera,Pahari Kati Khel,Pahari Kati Khel,Nowshera,search-verified
+nowshera,Kahi,Kahi,Jehangira,wikipedia-kahi
+nowshera,Shaidu,Shaidu,Nowshera,search-verified
+nowshera,Inzari,Inzari,Jehangira,wikipedia-inzari
+nowshera,Adamzai,Adam Zai,Jehangira,etea-school-list
+nowshera,Khairabad,Khairabad,Jehangira,etea-school-list
+nowshera,Jehangira,Jehangira,Jehangira,wikipedia-nowshera-district
+nowshera,Nowra,,Nowshera,wikipedia-nowra
+nowshera,Kotli Khurd,,Nowshera,wikipedia-kotli-khurd
+nowshera,Shalbandi,,Nowshera,wikipedia-shalbandi
+nowshera,Pabbi,,Pabbi,wikipedia-pabbi-tehsil
+nowshera,Taru Jabba,,Pabbi,wikipedia-taru-jabba
+nowshera,Spin Khak,,Pabbi,wikipedia-spin-khak
+nowshera,Dak Ismail Khel,,Pabbi,wikipedia-dak-ismail-khel
+nowshera,Jalozai,,Pabbi,wikipedia-dak-ismail-khel
+nowshera,Chapri,,Pabbi,wikipedia-dak-ismail-khel
+nowshera,Saleh Khana,,Pabbi,wikipedia-dak-ismail-khel
+nowshera,Jaroba,,Pabbi,wikipedia-dak-ismail-khel
