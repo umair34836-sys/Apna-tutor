@@ -1,32 +1,84 @@
 ---
 import { url } from '../lib/site';
-// src/components/Header.astro — index.html ka header, waisa ka waisa
+// src/components/Header.astro
+//
+// ★ Auth state yahan localStorage ke hint se aati hai, Firebase se nahi.
+//   Header har page par hai — static pages par bhi — aur wahan Firebase SDK
+//   (300 KB) load karna poori architecture ke khilaf hai. Hint sirf ye tay
+//   karta hai ke "Login / Sign up" dikhein ya "Mera dashboard"; koi ijazat
+//   uspar mabni nahi. Tafseel src/lib/auth-hint.ts mein.
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
+
+const links = [
+  { href: '/find-tutor',    label: 'Tutor dhoondein',     icon: 'search' },
+  { href: '/request-tutor', label: 'Request post karein', icon: 'send' },
+  { href: '/how-it-works',  label: 'Kaise kaam karta hai', icon: 'help' },
+  { href: '/teachers',      label: 'Saare tutors',        icon: 'users' },
+];
 ---
 <header>
   <div class="wrap nav">
     <Logo href={url('/')} size={38} />
 
     <nav class="nav-links" aria-label="Main">
-      <a href={url('/find-tutor')}>Tutor dhoondein</a>
-      <a href={url('/request-tutor')}>Request post karein</a>
-      <a href={url('/how-it-works')}>Kaise kaam karta hai</a>
-      <a href={url('/teachers')}>Saare tutors</a>
+      {links.map((l) => <a href={url(l.href)}>{l.label}</a>)}
     </nav>
 
-    {/* ★ Header ka primary CTA "Tutor banein" tha. Ab Sign up hai.
-        Wajah: jitne zyada parents aur students account banayenge, utne hi
-        zyada tutors khud aayenge — ulta nahi. Tutors ka raasta phir bhi
-        mojood hai: footer ka "Tutors ke liye" aur homepage ka recruit
-        section. Login mobile par bhi dikhta hai — wapas aane wala banda
-        pehli cheez wahi dhoondta hai. */}
     <div class="nav-cta">
-      <a class="btn btn-ghost btn-sm" href={url('/login')}>Login</a>
-      <a class="btn btn-primary btn-sm" href={url('/signup')}>
-        <Icon name="user-plus" />
-        Sign up
+      {/* Login ke baad ye do button hat jate hain — JS hint dekh kar. */}
+      <div class="auth-out" data-auth="out">
+        <a class="btn btn-ghost btn-sm" href={url('/login')}>Login</a>
+        <a class="btn btn-primary btn-sm" href={url('/signup')}>
+          <Icon name="user-plus" />
+          Sign up
+        </a>
+      </div>
+
+      <a class="btn btn-primary btn-sm" href={url('/login')} data-auth="in" data-home-link hidden>
+        <Icon name="trending-up" />
+        Dashboard
       </a>
+
+      {/* Teen lakeerein. Logout yahan andar rehta hai — milta asani se hai,
+          magar har page par saamne khara nahi rehta. */}
+      <button
+        type="button"
+        class="menu-btn"
+        id="menu-btn"
+        aria-controls="site-menu"
+        aria-expanded="false"
+        aria-label="Menu kholein"
+      >
+        <span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="menu" id="site-menu" hidden>
+    <div class="wrap menu-inner">
+      <nav aria-label="Saare pages">
+        {links.map((l) => (
+          <a class="menu-link" href={url(l.href)}><Icon name={l.icon} size={18} />{l.label}</a>
+        ))}
+      </nav>
+
+      <hr />
+
+      <div class="menu-group" data-auth="in" hidden>
+        <a class="menu-link" href={url('/login')} data-home-link>
+          <Icon name="trending-up" size={18} />Mera dashboard
+        </a>
+        <button type="button" class="menu-link danger" data-menu-signout>
+          <Icon name="log-out" size={18} />Logout
+        </button>
+      </div>
+
+      <div class="menu-group" data-auth="out">
+        <a class="menu-link" href={url('/login')}><Icon name="user" size={18} />Login</a>
+        <a class="menu-link" href={url('/signup')}><Icon name="user-plus" size={18} />Naya account banayein</a>
+        <a class="menu-link" href={url('/for-tutors')}><Icon name="graduation-cap" size={18} />Tutors ke liye</a>
+      </div>
     </div>
   </div>
 </header>
@@ -35,15 +87,128 @@ import Logo from './Logo.astro';
   header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);
     backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
   .nav{display:flex;align-items:center;justify-content:space-between;min-height:68px;gap:var(--space-2)}
+
   .nav-links{display:none;gap:4px}
   .nav-links a{padding:10px 12px;border-radius:var(--radius);color:var(--muted-fg);
     font-weight:500;white-space:nowrap;font-size:15px}
   .nav-links a:hover{background:var(--bg-alt);color:var(--fg);text-decoration:none}
+
   .nav-cta{display:flex;gap:var(--space-1);align-items:center}
+  .auth-out{display:flex;gap:var(--space-1);align-items:center}
+
   /* Chhoti screen par Sign up ka icon jagah kha jata hai — text kaafi hai. */
-  @media(max-width:420px){
-    .nav-cta :global(.btn-primary .icon){display:none}
+  @media(max-width:460px){
+    .nav-cta :global(.btn .icon){display:none}
     .nav-cta :global(.btn){padding-inline:12px}
   }
   @media(min-width:1040px){ .nav-links{display:flex} }
+
+  /* ---------- Teen lakeerein ---------- */
+  .menu-btn{
+    width:48px;height:48px;flex:none;
+    display:grid;place-items:center;
+    background:transparent;border:1px solid var(--border);
+    border-radius:var(--radius);cursor:pointer;
+    transition:background-color .2s var(--ease),border-color .2s var(--ease);
+  }
+  .menu-btn:hover{background:var(--bg-alt);border-color:var(--border-strong)}
+  .menu-btn[aria-expanded="true"]{background:var(--primary-soft);border-color:var(--primary-border)}
+
+  .bars{display:grid;gap:4px;width:20px}
+  .bars span{display:block;height:2px;border-radius:2px;background:var(--fg);
+    transition:transform .2s var(--ease),opacity .2s var(--ease)}
+  .menu-btn[aria-expanded="true"] .bars span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+  .menu-btn[aria-expanded="true"] .bars span:nth-child(2){opacity:0}
+  .menu-btn[aria-expanded="true"] .bars span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+  /* ---------- Panel ---------- */
+  .menu{
+    border-top:1px solid var(--border);
+    background:var(--card);
+    box-shadow:var(--shadow-lg);
+    max-height:min(70vh,560px);
+    overflow-y:auto;
+  }
+  .menu-inner{padding-block:var(--space-2);display:grid;gap:var(--space-1)}
+  .menu nav,.menu-group{display:grid;gap:2px}
+
+  .menu-link{
+    display:flex;align-items:center;gap:12px;
+    min-height:48px;padding:10px 12px;
+    border:0;border-radius:var(--radius);
+    background:transparent;color:var(--fg);
+    font-family:var(--font-heading);font-size:16px;font-weight:500;
+    text-align:left;width:100%;cursor:pointer;
+  }
+  .menu-link:hover{background:var(--bg-alt);text-decoration:none}
+  .menu-link :global(.icon){color:var(--icon-muted);flex:none}
+  .menu-link.danger{color:var(--destructive)}
+  .menu-link.danger :global(.icon){color:var(--destructive)}
+  .menu-link.danger:hover{background:#FEF2F2}
+
+  .menu hr{border:0;border-top:1px solid var(--border);margin:var(--space-1) 0}
+
+  @media (prefers-reduced-motion: reduce){
+    .bars span{transition:none}
+  }
 </style>
+
+<script>
+  import { url } from '../lib/site';
+  import { homeForRole, readAuthHint } from '../lib/auth-hint';
+
+  const btn = document.getElementById('menu-btn');
+  const menu = document.getElementById('site-menu');
+
+  if (btn && menu) {
+    // ---- Kaun sa header dikhe: logged in ya logged out ----
+    // Default markup logged-out hai. Hint hone par swap kar dete hain — is
+    // tarah pehli dafa aane wale ko kuch flash nahi hota.
+    const hint = readAuthHint();
+
+    document.querySelectorAll<HTMLElement>('[data-auth]').forEach((el) => {
+      el.hidden = (el.dataset.auth === 'in') !== hint.signedIn;
+    });
+
+    if (hint.signedIn) {
+      const home = url(homeForRole(hint.role));
+      document.querySelectorAll<HTMLAnchorElement>('[data-home-link]').forEach((a) => {
+        a.href = home;
+      });
+    }
+
+    // ---- Kholna / band karna ----
+    const setOpen = (open: boolean) => {
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      menu.hidden = !open;
+    };
+
+    btn.addEventListener('click', () => {
+      setOpen(btn.getAttribute('aria-expanded') !== 'true');
+    });
+
+    // Link par click — panel khula na reh jaye.
+    menu.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setOpen(false);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) { setOpen(false); btn.focus(); }
+    });
+
+    document.addEventListener('click', (e) => {
+      const t = e.target as Node;
+      if (!menu.hidden && !menu.contains(t) && !btn.contains(t)) setOpen(false);
+    });
+
+    // ---- Logout ----
+    // Firebase sirf ab load hoti hai, page load par nahi.
+    menu.querySelector('[data-menu-signout]')?.addEventListener('click', async (e) => {
+      const el = e.currentTarget as HTMLButtonElement;
+      el.disabled = true;
+      const { signOut } = await import('../lib/auth');
+      await signOut();
+      window.location.href = url('/');
+    });
+  }
+</script>

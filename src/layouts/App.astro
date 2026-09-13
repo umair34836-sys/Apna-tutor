@@ -100,14 +100,15 @@ const current = path;
 
     <!-- Content — gate pass hone par -->
     <div data-app-content hidden>
+      {/* Logout yahan se hata diya. Har page ke sab se upar, heading ke
+          barabar mein khara hona us button ka kaam nahi tha — ab wo header
+          ke teen-lakeeron wale menu mein hai: milta asani se hai, magar
+          saamne nahi rehta. */}
       <div class="wrap app-head">
         <div>
           <h1>{heading}</h1>
           {sub && <p class="app-sub">{sub}</p>}
         </div>
-        <button type="button" class="btn btn-ghost btn-sm" data-signout>
-          <Icon name="log-out" />Logout
-        </button>
       </div>
 
       {nav && links.length > 0 && (

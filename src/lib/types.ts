@@ -7,6 +7,15 @@
 //   likh degi aur ek hi scrape mein saare numbers leak ho jayenge.
 // =============================================================================
 
+/**
+ * Account ka role.
+ *
+ * `parent` aur `student` system mein ek hi tarah chalte hain — dono tutor
+ * dhoondte hain, ek hi dashboard, ek hi rules ka raasta. Farq sirf ye hai ke
+ * tuition kis ke liye hai.
+ */
+export type Role = 'parent' | 'student' | 'tutor';
+
 export type TutorStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 export type Gender = 'male' | 'female';
 /**

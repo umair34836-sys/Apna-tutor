@@ -11,15 +11,15 @@
 
 import { getFirebase, currentUser } from './firebase';
 import { url } from './site';
+import { homeForRole, writeAuthHint } from './auth-hint';
 import type { User } from 'firebase/auth';
+import type { Role } from './types';
 
 /**
- * `parent` aur `student` dono ek hi taraf ke hain — tutor dhoondte hain,
- * request post karte hain, contact unlock karte hain. Farq sirf ye hai ke
- * request kis ke liye hai. Is liye dono ka dashboard aur rules ka raasta ek
- * hi hai; alag `student` area banana sirf do jaisi cheezein do jagah rakhta.
+ * Role ki tareef src/lib/types.ts mein hai — wahan isliye ke auth-hint.ts ko
+ * bhi chahiye, aur usay auth.ts (yani Firebase) import nahi karni chahiye.
  */
-export type Role = 'parent' | 'student' | 'tutor';
+export type { Role };
 
 /** Wo roles jo tutor DHOONDTE hain (parent side ki har page inke liye hai). */
 export const isLearnerRole = (role: Role | undefined): boolean =>
@@ -92,6 +92,8 @@ export async function signUpWithEmail(
     createdAt: serverTimestamp(),
   });
 
+  writeAuthHint({ signedIn: true, role: profile.role });
+
   // Sabse sasta spam filter. Verify na ho to tutor profile submit nahi hoti.
   await sendEmailVerification(cred.user).catch(() => {
     // Spark par 150 emails/day. Limit lagne par signup fail na ho.
@@ -134,6 +136,8 @@ export async function completeProfile(profile: UserProfile): Promise<void> {
     city: profile.city,
     createdAt: serverTimestamp(),
   });
+
+  writeAuthHint({ signedIn: true, role: profile.role });
 }
 
 export async function sendPasswordReset(email: string): Promise<void> {
@@ -150,17 +154,28 @@ export async function resendVerification(): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
+  writeAuthHint(null);
   const { auth } = await getFirebase();
   const { signOut: fbSignOut } = await import('firebase/auth');
   await fbSignOut(auth);
 }
 
-/** `users/{uid}` doc. Na mile to null. */
+/**
+ * `users/{uid}` doc. Na mile to null.
+ *
+ * Har raasta — login, signup, har guarded page — yahin se guzarta hai, isliye
+ * header ka auth hint bhi yahin taza hota hai.
+ */
 export async function getProfile(uid: string): Promise<UserProfile | null> {
   const { db } = await getFirebase();
   const { doc, getDoc } = await import('firebase/firestore');
   const snap = await getDoc(doc(db, 'users', uid));
-  return snap.exists() ? (snap.data() as UserProfile) : null;
+
+  if (!snap.exists()) return null;
+
+  const profile = snap.data() as UserProfile;
+  writeAuthHint({ signedIn: true, role: profile.role });
+  return profile;
 }
 
 export interface Session {
@@ -296,7 +311,7 @@ export function nextUrl(fallback = '/'): string {
 }
 
 export function homeFor(role: Role | undefined): string {
-  return role === 'tutor' ? '/tutor/dashboard' : '/parent/dashboard';
+  return homeForRole(role);
 }
 
 /** Roman Urdu label — role batane ke liye. */
