@@ -70,6 +70,9 @@ jobs:
           # trigger karni ho.
           PUBLIC_GITHUB_REPO:          ${{ secrets.PUBLIC_GITHUB_REPO || github.repository }}
           PUBLIC_GITHUB_WORKFLOW:      deploy.yml
+          # Jis branch par ye build chal rahi hai, wahi /admin/rebuild dobara
+          # chalayega. Hard-code karne se hi "No ref found" wala masla bana tha.
+          PUBLIC_GITHUB_BRANCH:        ${{ github.ref_name }}
         run: npm run build
 
       - name: SEO gate — thin pages aur phone leaks block karo

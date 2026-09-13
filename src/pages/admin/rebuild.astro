@@ -22,7 +22,7 @@ import { env } from '../../lib/site';
   admin
   path="/admin/rebuild"
 >
-  <div id="rebuild" data-repo={env.githubRepo} data-workflow={env.githubWorkflow}>
+  <div id="rebuild" data-repo={env.githubRepo} data-workflow={env.githubWorkflow} data-branch={env.githubBranch}>
     <section class="card">
       <h2>Rebuild kab chahiye</h2>
       <p class="card-sub">
@@ -92,7 +92,10 @@ import { env } from '../../lib/site';
 
     <section class="card">
       <h2>Build chalayein</h2>
-      <p class="card-sub">Ye <code>main</code> branch par <code>workflow_dispatch</code> bhejta hai.</p>
+      <p class="card-sub">
+        Ye <code>{env.githubBranch || '(default branch)'}</code> par
+        <code>workflow_dispatch</code> bhejta hai.
+      </p>
 
       <button type="button" class="btn btn-primary" data-run disabled>
         <Icon name="refresh" />Abhi rebuild karein
@@ -137,11 +140,41 @@ import { env } from '../../lib/site';
 
     const repo = root.dataset.repo ?? '';
     const workflow = root.dataset.workflow || 'deploy.yml';
+    const branchHint = root.dataset.branch ?? '';
     const input = document.getElementById('token') as HTMLInputElement;
 
     const readToken = () => {
       try { return localStorage.getItem(KEY) ?? ''; } catch { return ''; }
     };
+
+    const ghHeaders = () => ({
+      Authorization: `Bearer ${readToken()}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    });
+
+    /**
+     * Build kis branch par chalani hai.
+     *
+     * Pehle yahan 'main' likha tha aur GitHub 422 deta tha — "No ref found for:
+     * main". Har repo ka default branch 'main' nahi hota.
+     *
+     * Ab do surtein hain: build khud apna branch bata deti hai (deploy.yml se),
+     * aur wo maloomat na ho to GitHub se repo ka default branch pooch lete hain.
+     * Dusri surat purani build par kaam karti hai — yani button aaj hi chalta
+     * hai, agli deploy ka intezar kiye bagair.
+     */
+    async function targetBranch(): Promise<string> {
+      if (branchHint) return branchHint;
+
+      const res = await fetch(`https://api.github.com/repos/${repo}`, { headers: ghHeaders() });
+      if (!res.ok) {
+        throw new Error(
+          `Repo ki maloomat nahi mil saki (${res.status}). Token par is repo ka access check karein.`
+        );
+      }
+      return (await res.json()).default_branch as string;
+    }
 
     function refreshTokenState() {
       const token = readToken();
@@ -179,18 +212,17 @@ import { env } from '../../lib/site';
       btn.disabled = true;
       btn.textContent = 'Build shuru kar rahe hain…';
 
+      let branch = branchHint;
+
       try {
+        branch = await targetBranch();
+
         const res = await fetch(
           `https://api.github.com/repos/${repo}/actions/workflows/${workflow}/dispatches`,
           {
             method: 'POST',
-            headers: {
-              Authorization: `Bearer ${readToken()}`,
-              Accept: 'application/vnd.github+json',
-              'X-GitHub-Api-Version': '2022-11-28',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ ref: 'main' }),
+            headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ref: branch }),
           }
         );
 
@@ -202,6 +234,12 @@ import { env } from '../../lib/site';
           throw new Error('Token qabool nahi hua. Expire ho gaya hoga, ya us par "Actions: Read and write" permission nahi hai.');
         } else if (res.status === 404) {
           throw new Error(`Workflow nahi mila (${repo} → ${workflow}). Repo ka naam aur workflow file check karein.`);
+        } else if (res.status === 422) {
+          // Aam tor par: branch ka naam ghalat hai (GitHub isay "ref" kehta hai).
+          throw new Error(
+            `Branch "${branch}" GitHub par nahi mili. Agli build ke baad ye khud theek ho jata hai; ` +
+            'tab tak GitHub → Actions → "Build and deploy" → Run workflow se kaam chal jayega.'
+          );
         } else {
           const body = await res.text();
           throw new Error(`GitHub ne ${res.status} diya. ${body.slice(0, 160)}`);

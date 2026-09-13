@@ -155,6 +155,16 @@ export const env = {
   githubRepo: import.meta.env.PUBLIC_GITHUB_REPO ?? '',
   /** Workflow ka file name. */
   githubWorkflow: import.meta.env.PUBLIC_GITHUB_WORKFLOW ?? 'deploy.yml',
+  /**
+   * Kis branch par build chalani hai.
+   *
+   * ★ Pehle yahan 'main' hard-coded tha aur GitHub ne 422 diya:
+   *   "No ref found for: main". Har repo ka default branch 'main' nahi hota —
+   *   is repo ka to hai hi nahi. Ab build khud apna branch bata deti hai
+   *   (deploy.yml mein github.ref_name), is liye ye kabhi ghalat ho hi nahi
+   *   sakta.
+   */
+  githubBranch: import.meta.env.PUBLIC_GITHUB_BRANCH ?? '',
 } as const;
 
 /**
