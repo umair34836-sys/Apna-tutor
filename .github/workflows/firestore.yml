@@ -46,25 +46,41 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "::error::FIREBASE_SERVICE_ACCOUNT secret set nahi hai — pehle wo banayein, phir ye workflow chalayein."
-            echo ""
-            echo "1) Firebase Console → Project settings (gear) → Service accounts"
-            echo "   → Generate new private key. Ek .json file download hogi."
-            echo ""
-            echo "2) Us file ka POORA text copy karein — { se } tak."
-            echo "   Phone par file ko .txt par rename kar lein, phir wo khul jati hai."
-            echo ""
-            echo "3) GitHub → repo → Settings → Secrets and variables → Actions"
-            echo "   ★ Upar do tabs hain: 'Secrets' aur 'Variables'."
-            echo "     SECRETS wale tab par 'New repository secret'."
-            echo "     Variables mein daalne se workflow usay dekh nahi payega."
-            echo "   Name (bilkul aisa hi): FIREBASE_SERVICE_ACCOUNT"
-            echo "   Secret: wahi poora JSON"
-            echo ""
-            echo "Uske baad ye workflow dobara chalayein."
-            exit 1
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            case "$FIREBASE_SERVICE_ACCOUNT" in
+              \{*) ;;
+              *) echo "::warning::Secret '{' se shuru nahi hota — shayad poora JSON copy nahi hua." ;;
+            esac
+            exit 0
           fi
+
+          # Secret mojood na ho to sab se kaam ki baat ye NAHI hai ke "set nahi
+          # hai" — wo to banda dekh hi raha hai. Kaam ki baat ye hai ke wo kis
+          # GHALAT jagah ja sakti hai. GitHub par secrets ki chaar alag alag
+          # jagahein hain aur teen bilkul aisi hi dikhti hain.
+          echo "::error::FIREBASE_SERVICE_ACCOUNT is repo ki ACTIONS secrets mein nahi hai."
+          echo ""
+          echo "Sahi jagah sirf ye page hai:"
+          echo ""
+          echo "  https://github.com/${{ github.repository }}/settings/secrets/actions"
+          echo ""
+          echo "Us page par 'Repository secrets' ki list mein FIREBASE_SERVICE_ACCOUNT"
+          echo "likha nazar aana chahiye."
+          echo ""
+          echo "Ye chaaron jagahein ek jaisi dikhti hain, magar workflow ko sirf"
+          echo "pehli wali nazar aati hai:"
+          echo ""
+          echo "  ✓ Repo → Settings → Secrets and variables → ACTIONS → Secrets"
+          echo "  ✗ usi page ka VARIABLES tab"
+          echo "  ✗ AGENTS / Codespaces / Dependabot ki secrets"
+          echo "  ✗ 'New environment secret' (sirf us environment ko milti hai)"
+          echo "  ✗ apni account settings (avatar → Settings) ki secrets"
+          echo ""
+          echo "Chabi abhi banani ho to: Firebase Console → Project settings →"
+          echo "Service accounts → Generate new private key. Us JSON ka POORA text"
+          echo "({ se } tak) upar wale page par 'New repository secret' mein paste"
+          echo "karein, naam bilkul: FIREBASE_SERVICE_ACCOUNT"
+          exit 1
 
       - name: Credentials file banao
         env:
