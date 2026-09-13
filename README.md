@@ -29,6 +29,50 @@ site empty states dikhati hai. Ye jaan boojh kar hai: jhoota demo data kabhi nah
 | `npm run check` | Astro + TypeScript type checking |
 | `npm run validate-links` | Har internal link base path ke andar hai? |
 
+## Firestore setup — ek baar ka kaam
+
+`firestore.rules` aur `firestore.indexes.json` repo mein hone se **kuch nahi
+hota**. Inhe Firestore par deploy karna parta hai. Ye na kiya ho to site
+chalne mein aisi lagti hai jaise poori tooti hui ho:
+
+| Kya nahi hua | Site par kya dikhta hai |
+|---|---|
+| Indexes deploy nahi huye | "Database ka setup abhi mukammal nahi hua (index nahi bana)" — search, leads, dashboards aur admin ki har list par |
+| Rules deploy nahi huin | "Aapko is kaam ki ijazat nahi hai" — login theek hone par bhi |
+
+Wajah ye hai ke jo bhi query `where` aur `orderBy` dono istemal karti hai usay
+Firestore ka composite index chahiye, aur is site ki taqreeban har list wahi
+karti hai. Ek page nahi — sab ek saath ruk jate hain.
+
+### Deploy karne ka tareeqa
+
+**Bina kuch install kiye (aasan raasta):**
+
+GitHub → **Actions** → **"Firestore rules aur indexes deploy"** → **Run workflow**
+
+Iske liye `FIREBASE_SERVICE_ACCOUNT` secret hona zaroori hai (wahi jo build
+istemal karti hai). Firebase Console → Project settings → Service accounts →
+Generate new private key; us JSON ko poora ka poora GitHub → Settings →
+Secrets and variables → Actions mein paste kar dein.
+
+**Ya apne computer se:**
+
+```bash
+npx firebase login
+npx firebase deploy --only firestore:rules,firestore:indexes --project apna-tutor-33bf3
+```
+
+Indexes ban'ne mein chand minute lag sakte hain (Console → Firestore → Indexes
+par "Building" dikhega). Jab tak "Enabled" na ho jayein, wahi error aata
+rahega.
+
+### Ek index foran banana ho to
+
+Firebase har nakaam query ke error mein us index ko banane ka seedha link deta
+hai. Browser ka console kholein (F12 → Console) — `[firestore] Index nahi
+bana` wali line mein wo link mojood hota hai. Us par click karne se Console
+mein index pehle se bhara hua khul jata hai.
+
 ## Site kahan chalti hai
 
 Custom domain abhi nahi hai, isliye site GitHub ke project page par hai:

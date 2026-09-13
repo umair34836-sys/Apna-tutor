@@ -212,25 +212,56 @@ export async function isAdmin(): Promise<boolean> {
  */
 export function firestoreError(err: unknown): string {
   const code = (err as { code?: string })?.code ?? '';
+  const raw = String((err as { message?: string })?.message ?? '');
 
   switch (code) {
     case 'permission-denied':
+      // Setup ke doran iski aam wajah ye hoti hai ke firestore.rules deploy hi
+      // nahi huin — us surat mein login theek hone par bhi yahi error aata hai.
+      console.error(
+        '[firestore] permission-denied — agar aap login hain to pehle rules check karein:\n' +
+          '  npx firebase deploy --only firestore:rules --project apna-tutor-33bf3',
+        err
+      );
       return 'Aapko is kaam ki ijazat nahi hai. Login check karein.';
+
     case 'resource-exhausted':
       // Ye dekho to Firebase Console → Usage foran check karo.
       return 'Website par abhi bohat rush hai. Kuch dair baad koshish karein.';
+
     case 'unavailable':
     case 'deadline-exceeded':
       return 'Internet connection check karein aur dobara koshish karein.';
+
     case 'unauthenticated':
       return 'Aapka session khatam ho gaya. Dobara login karein.';
+
     case 'already-exists':
       return 'Ye pehle se mojood hai.';
-    case 'failed-precondition':
-      // Aam wajah: composite index nahi bana. Console ke error mein link hota hai.
-      return 'Kuch masla hua. Dobara koshish karein.';
+
+    case 'failed-precondition': {
+      // ★ Ismein taqreeban hamesha wajah ek hi hoti hai: composite index nahi
+      //   bana. Pehle yahan "Kuch masla hua" likha tha — jo sach to tha magar
+      //   bilkul bekaar: har query jismein where + orderBy hai (search, leads,
+      //   dashboards, admin lists) isi par ruk jati hai, aur banda samajhta hai
+      //   ke poori site kharab hai. Firebase apne error mein index banane ka
+      //   seedha link deta hai; usay chhupana ghalti thi.
+      const link = raw.match(/https:\/\/console\.firebase\.google\.com\/\S+/)?.[0];
+      console.error(
+        '[firestore] Index nahi bana. Ye ek baar ka setup hai:\n' +
+          (link ? `  Is link par click karein: ${link}\n` : '') +
+          '  Ya sab indexes ek saath deploy karein:\n' +
+          '  npx firebase deploy --only firestore:indexes --project apna-tutor-33bf3',
+        err
+      );
+      return 'Database ka setup abhi mukammal nahi hua (index nahi bana). ' +
+        'Ye ek baar ka kaam hai — README ka "Firestore setup" dekhein.';
+    }
+
     default:
-      console.error('[firestore]', code, err);
-      return 'Kuch masla hua. Dobara koshish karein.';
+      console.error('[firestore]', code || '(no code)', err);
+      // Code saath likhna zaroori hai. Iske bagair banda sirf "kuch masla hua"
+      // bata sakta hai, jis se koi bhi tashkhees mumkin nahi.
+      return `Kuch masla hua. Dobara koshish karein.${code ? ` (${code})` : ''}`;
   }
 }

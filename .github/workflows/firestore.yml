@@ -1,0 +1,84 @@
+name: Firestore rules aur indexes deploy
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rules aur indexes Firestore par "deploy" karni parti hain — repo mein hone se
+# kuch nahi hota. Ye workflow isi liye hai, taake ye kaam bina Firebase CLI
+# install kiye ho jaye:
+#
+#   GitHub → Actions → "Firestore rules aur indexes deploy" → Run workflow
+#
+# Indexes na hon to har wo query fail hoti hai jismein where + orderBy hai —
+# yani search, leads, dashboards aur admin ki saari lists. Site par wo
+# "Database ka setup abhi mukammal nahi hua" ke taur par dikhta hai.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'firestore.rules'
+      - 'firestore.indexes.json'
+      - '.github/workflows/firestore.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firestore-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Push sirf default branch se deploy kare; manual run hamesha chale.
+    if: >-
+      github.event_name != 'push' ||
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Service account check
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret set nahi hai."
+            echo "Firebase Console → Project settings → Service accounts →"
+            echo "Generate new private key. Us JSON ko poora ka poora"
+            echo "GitHub → Settings → Secrets and variables → Actions mein"
+            echo "FIREBASE_SERVICE_ACCOUNT ke naam se paste karein."
+            exit 1
+          fi
+
+      - name: Credentials file banao
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          # Runner ki apni disk par — repo mein kabhi nahi.
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          # Project id wahi jo service account ka hai — hardcode karne se
+          # ghalat project par deploy hone ka khatra rehta hai.
+          node -e "
+            const sa = require(process.env.RUNNER_TEMP + '/sa.json');
+            if (!sa.project_id) { console.error('::error::Service account JSON mein project_id nahi hai.'); process.exit(1); }
+            require('fs').appendFileSync(process.env.GITHUB_ENV, 'FIREBASE_PROJECT=' + sa.project_id + '\n');
+            console.log('Project:', sa.project_id);
+          "
+
+      - name: Rules aur indexes deploy karo
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+        run: |
+          npx firebase deploy \
+            --only firestore:rules,firestore:indexes \
+            --project "$FIREBASE_PROJECT" \
+            --non-interactive
+
+      - name: Credentials mitao
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"
