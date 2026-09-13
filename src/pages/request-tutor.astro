@@ -1,0 +1,235 @@
+---
+// =============================================================================
+// src/pages/request-tutor.astro
+//
+// Parent apni requirement post karta hai. Public page hai — form sab ko dikhta
+// hai, login sirf submit par chahiye (warna log form dekhe bagair hi chale
+// jate hain).
+//
+// ★ Submit par parent ka browser khud matching tutors dhoond kar max 5 lead
+//   documents likhta hai. Server nahi hai, yahi tareeqa hai. Lead mein parent
+//   ka number KABHI nahi jata — rules bhi rokti hain.
+// =============================================================================
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { cities, subjects } from '../lib/data';
+import { CLASSES, GENDERS, MODES } from '../lib/taxonomy';
+
+const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
+const ready = cities.length > 0 && subjects.length > 0;
+---
+<Base
+  title="Post a Tuition Request — Free for Parents | ApnaTutor"
+  description="Apni requirement post karein — class, subject, area aur budget. Hum aapke area ke matching tutors tak pohancha dete hain. Parents ke liye bilkul free."
+  path="/request-tutor"
+>
+  <div class="wrap page-head">
+    <h1>Apni requirement batayein</h1>
+    <p class="lead">
+      Sau profiles browse karne ki zarurat nahi. Ye form bharein — hum aap ke area ke
+      matching tutors tak aap ki request pohancha denge, aur jo dilchaspi lein wo aap ke
+      dashboard mein nazar aayenge.
+    </p>
+    <p class="privacy">
+      <Icon name="lock" size={17} />
+      Aap ka number tutors ko khud-ba-khud nahi jata. Aap khud faisla karte hain kis se rabta karna hai.
+    </p>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div id="request-page" data-city-areas={JSON.stringify(cityAreas)} data-ready={ready ? '1' : ''}>
+        {!ready && (
+          <p class="state state-error">
+            <Icon name="alert-circle" />
+            <span>Requests abhi band hain — hum cities aur subjects set kar rahe hain. Thori dair baad koshish karein.</span>
+          </p>
+        )}
+
+        {ready && (
+          <form id="request-form" novalidate>
+            <div class="card">
+              <h2>Kis ke liye tutor chahiye?</h2>
+
+              <div class="field-grid">
+                <div class="field">
+                  <label for="classLevel">Class</label>
+                  <select id="classLevel" required>
+                    <option value="">Select karein</option>
+                    {CLASSES.map((c) => <option value={c.slug}>{c.labelUrdu}</option>)}
+                  </select>
+                  <p class="err" id="e-classLevel"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+                </div>
+
+                <div class="field">
+                  <label for="subject">Subject</label>
+                  <select id="subject" required>
+                    <option value="">Select karein</option>
+                    {subjects.map((s) => <option value={s.slug}>{s.name}</option>)}
+                  </select>
+                  <p class="err" id="e-subject"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2>Kahan aur kaise?</h2>
+
+              <div class="field-grid">
+                <div class="field">
+                  <label for="city">Sheher</label>
+                  <select id="city" required>
+                    <option value="">Select karein</option>
+                    {cities.map((c) => <option value={c.slug}>{c.name}</option>)}
+                  </select>
+                  <p class="err" id="e-city"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+                </div>
+
+                <div class="field">
+                  <label for="area">Area</label>
+                  <select id="area" required disabled>
+                    <option value="">Pehle sheher select karein</option>
+                  </select>
+                  <p class="hint">Sirf area — poora ghar ka pata kabhi na likhein.</p>
+                  <p class="err" id="e-area"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+                </div>
+              </div>
+
+              <div class="field-grid">
+                <div class="field">
+                  <label for="mode">Teaching mode</label>
+                  <select id="mode">
+                    <option value="any">Dono theek hain</option>
+                    {MODES.map((m) => <option value={m.slug}>{m.labelUrdu}</option>)}
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label for="genderPref">Teacher gender</label>
+                  <select id="genderPref">
+                    <option value="any">Koi preference nahi</option>
+                    {GENDERS.map((g) => <option value={g.slug}>{g.labelUrdu}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2>Budget aur timing</h2>
+
+              <div class="field-grid">
+                <div class="field">
+                  <label for="budgetMax">Zyada se zyada monthly budget (Rs.)</label>
+                  <input type="number" id="budgetMax" min="500" max="200000" step="500" required placeholder="5000" />
+                  <p class="err" id="e-budgetMax"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+                </div>
+
+                <div class="field">
+                  <label for="timing">Pasandeeda waqt</label>
+                  <input type="text" id="timing" maxlength="80" required placeholder="Misal: Shaam 4–6 baje" />
+                  <p class="err" id="e-timing"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="notes">Aur kuch batana chahein? <span class="hint">(optional)</span></label>
+                <textarea id="notes" maxlength="1000" rows="4"
+                  placeholder="Misal: Beti class 8 mein hai, Maths mein kamzor hai. Female teacher chahiye jo ghar aa sake."></textarea>
+                <p class="hint">
+                  Bachay ka poora naam, school ya ghar ka pata likhne ki zarurat nahi — class aur subject kaafi hai.
+                </p>
+                <p class="err" id="e-notes"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2>Aap ka rabta <span class="tag">Private</span></h2>
+              <p class="card-sub">
+                Ye number <strong>tutors ko nazar nahi aata</strong>. Hum zarurat par aap se rabta karne ke
+                liye rakhte hain, aur aap khud faisla karte hain kis tutor ko number dena hai.
+              </p>
+
+              <div class="field">
+                <label for="phone">Aap ka phone number</label>
+                <div class="phone-input">
+                  <span class="prefix" aria-hidden="true">+92</span>
+                  <input type="tel" id="phone" inputmode="numeric" maxlength="11" placeholder="3001234567" required />
+                </div>
+                <p class="hint">0 ke bagair likhein — misal: 3001234567</p>
+                <p class="err" id="e-phone"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+              </div>
+            </div>
+
+            <p class="state state-info" id="login-note" hidden>
+              <Icon name="info" />
+              <span>Request bhejne ke liye login karna zaroori hai. Aap ki likhi hui tafseel mehfooz hai — login ke baad seedha yahin wapas aayenge.</span>
+            </p>
+
+            <p class="state state-error" id="submit-error" hidden><Icon name="alert-circle" /><span></span></p>
+
+            <div class="submit-bar">
+              <button type="submit" class="btn btn-primary" id="submit"><Icon name="send" />Request bhejein</button>
+              <span class="hint">Parents ke liye bilkul free</span>
+            </div>
+          </form>
+        )}
+
+        <!-- Done -->
+        <div id="done" hidden>
+          <div class="done-card">
+            <Icon name="check-circle" />
+            <h2>Request bhej di gayi</h2>
+            <p id="done-body"></p>
+            <p class="done-note">
+              Jo tutors dilchaspi lenge wo aap ke dashboard mein nazar aayenge. Aap faisla karenge
+              kis se rabta karna hai — aap ka number kisi ko khud-ba-khud nahi jata.
+            </p>
+            <div class="done-actions">
+              <a class="btn btn-primary" href="/parent/requests">Meri requests dekhein</a>
+              <a class="btn btn-outline" href="/find-tutor">Khud bhi tutors dekhein</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .page-head{padding:var(--space-4) var(--space-2) 0;max-width:760px}
+    .page-head h1{font-size:clamp(26px,5vw,38px);font-weight:700;text-wrap:balance}
+    .lead{margin-top:14px;color:var(--muted-fg);font-size:17px}
+    .privacy{margin-top:var(--space-2);display:inline-flex;gap:8px;align-items:center;
+      background:var(--primary-soft);border:1px solid var(--primary-border);
+      color:var(--primary-dark);border-radius:var(--radius);padding:10px 14px;font-size:14.5px}
+    .privacy :global(.icon){flex:0 0 auto}
+
+    #request-page{max-width:760px}
+    form{display:flex;flex-direction:column;gap:var(--space-3)}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+    .card h2{font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px}
+    .card-sub{color:var(--muted-fg);font-size:15px}
+    .tag{font-family:var(--font-body);font-size:12px;font-weight:600;text-transform:uppercase;
+      letter-spacing:.05em;background:var(--b-id-bg);color:var(--b-id-fg);
+      border:1px solid var(--b-id-border);border-radius:var(--radius-pill);padding:3px 9px}
+
+    .phone-input{display:flex;align-items:stretch}
+    .phone-input .prefix{display:grid;place-items:center;padding:0 14px;min-height:48px;
+      background:var(--bg-alt);border:1px solid var(--border-strong);border-right:0;
+      border-radius:var(--radius) 0 0 var(--radius);font-size:16px;color:var(--muted-fg);font-weight:600}
+    .phone-input input{border-radius:0 var(--radius) var(--radius) 0}
+
+    .submit-bar{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+
+    .done-card{text-align:center;padding:var(--space-5) var(--space-3);background:var(--primary-soft);
+      border:1px solid var(--primary-border);border-radius:var(--radius-lg);
+      display:flex;flex-direction:column;align-items:center;gap:var(--space-2)}
+    .done-card :global(.icon){width:44px;height:44px;color:var(--primary)}
+    .done-card h2{font-size:23px;font-weight:600}
+    .done-card p{color:var(--muted-fg);max-width:54ch}
+    .done-note{font-size:15px}
+    .done-actions{display:flex;gap:var(--space-1);flex-wrap:wrap;justify-content:center;margin-top:var(--space-2)}
+  </style>
+
+  <script src="../scripts/request-tutor.ts"></script>
+</Base>

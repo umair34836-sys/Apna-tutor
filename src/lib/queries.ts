@@ -206,3 +206,266 @@ export const statusLabel: Record<TutorStatus, string> = {
   rejected: 'Reject hui',
   suspended: 'Suspend hai',
 };
+
+// ---------------------------------------------------------------------------
+// Search — parent ki taraf se
+//
+// ★ Firestore ek query mein SIRF EK `array-contains` allow karta hai. Isliye
+//   subject server-side filter hota hai, aur class/area/gender/mode/fee ka
+//   filter client par. Ek city mein 30–300 tutors par ye tez aur sasta hai.
+//   500+ ho jayein to Algolia/Typesense ka free tier (docs/01-ARCHITECTURE §4).
+// ---------------------------------------------------------------------------
+
+export interface SearchFilters {
+  city: string;
+  subject: string;
+  classLevel?: string;
+  area?: string;
+  gender?: string;
+  mode?: string;
+  board?: string;
+  budgetMax?: number;
+  minExperience?: number;
+}
+
+/** Server-side query — rules ke cap ke andar. */
+export async function searchTutors(city: string, subject: string): Promise<Tutor[]> {
+  const { db } = await getFirebase();
+  const { collection, getDocs, limit, orderBy, query, where } = await import('firebase/firestore');
+
+  const snap = await getDocs(
+    query(
+      collection(db, 'tutors'),
+      where('status', '==', 'approved'),
+      where('city', '==', city),
+      where('subjects', 'array-contains', subject),
+      orderBy('featuredUntil', 'desc'),
+      limit(TUTOR_CAP)
+    )
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Tutor);
+}
+
+/** Baqi filters client par. */
+export function applyFilters(tutors: Tutor[], f: SearchFilters): Tutor[] {
+  return tutors.filter((t) => {
+    if (f.classLevel && !t.classes.includes(f.classLevel)) return false;
+    if (f.board && !t.boards.includes(f.board)) return false;
+    if (f.mode && !t.modes.includes(f.mode as 'home' | 'online')) return false;
+    if (f.gender && t.gender !== f.gender) return false;
+    if (f.area && !t.areas.includes(f.area)) return false;
+    // Budget: tutor ki kam az kam fee parent ke budget se zyada na ho.
+    if (f.budgetMax && t.feeMin > f.budgetMax) return false;
+    if (f.minExperience && t.experienceYears < f.minExperience) return false;
+    return true;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Requests aur lead fan-out
+//
+// ★ Server nahi hai, isliye fan-out PARENT KA BROWSER karta hai: request
+//   banane ke baad matching approved tutors query hote hain aur max 5 lead
+//   documents likhe jate hain. Rules do cheezein enforce karti hain — parent
+//   sirf apni request ka fan-out kar sake, aur lead mein parent ka contact
+//   bilkul na ho (docs/05-RISKS.md §4).
+// ---------------------------------------------------------------------------
+
+export const MAX_LEADS_PER_REQUEST = 5;
+
+export interface RequestInput {
+  parentPhone: string;
+  classLevel: string;
+  subject: string;
+  city: string;
+  area: string;
+  mode: 'home' | 'online' | 'any';
+  genderPref: 'male' | 'female' | 'any';
+  budgetMax: number;
+  timing: string;
+  notes: string;
+}
+
+export interface TuitionRequest extends RequestInput {
+  id: string;
+  parentUid: string;
+  status: 'open' | 'matched' | 'closed';
+  createdAt: { toDate(): Date } | null;
+}
+
+export async function createRequest(parentUid: string, input: RequestInput): Promise<string> {
+  const { db } = await getFirebase();
+  const { addDoc, collection, serverTimestamp } = await import('firebase/firestore');
+
+  const ref = await addDoc(collection(db, 'requests'), {
+    ...input,
+    parentUid,
+    status: 'open',
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+/**
+ * Matching tutors dhoond kar unke liye lead documents banata hai.
+ *
+ * ★ Lead mein parentPhone / parentAddress / parentEmail KABHI nahi. Rules bhi
+ *   rokti hain. Tutor "Interested" karta hai, phir parent faisla karta hai ke
+ *   number dena hai ya nahi — yahi is platform ka sabse bara privacy wada hai.
+ *
+ * Return: kitne tutors tak request pohanchi.
+ */
+export async function fanOutLeads(
+  parentUid: string,
+  requestId: string,
+  input: RequestInput
+): Promise<number> {
+  const { db } = await getFirebase();
+  const { doc, serverTimestamp, writeBatch, collection } = await import('firebase/firestore');
+
+  const pool = await searchTutors(input.city, input.subject);
+
+  const matched = applyFilters(pool, {
+    city: input.city,
+    subject: input.subject,
+    classLevel: input.classLevel,
+    gender: input.genderPref === 'any' ? undefined : input.genderPref,
+    mode: input.mode === 'any' ? undefined : input.mode,
+    budgetMax: input.budgetMax,
+    // Area ko sakht filter nahi banate — aas paas ke tutors bhi kaam ke hain.
+  }).slice(0, MAX_LEADS_PER_REQUEST);
+
+  if (matched.length === 0) return 0;
+
+  const batch = writeBatch(db);
+  for (const tutor of matched) {
+    batch.set(doc(collection(db, 'leads')), {
+      requestId,
+      parentUid,
+      tutorUid: tutor.id,
+      classLevel: input.classLevel,
+      subject: input.subject,
+      area: input.area,
+      mode: input.mode,
+      budgetMax: input.budgetMax,
+      timing: input.timing,
+      status: 'new',
+      createdAt: serverTimestamp(),
+      respondedAt: null,
+    });
+  }
+  await batch.commit();
+
+  return matched.length;
+}
+
+export async function listMyRequests(parentUid: string): Promise<TuitionRequest[]> {
+  const { db } = await getFirebase();
+  const { collection, getDocs, limit, orderBy, query, where } = await import('firebase/firestore');
+
+  const snap = await getDocs(
+    query(
+      collection(db, 'requests'),
+      where('parentUid', '==', parentUid),
+      orderBy('createdAt', 'desc'),
+      limit(LIST_CAP)
+    )
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as TuitionRequest);
+}
+
+export async function getRequest(id: string): Promise<TuitionRequest | null> {
+  const { db } = await getFirebase();
+  const { doc, getDoc } = await import('firebase/firestore');
+  const snap = await getDoc(doc(db, 'requests', id));
+  return snap.exists() ? ({ id: snap.id, ...snap.data() } as TuitionRequest) : null;
+}
+
+export async function closeRequest(id: string): Promise<void> {
+  const { db } = await getFirebase();
+  const { doc, updateDoc } = await import('firebase/firestore');
+  await updateDoc(doc(db, 'requests', id), { status: 'closed' });
+}
+
+/** Ek request par kaun se tutors ne dilchaspi li. */
+export async function listLeadsForRequest(requestId: string): Promise<Lead[]> {
+  const { db } = await getFirebase();
+  const { collection, getDocs, limit, query, where } = await import('firebase/firestore');
+
+  const snap = await getDocs(
+    query(
+      collection(db, 'leads'),
+      where('requestId', '==', requestId),
+      where('status', '==', 'interested'),
+      limit(LIST_CAP)
+    )
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Lead);
+}
+
+// ---------------------------------------------------------------------------
+// Connections — unlock kiye hue tutors
+// ---------------------------------------------------------------------------
+
+export interface Connection {
+  id: string;
+  parentUid: string;
+  tutorUid: string;
+  source: 'search' | 'lead';
+  createdAt: { toDate(): Date } | null;
+}
+
+export async function listMyConnections(parentUid: string): Promise<Connection[]> {
+  const { db } = await getFirebase();
+  const { collection, getDocs, limit, query, where } = await import('firebase/firestore');
+
+  const snap = await getDocs(
+    query(collection(db, 'connections'), where('parentUid', '==', parentUid), limit(LIST_CAP))
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Connection);
+}
+
+/** Public tutor doc — connections se naam/slug nikalne ke liye. */
+export async function getTutorById(uid: string): Promise<Tutor | null> {
+  const { db } = await getFirebase();
+  const { doc, getDoc } = await import('firebase/firestore');
+  const snap = await getDoc(doc(db, 'tutors', uid));
+  return snap.exists() ? ({ id: snap.id, ...snap.data() } as Tutor) : null;
+}
+
+// ---------------------------------------------------------------------------
+// Reviews
+//
+// ★ Review sirf tab ban sakta hai jab `connections/{parentUid}_{tutorUid}`
+//   mojood ho — yani parent ne waqai us tutor ka contact khola ho. Rules ye
+//   enforce karti hain, aur yahi fake reviews ke khilaf sabse mazboot defence
+//   hai. Composite ID = ek parent ek tutor ko ek hi review de sakta hai.
+// ---------------------------------------------------------------------------
+
+export interface ReviewInput { rating: number; text: string; parentName: string }
+
+export async function createReview(
+  parentUid: string,
+  tutorUid: string,
+  input: ReviewInput
+): Promise<void> {
+  const { db } = await getFirebase();
+  const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+
+  await setDoc(doc(db, 'reviews', `${parentUid}_${tutorUid}`), {
+    tutorUid,
+    parentUid,
+    parentName: input.parentName,
+    rating: input.rating,
+    text: input.text,
+    status: 'pending',
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function getMyReview(parentUid: string, tutorUid: string) {
+  const { db } = await getFirebase();
+  const { doc, getDoc } = await import('firebase/firestore');
+  const snap = await getDoc(doc(db, 'reviews', `${parentUid}_${tutorUid}`));
+  return snap.exists() ? (snap.data() as { rating: number; text: string; status: string }) : null;
+}

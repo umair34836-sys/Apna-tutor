@@ -1,0 +1,76 @@
+---
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+---
+<App
+  title="Parent Dashboard | ApnaTutor"
+  heading="Dashboard"
+  sub="Aap ki requests aur wo tutors jinka contact aap ne khola hai."
+  role="parent"
+  path="/parent/dashboard"
+>
+  <div id="parent-dash">
+    <div class="skeleton sk-box" data-loading></div>
+    <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+
+    <div data-content hidden>
+      <div class="stat-row">
+        <a class="stat-card" href="/parent/requests">
+          <Icon name="file-text" />
+          <strong data-stat-requests>0</strong>
+          <span>Open requests</span>
+        </a>
+        <a class="stat-card" href="/parent/requests">
+          <Icon name="users" />
+          <strong data-stat-interested>0</strong>
+          <span>Interested tutors</span>
+        </a>
+        <a class="stat-card" href="/parent/saved-tutors">
+          <Icon name="bookmark" />
+          <strong data-stat-saved>0</strong>
+          <span>Unlocked tutors</span>
+        </a>
+      </div>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Aap ki requests</h2>
+          <a class="btn btn-outline btn-sm" href="/parent/requests">Sab dekhein</a>
+        </div>
+        <div data-requests></div>
+      </section>
+
+      <section class="card next-steps">
+        <h2>Aage kya karein</h2>
+        <ul>
+          <li><Icon name="search" size={18} /><span><a href="/find-tutor">Khud tutors dekhein</a> — aap ke area ke verified profiles.</span></li>
+          <li><Icon name="send" size={18} /><span><a href="/request-tutor">Nayi request post karein</a> — har bachay ya subject ke liye alag.</span></li>
+          <li><Icon name="shield-check" size={18} /><span><a href="/safety">Safety policy parhein</a> — pehli class se pehle kya dekhna hai.</span></li>
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <style>
+    #parent-dash{display:flex;flex-direction:column;gap:var(--space-3)}
+    .sk-box{height:200px}
+    .stat-row{display:grid;grid-template-columns:1fr;gap:var(--space-2)}
+    @media(min-width:640px){.stat-row{grid-template-columns:repeat(3,1fr)}}
+    .stat-card{display:flex;flex-direction:column;gap:4px;padding:var(--space-3);background:#fff;
+      border:1px solid var(--border);border-radius:var(--radius-lg);color:var(--fg)}
+    .stat-card:hover{border-color:var(--primary-border);background:var(--primary-soft);text-decoration:none}
+    .stat-card :global(.icon){width:22px;height:22px;color:var(--primary-bright)}
+    .stat-card strong{font-family:var(--font-heading);font-size:28px;font-weight:700;margin-top:6px}
+    .stat-card span{font-size:14.5px;color:var(--muted-fg)}
+
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+    .card h2{font-size:18px;font-weight:600}
+    .card-head{display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+    .next-steps ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+    .next-steps li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;color:var(--muted-fg)}
+    .next-steps :global(.icon){color:var(--icon-muted);flex:0 0 auto;margin-top:3px}
+  </style>
+
+  <script src="../../scripts/parent-dashboard.ts"></script>
+</App>

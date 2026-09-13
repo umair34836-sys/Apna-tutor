@@ -1,0 +1,88 @@
+---
+// src/pages/parent/requests.astro
+//
+// List aur detail dono yahin. Detail `?id=…` se khulti hai.
+//
+// ★ Spec mein /parent/requests/[id] likha tha, magar site static (SSG) hai —
+//   build time par requests ki IDs maloom hi nahi hotin (wo private data hai
+//   jo build script padhti bhi nahi). Query param isi ka seedha barabar hai
+//   aur ek hi page se dono kaam ho jate hain.
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+---
+<App
+  title="My Requests | ApnaTutor"
+  heading="Meri requests"
+  sub="Har request ke saath wo tutors jinhon ne dilchaspi li."
+  role="parent"
+  path="/parent/requests"
+>
+  <div id="requests-page">
+    <div class="skeleton sk-box" data-loading></div>
+    <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+
+    <!-- LIST -->
+    <div data-list-view hidden>
+      <div class="bar">
+        <a class="btn btn-primary btn-sm" href="/request-tutor"><Icon name="send" />Nayi request</a>
+      </div>
+      <div data-requests></div>
+    </div>
+
+    <!-- DETAIL -->
+    <div data-detail-view hidden>
+      <a class="back-link" href="/parent/requests"><Icon name="chevron-left" size={16} />Saari requests</a>
+
+      <section class="card">
+        <div class="card-head">
+          <h2 data-req-title>—</h2>
+          <span class="req-status" data-req-status>—</span>
+        </div>
+        <dl class="facts" data-req-facts></dl>
+        <p class="notes" data-req-notes hidden></p>
+
+        <div class="detail-actions">
+          <button type="button" class="btn btn-ghost btn-sm" data-close-req hidden>
+            <Icon name="check" />Ye request band karein
+          </button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Interested tutors</h2>
+        <p class="card-sub">
+          In tutors ne aap ki request dekh kar dilchaspi zahir ki hai. Profile khol kar dekhein,
+          phir jis se baat karni ho uska contact kholein — <strong>aap ka number kisi ko khud-ba-khud
+          nahi jata</strong>.
+        </p>
+        <div data-interested></div>
+      </section>
+    </div>
+  </div>
+
+  <style>
+    #requests-page{display:flex;flex-direction:column;gap:var(--space-3)}
+    .sk-box{height:220px}
+    .bar{display:flex;justify-content:flex-end;margin-bottom:var(--space-2)}
+    .back-link{display:inline-flex;align-items:center;gap:5px;font-size:14.5px;
+      color:var(--muted-fg);min-height:44px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+    .card h2{font-size:18px;font-weight:600}
+    .card-sub{color:var(--muted-fg);font-size:15px;max-width:66ch}
+    .card-head{display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+    .facts{display:grid;grid-template-columns:1fr;gap:8px;margin:0}
+    @media(min-width:560px){.facts{grid-template-columns:1fr 1fr}}
+    .facts > div{padding:10px 12px;background:var(--bg-alt);border:1px solid var(--border);
+      border-radius:var(--radius)}
+    .facts dt{font-size:12px;color:var(--muted-fg);text-transform:uppercase;
+      letter-spacing:.04em;font-weight:600}
+    .facts dd{margin:2px 0 0;font-size:15px;color:var(--fg);font-weight:500}
+    .notes{padding:12px 14px;background:var(--bg-alt);border:1px solid var(--border);
+      border-radius:var(--radius);color:var(--muted-fg);font-size:15.5px;white-space:pre-line}
+    .detail-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}
+    .detail-actions:empty{display:none}
+  </style>
+
+  <script src="../../scripts/parent-requests.ts"></script>
+</App>

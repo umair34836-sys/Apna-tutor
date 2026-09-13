@@ -1,0 +1,232 @@
+---
+// =============================================================================
+// src/pages/find-tutor.astro — search results
+//
+// Hybrid: static shell + filter sidebar, results client-side.
+//
+// ★ noindex — filtered URLs ke hazaron combinations index ho jayein to wo
+//   duplicate/thin content ban jate hain. Index sirf pre-rendered combo pages
+//   hone chahiye (/math-tutor-risalpur waghaira).
+//
+// ★ Firestore ek query mein sirf EK array-contains allow karta hai, isliye
+//   server-side filter sirf city + subject par hai; baqi client par.
+// =============================================================================
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { cities, subjects } from '../lib/data';
+import { BOARDS, CLASSES, GENDERS, MODES } from '../lib/taxonomy';
+
+const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
+const ready = cities.length > 0 && subjects.length > 0;
+---
+<Base
+  title="Find a Tutor — Search by Class, Subject and Area | ApnaTutor"
+  description="Apne area ke verified tutors dhoondein. Class, subject, board, gender, mode aur budget ke hisaab se filter karein."
+  path="/find-tutor"
+  noindex
+>
+  <div class="wrap search-head">
+    <h1>Tutor dhoondein</h1>
+    <p class="lead">Class, subject aur area select karein — baqi filters se list chhoti karte jayein.</p>
+  </div>
+
+  <div class="wrap search-layout" id="search" data-city-areas={JSON.stringify(cityAreas)} data-ready={ready ? '1' : ''}>
+    <!-- Mobile: filters bottom sheet mein -->
+    <button type="button" class="btn btn-outline filter-toggle" id="filter-toggle" aria-expanded="false" aria-controls="filters">
+      <Icon name="filter" />Filters <span class="count-pill" id="filter-count" hidden></span>
+    </button>
+
+    <aside class="filters" id="filters">
+      <div class="filters-inner">
+        <div class="filters-head">
+          <h2>Filters</h2>
+          <button type="button" class="icon-btn" id="filter-close" aria-label="Filters band karein"><Icon name="x" /></button>
+        </div>
+
+        <form id="filter-form">
+          <div class="field">
+            <label for="f-city">Sheher</label>
+            <select id="f-city" name="city">
+              <option value="">Select karein</option>
+              {cities.map((c) => <option value={c.slug}>{c.name}</option>)}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="f-subject">Subject</label>
+            <select id="f-subject" name="subject">
+              <option value="">Select karein</option>
+              {subjects.map((s) => <option value={s.slug}>{s.name}</option>)}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="f-area">Area</label>
+            <select id="f-area" name="area" disabled>
+              <option value="">Koi bhi</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="f-class">Class</label>
+            <select id="f-class" name="class">
+              <option value="">Koi bhi</option>
+              {CLASSES.map((c) => <option value={c.slug}>{c.labelUrdu}</option>)}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="f-board">Board</label>
+            <select id="f-board" name="board">
+              <option value="">Koi bhi</option>
+              {BOARDS.map((b) => <option value={b.slug}>{b.labelUrdu}</option>)}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="f-gender">Teacher gender</label>
+            <select id="f-gender" name="gender">
+              <option value="">Koi bhi</option>
+              {GENDERS.map((g) => <option value={g.slug}>{g.labelUrdu}</option>)}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="f-mode">Teaching mode</label>
+            <select id="f-mode" name="mode">
+              <option value="">Koi bhi</option>
+              {MODES.map((m) => <option value={m.slug}>{m.labelUrdu}</option>)}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="f-budget">Monthly budget tak (Rs.)</label>
+            <select id="f-budget" name="budget">
+              <option value="">Koi bhi</option>
+              <option value="3000">3,000</option>
+              <option value="5000">5,000</option>
+              <option value="8000">8,000</option>
+              <option value="15000">15,000</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="f-exp">Kam az kam tajurba</label>
+            <select id="f-exp" name="exp">
+              <option value="">Koi bhi</option>
+              <option value="1">1+ saal</option>
+              <option value="3">3+ saal</option>
+              <option value="5">5+ saal</option>
+              <option value="10">10+ saal</option>
+            </select>
+          </div>
+
+          <div class="filters-actions">
+            <button type="button" class="btn btn-ghost btn-sm btn-block" id="filter-reset">Saare filters hatayein</button>
+            <button type="button" class="btn btn-primary btn-block apply-only" id="filter-apply">Natije dekhein</button>
+          </div>
+        </form>
+      </div>
+    </aside>
+
+    <div class="results" id="results">
+      {!ready && (
+        <p class="state state-error">
+          <Icon name="alert-circle" />
+          <span>Search abhi taiyar nahi — hum cities aur subjects set kar rahe hain.</span>
+        </p>
+      )}
+
+      <div data-prompt hidden>
+        <div class="empty">
+          <Icon name="search" />
+          <h3>Sheher aur subject select karein</h3>
+          <p>Ye do cheezein zaroori hain — baqi filters marzi ke hain.</p>
+        </div>
+      </div>
+
+      <div data-loading hidden>
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+      </div>
+
+      <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+
+      <p class="result-count" data-count hidden></p>
+      <div data-list hidden></div>
+
+      <div data-more hidden>
+        <button type="button" class="btn btn-outline btn-block" data-more-btn>Aur dikhayein</button>
+      </div>
+
+      <div data-zero hidden>
+        <div class="empty">
+          <Icon name="search" />
+          <h3>Is filter par koi tutor nahi mila</h3>
+          <p data-zero-tip></p>
+          <div class="zero-actions">
+            <button type="button" class="btn btn-outline" data-relax>Kuch filters hata dein</button>
+            <a class="btn btn-primary" href="/request-tutor"><Icon name="send" />Request post karein</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+
+  <style>
+    .search-head{padding:var(--space-4) var(--space-2) 0}
+    .search-head h1{font-size:clamp(24px,4vw,34px);font-weight:700}
+    .lead{margin-top:10px;color:var(--muted-fg);font-size:16.5px;max-width:60ch}
+
+    .search-layout{display:grid;grid-template-columns:1fr;gap:var(--space-3);
+      padding:var(--space-3) var(--space-2) var(--space-6)}
+    @media(min-width:900px){
+      .search-layout{grid-template-columns:280px minmax(0,1fr);align-items:start}
+      .filter-toggle{display:none}
+    }
+
+    .filter-toggle{width:100%;justify-content:center}
+    .count-pill{background:var(--primary);color:#fff;border-radius:var(--radius-pill);
+      padding:1px 9px;font-size:13px}
+
+    /* Mobile: bottom sheet. Desktop: sidebar. */
+    .filters{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;
+      border-radius:var(--radius-lg) var(--radius-lg) 0 0;box-shadow:var(--shadow-lg);
+      max-height:85vh;overflow-y:auto;transform:translateY(100%);
+      transition:transform .28s var(--ease);visibility:hidden}
+    .filters[data-open="true"]{transform:translateY(0);visibility:visible}
+    .filters-inner{padding:var(--space-3) var(--space-2) calc(var(--space-3) + env(safe-area-inset-bottom))}
+    .filters-head{display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:var(--space-2)}
+    .filters-head h2{font-size:19px;font-weight:600}
+    .icon-btn{background:none;border:0;cursor:pointer;min-width:44px;min-height:44px;
+      display:grid;place-items:center;border-radius:var(--radius);color:var(--muted-fg)}
+    .icon-btn:hover{background:var(--bg-alt);color:var(--fg)}
+
+    @media(min-width:900px){
+      .filters{position:sticky;top:88px;transform:none;visibility:visible;max-height:none;
+        border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:none;
+        overflow:visible;background:#fff}
+      .filters-inner{padding:var(--space-3)}
+      .filters-head button,.apply-only{display:none}
+    }
+
+    #filter-form{display:flex;flex-direction:column;gap:var(--space-2)}
+    .filters-actions{display:flex;flex-direction:column;gap:8px;margin-top:var(--space-1);
+      padding-top:var(--space-2);border-top:1px solid var(--border)}
+
+    .sheet-backdrop{position:fixed;inset:0;z-index:55;background:rgba(15,23,42,.5)}
+    @media(min-width:900px){.sheet-backdrop{display:none}}
+
+    .results{min-width:0;display:flex;flex-direction:column;gap:var(--space-2)}
+    .sk-card{height:280px;margin-bottom:var(--space-2)}
+    .result-count{font-size:15px;color:var(--muted-fg)}
+    .zero-actions{display:flex;gap:var(--space-1);flex-wrap:wrap;justify-content:center;
+      margin-top:var(--space-3)}
+  </style>
+
+  <script src="../scripts/find-tutor.ts"></script>
+</Base>

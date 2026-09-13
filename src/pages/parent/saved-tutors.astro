@@ -1,0 +1,94 @@
+---
+// src/pages/parent/saved-tutors.astro
+//
+// Wo tutors jinka contact aap ne khola. Yahin se review bhi likha jata hai.
+//
+// ★ Review sirf isi list ke tutors ke liye mumkin hai — kyunki review likhne ke
+//   liye `connections/{parentUid}_{tutorUid}` doc ka hona lazmi hai (rules
+//   enforce karti hain). Yahi fake reviews ke khilaf sabse mazboot defence hai.
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+---
+<App
+  title="Saved Tutors | ApnaTutor"
+  heading="Unlocked tutors"
+  sub="Wo tutors jinka contact aap ne khola hai. Inhi ke baare mein aap review likh sakte hain."
+  role="parent"
+  path="/parent/saved-tutors"
+>
+  <div id="saved-page">
+    <div class="skeleton sk-box" data-loading></div>
+    <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+    <div data-list hidden></div>
+  </div>
+
+  <!-- Review dialog -->
+  <dialog id="review-dialog" class="review-dialog">
+    <form method="dialog" class="review-form" novalidate>
+      <h2>Review likhein</h2>
+      <p class="review-sub" data-review-for>—</p>
+
+      <fieldset class="stars-field">
+        <legend>Aap ka tajurba kaisa raha?</legend>
+        <div class="stars-input" id="stars" role="radiogroup" aria-label="Rating">
+          <label class="star"><input type="radio" name="rating" value="1" /><span>1</span></label>
+          <label class="star"><input type="radio" name="rating" value="2" /><span>2</span></label>
+          <label class="star"><input type="radio" name="rating" value="3" /><span>3</span></label>
+          <label class="star"><input type="radio" name="rating" value="4" /><span>4</span></label>
+          <label class="star"><input type="radio" name="rating" value="5" /><span>5</span></label>
+        </div>
+        <p class="err" id="e-rating"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> Rating select karna zaroori hai</p>
+      </fieldset>
+
+      <div class="field">
+        <label for="review-text">Apne alfaaz mein</label>
+        <textarea id="review-text" rows="5" minlength="10" maxlength="800"
+          placeholder="Parhane ka andaz kaisa tha, waqt ki pabandi, bachay ke natije — jo aap ne khud dekha wahi likhein."></textarea>
+        <p class="hint"><span id="review-count">0</span> / 800 · kam az kam 10 characters</p>
+        <p class="err" id="e-text"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
+      </div>
+
+      <p class="state state-info">
+        <Icon name="info" />
+        <span>Review pehle hamari team dekhti hai, phir profile par aata hai. Publish hone ke baad aap khud isay edit nahi kar sakte — badalwana ho to hamein likhein.</span>
+      </p>
+
+      <p class="state state-error" data-review-error hidden><Icon name="alert-circle" /><span></span></p>
+      <p class="state state-success" data-review-ok hidden>
+        <Icon name="check-circle" />Review bhej diya gaya. Shukriya — team ke dekhne ke baad ye profile par aa jayega.
+      </p>
+
+      <div class="review-actions">
+        <button type="button" class="btn btn-ghost" data-review-close>Band karein</button>
+        <button type="button" class="btn btn-primary" data-review-submit><Icon name="check" />Review bhejein</button>
+      </div>
+    </form>
+  </dialog>
+
+  <style>
+    #saved-page{display:flex;flex-direction:column;gap:var(--space-3)}
+    .sk-box{height:280px}
+
+    .review-dialog{border:0;border-radius:var(--radius-lg);padding:0;max-width:520px;width:92%;
+      box-shadow:var(--shadow-lg);color:var(--fg)}
+    .review-dialog::backdrop{background:rgba(15,23,42,.5)}
+    .review-form{padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+    .review-form h2{font-size:20px;font-weight:600}
+    .review-sub{font-size:14.5px;color:var(--muted-fg)}
+    .stars-field{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+    .stars-field legend{font-family:var(--font-heading);font-size:14px;font-weight:600;padding:0}
+    .stars-input{display:flex;gap:8px}
+    .star input{position:absolute;opacity:0;width:0;height:0}
+    .star span{display:grid;place-items:center;width:48px;height:48px;border-radius:var(--radius);
+      border:1px solid var(--border-strong);background:#fff;cursor:pointer;
+      font-family:var(--font-heading);font-weight:600;font-size:16px;
+      transition:background-color .2s var(--ease),border-color .2s var(--ease)}
+    .star:hover span{border-color:var(--accent)}
+    .star input:checked + span{background:var(--accent);border-color:var(--accent);color:#fff}
+    .star input:focus-visible + span{outline:3px solid var(--primary-bright);outline-offset:2px}
+    .review-actions{display:flex;gap:var(--space-1);justify-content:flex-end;flex-wrap:wrap;
+      margin-top:var(--space-1)}
+  </style>
+
+  <script src="../../scripts/parent-saved.ts"></script>
+</App>

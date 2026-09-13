@@ -56,7 +56,7 @@ dhyan se parho.
 | 2 | Firestore rules tests — 79 tests, sab pass | ✅ |
 | 3 | Public pages (SSG) + SEO combo pages | ✅ |
 | 4 | Auth + tutor flows | ✅ |
-| 5 | Parent flows + search + contact unlock | ⬜ |
+| 5 | Parent flows + search + contact unlock | ✅ |
 | 6 | Admin panel | ⬜ |
 
 Launch gate [`docs/README.md`](docs/README.md) mein hai — us ke bagair live na karo.
