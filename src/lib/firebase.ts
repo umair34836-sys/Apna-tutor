@@ -21,18 +21,36 @@ import type { FirebaseApp } from 'firebase/app';
 import type { Auth } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
 
-// Config public hai (by design) — lekin env se lo, hard-code na karo, taake
-// dev aur prod projects switch kar sako.
+// =============================================================================
+// Firebase web config.
+//
+// ★ Ye values PUBLIC hain — by design. Firebase web config browser mein nazar
+//   aati hai aur usay chhupana mumkin bhi nahi. Asli protection firestore.rules
+//   aur storage.rules hain, aur App Check hai.
+//
+// Isliye ye yahan committed hain: site bina kisi secret ke chal jati hai.
+// Dev/staging project chalana ho to .env mein PUBLIC_FIREBASE_* set kar dein —
+// wo in par ghalib aa jayengi.
+// =============================================================================
+
+// storageBucket jaan boojh kar yahan NAHI hai. Cloud Storage istemal nahi hoti
+// (na Spark par available hai, na hum chahte hain) — photos Firestore mein
+// base64 ke taur par jati hain, src/lib/photo.ts dekhein. Bucket yahan hota to
+// kabhi galti se getStorage() call ho jata aur ek confusing error milta.
+const DEFAULTS = {
+  apiKey: 'AIzaSyCpmLDXV1KL-gkShWmDoSfaT13MB191qxs',
+  authDomain: 'apna-tutor-33bf3.firebaseapp.com',
+  projectId: 'apna-tutor-33bf3',
+  messagingSenderId: '703030381065',
+  appId: '1:703030381065:web:0e5428011db1d2f85306d8',
+} as const;
+
 const firebaseConfig = {
-  apiKey:            import.meta.env.PUBLIC_FIREBASE_API_KEY,
-  authDomain:        import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId:         import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
-  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_SENDER_ID,
-  appId:             import.meta.env.PUBLIC_FIREBASE_APP_ID,
-  // storageBucket jaan boojh kar nahi hai. Cloud Storage Spark plan par
-  // available nahi (3 Feb 2026 se Blaze zaroori). Photos Cloudinary par jati
-  // hain. Agar ye field rakhein to kabhi galti se getStorage() call ho jayega
-  // aur ek confusing runtime error milega.
+  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || DEFAULTS.apiKey,
+  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN || DEFAULTS.authDomain,
+  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || DEFAULTS.projectId,
+  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_SENDER_ID || DEFAULTS.messagingSenderId,
+  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID || DEFAULTS.appId,
 };
 
 interface FirebaseBundle {

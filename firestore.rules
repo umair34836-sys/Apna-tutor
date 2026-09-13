@@ -188,14 +188,43 @@ service cloud.firestore {
       // Tutor apni photo upload karta hai → pending. Admin approve karke
       // `photoUrl` set karta hai. Alag doc taake public profile ki update
       // rule saaf rahe.
+      // Tutor apni photo yahan bhejta hai (base64 data URI). Ye PRIVATE doc
+      // hai — admin approve karke isay `photos/{uid}` mein le jata hai, tab wo
+      // public hoti hai. Cloud Storage istemal nahi hoti; photo Firestore mein
+      // hi rehti hai (src/lib/photo.ts dekhein).
       match /private/photoSubmission {
         allow read:   if isAdmin() || isOwner(tutorId);
         allow create, update: if isOwner(tutorId)
-          && request.resource.data.keys().hasOnly(['url', 'publicId', 'submittedAt'])
-          && request.resource.data.url.matches('^https://res[.]cloudinary[.]com/.*')
+          && request.resource.data.keys().hasOnly(['dataUrl', 'thumbUrl', 'submittedAt'])
+          // JPEG data URI hi — koi bahar ka link ya SVG (jismein script ho
+          // sakti hai) yahan na aa sake.
+          && request.resource.data.dataUrl.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')
+          && request.resource.data.thumbUrl.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')
+          // 1 MiB document cap se kaafi neeche. Client 600x600 tak simat kar
+          // bhejta hai, yani aam taur par isse bhi bohat kam.
+          && request.resource.data.dataUrl.size() <= 300000
+          && request.resource.data.thumbUrl.size() <= 30000
           && serverTime('submittedAt');
         allow delete: if isAdmin() || isOwner(tutorId);
       }
+    }
+
+    // ---------------------------------------------------------------------
+    // photos/{tutorUid}  —  approve ho chuki profile photo (base64)
+    //
+    // Alag collection isliye hai ke `tutors/{uid}` ka public doc halka rahe.
+    // Agar photo usi doc mein hoti to har search query (30 docs) ke saath 30
+    // photos bhi download hotin — wo mahanga bhi hai aur slow bhi.
+    //
+    // ★ Sirf admin likh sakta hai. Tutor apni photo `private/photoSubmission`
+    //   mein bhejta hai; admin dekh kar yahan laata hai. Warna koi bhi kuch bhi
+    //   apni public profile par laga sakta tha.
+    // ---------------------------------------------------------------------
+
+    match /photos/{tutorUid} {
+      allow get:  if true;
+      allow list: if capped(50);
+      allow write: if isAdmin();
     }
 
     // ---------------------------------------------------------------------

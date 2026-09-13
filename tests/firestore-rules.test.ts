@@ -259,37 +259,92 @@ describe('tutors/{id}/private/contact — gated phone', () => {
 // =============================================================================
 
 describe('tutors/{id}/private/photoSubmission', () => {
-  const cloudinaryUrl = 'https://res.cloudinary.com/demo/image/upload/v1/tutors/pending/x.jpg';
+  // Photo Firestore mein base64 ke taur par jati hai — na Cloud Storage, na
+  // koi bahar ki service. Client 600x600 tak simat kar bhejta hai.
+  const jpeg = (chars: number) => 'data:image/jpeg;base64,' + 'A'.repeat(chars);
+  const good = { dataUrl: jpeg(2000), thumbUrl: jpeg(400) };
 
-  it('tutor Cloudinary URL ke saath photo submit kar sakta hai', async () => {
+  it('tutor apni photo submit kar sakta hai', async () => {
     await assertSucceeds(
       setDoc(doc(db(TUTOR_UID), `tutors/${TUTOR_UID}/private/photoSubmission`), {
-        url: cloudinaryUrl, publicId: 'tutors/pending/x', submittedAt: serverTimestamp(),
+        ...good, submittedAt: serverTimestamp(),
       })
     );
   });
 
-  it('Cloudinary ke bahar ka URL reject hota hai', async () => {
-    // Warna koi bhi URL yahan aa sakta tha — kisi aur ki image ya phishing link.
+  it('bahar ka URL reject hota hai ❗', async () => {
+    // Warna koi bhi link yahan aa sakta tha — kisi aur ki image ya phishing.
     await assertFails(
       setDoc(doc(db(TUTOR_UID), `tutors/${TUTOR_UID}/private/photoSubmission`), {
-        url: 'https://evil.example.com/x.jpg', publicId: 'x', submittedAt: serverTimestamp(),
+        dataUrl: 'https://evil.example.com/x.jpg', thumbUrl: jpeg(400),
+        submittedAt: serverTimestamp(),
+      })
+    );
+  });
+
+  it('SVG data URI reject hota hai ❗', async () => {
+    // SVG ke andar script ho sakti hai — isliye sirf JPEG.
+    await assertFails(
+      setDoc(doc(db(TUTOR_UID), `tutors/${TUTOR_UID}/private/photoSubmission`), {
+        dataUrl: 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=', thumbUrl: jpeg(400),
+        submittedAt: serverTimestamp(),
+      })
+    );
+  });
+
+  it('hadd se bari photo reject hoti hai ❗', async () => {
+    // 1 MiB document cap se pehle ye rule rok deta hai.
+    await assertFails(
+      setDoc(doc(db(TUTOR_UID), `tutors/${TUTOR_UID}/private/photoSubmission`), {
+        dataUrl: jpeg(300_001), thumbUrl: jpeg(400), submittedAt: serverTimestamp(),
+      })
+    );
+  });
+
+  it('hadd se bara thumbnail reject hota hai', async () => {
+    await assertFails(
+      setDoc(doc(db(TUTOR_UID), `tutors/${TUTOR_UID}/private/photoSubmission`), {
+        dataUrl: jpeg(2000), thumbUrl: jpeg(30_001), submittedAt: serverTimestamp(),
       })
     );
   });
 
   it('doosra banda kisi aur ki photo submission nahi padh sakta', async () => {
-    await seedDoc(`tutors/${TUTOR_UID}/private/photoSubmission`, {
-      url: cloudinaryUrl, publicId: 'x', submittedAt: new Date(),
-    });
+    await seedDoc(`tutors/${TUTOR_UID}/private/photoSubmission`, { ...good, submittedAt: new Date() });
     await assertFails(getDoc(doc(db(PARENT_UID), `tutors/${TUTOR_UID}/private/photoSubmission`)));
   });
 
   it('admin photo submission padh sakta hai (approve karne ke liye)', async () => {
-    await seedDoc(`tutors/${TUTOR_UID}/private/photoSubmission`, {
-      url: cloudinaryUrl, publicId: 'x', submittedAt: new Date(),
-    });
+    await seedDoc(`tutors/${TUTOR_UID}/private/photoSubmission`, { ...good, submittedAt: new Date() });
     await assertSucceeds(getDoc(doc(db(ADMIN_UID), `tutors/${TUTOR_UID}/private/photoSubmission`)));
+  });
+});
+
+// =============================================================================
+// photos/{tutorUid} — approve ho chuki photo (public)
+// =============================================================================
+
+describe('photos/{tutorUid}', () => {
+  const jpeg = (chars: number) => 'data:image/jpeg;base64,' + 'A'.repeat(chars);
+  const photo = { dataUrl: jpeg(2000), thumbUrl: jpeg(400) };
+
+  it('approve ho chuki photo duniya dekh sakti hai', async () => {
+    await seedDoc(`photos/${TUTOR_UID}`, { ...photo, updatedAt: new Date() });
+    await assertSucceeds(getDoc(doc(anonDb(), `photos/${TUTOR_UID}`)));
+  });
+
+  it('tutor apni photo KHUD live nahi kar sakta ❗', async () => {
+    // Warna admin approval ka koi matlab hi na rehta — koi bhi kuch bhi apni
+    // public profile par laga sakta tha.
+    await assertFails(
+      setDoc(doc(db(TUTOR_UID), `photos/${TUTOR_UID}`), { ...photo, updatedAt: serverTimestamp() })
+    );
+  });
+
+  it('admin photo live kar sakta hai', async () => {
+    await assertSucceeds(
+      setDoc(doc(db(ADMIN_UID), `photos/${TUTOR_UID}`), { ...photo, updatedAt: serverTimestamp() })
+    );
   });
 });
 

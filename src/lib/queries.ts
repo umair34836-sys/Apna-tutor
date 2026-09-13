@@ -109,7 +109,7 @@ export async function setMyContact(uid: string, contact: Contact): Promise<void>
 // Photo — tutor submit karta hai, admin approve karke photoUrl set karta hai
 // ---------------------------------------------------------------------------
 
-export interface PhotoSubmission { url: string; publicId: string }
+export interface PhotoSubmission { dataUrl: string; thumbUrl: string }
 
 export async function getMyPhotoSubmission(uid: string): Promise<PhotoSubmission | null> {
   const { db } = await getFirebase();
@@ -121,10 +121,11 @@ export async function getMyPhotoSubmission(uid: string): Promise<PhotoSubmission
 export async function setMyPhotoSubmission(uid: string, photo: PhotoSubmission): Promise<void> {
   const { db } = await getFirebase();
   const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-  // Rules: sirf url/publicId/submittedAt, aur url Cloudinary ka hona chahiye.
+  // Rules: sirf dataUrl + submittedAt, aur dataUrl ek JPEG data URI jo
+  // 300,000 characters se bara na ho.
   await setDoc(doc(db, 'tutors', uid, 'private', 'photoSubmission'), {
-    url: photo.url,
-    publicId: photo.publicId,
+    dataUrl: photo.dataUrl,
+    thumbUrl: photo.thumbUrl,
     submittedAt: serverTimestamp(),
   });
 }

@@ -52,8 +52,6 @@ jobs:
           PUBLIC_GTM_ID:               ${{ secrets.PUBLIC_GTM_ID }}
           PUBLIC_GA4_ID:               ${{ secrets.PUBLIC_GA4_ID }}
           PUBLIC_META_PIXEL_ID:        ${{ secrets.PUBLIC_META_PIXEL_ID }}
-          PUBLIC_CLOUDINARY_CLOUD:     ${{ secrets.PUBLIC_CLOUDINARY_CLOUD }}
-          PUBLIC_CLOUDINARY_PRESET:    ${{ secrets.PUBLIC_CLOUDINARY_PRESET }}
           # Contact page aur admin ka rebuild button — in ke bagair wo pages
           # bante to hain, magar khali/disabled rehte hain.
           PUBLIC_CONTACT_EMAIL:        ${{ secrets.PUBLIC_CONTACT_EMAIL }}

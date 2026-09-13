@@ -34,7 +34,10 @@ export interface Tutor {
   experienceYears: number;
   availability: string;
   bio: string;
+  /** Card thumbnail (96px base64). Build time par `photos/{uid}` se aata hai. */
   photoUrl: string | null;
+  /** Profile page ki poori photo (600px base64). Sirf profile page par. */
+  photoFull?: string | null;
   status: TutorStatus;
   badges: TutorBadges;
   ratingAvg: number;

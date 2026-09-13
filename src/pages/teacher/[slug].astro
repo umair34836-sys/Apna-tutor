@@ -63,7 +63,8 @@ const person: Record<string, unknown> = {
   name: tutor.name,
   jobTitle: `${subjectNames[0] ?? 'Home'} Tutor`,
   url: absoluteUrl(path),
-  ...(tutor.photoUrl ? { image: tutor.photoUrl } : {}),
+  // JSON-LD ka `image` absolute URL maangta hai — base64 data URI wahan kaam
+  // nahi karta, isliye photo yahan nahi bhejte.
   knowsAbout: subjectNames,
   workLocation: {
     '@type': 'Place',
@@ -92,7 +93,6 @@ if (tutor.ratingCount > 0) {
   title={title}
   description={description.slice(0, 160)}
   path={path}
-  ogImage={tutor.photoUrl ?? undefined}
   jsonLd={[person, breadcrumbJsonLd(crumbs, SITE.url)]}
 >
   <div class="wrap"><Breadcrumbs items={crumbs} /></div>
@@ -100,8 +100,14 @@ if (tutor.ratingCount > 0) {
   <div class="wrap profile">
     <div class="main-col">
       <header class="head">
-        {tutor.photoUrl ? (
-          <img class="photo" src={tutor.photoUrl} alt={`${tutor.name} ki tasveer`} width="96" height="96" />
+        {tutor.photoFull || tutor.photoUrl ? (
+          <img
+            class="photo"
+            src={tutor.photoFull ?? tutor.photoUrl ?? ''}
+            alt={`${tutor.name} ki tasveer`}
+            width="96"
+            height="96"
+          />
         ) : (
           <div class="photo photo-initials" aria-hidden="true">{initials(tutor.name)}</div>
         )}

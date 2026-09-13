@@ -9,7 +9,7 @@
 import { getSession } from '../lib/auth';
 import { firestoreError } from '../lib/firebase';
 import { createTutorProfile, getMyTutorProfile, makeSlug, setMyContact, setMyPhotoSubmission } from '../lib/queries';
-import { uploadPhoto, validatePhoto } from '../lib/cloudinary';
+import { dataUrlKb, preparePhoto, validatePhoto } from '../lib/photo';
 import { track } from '../lib/analytics';
 
 const DRAFT_KEY = 'apnatutor:tutor-draft:v1';
@@ -34,15 +34,15 @@ interface Draft {
   phone: string;
   whatsapp: string;
   sameWa: boolean;
-  photoUrl: string;
-  photoPublicId: string;
+  photoDataUrl: string;
+  photoThumbUrl: string;
 }
 
 const empty = (): Draft => ({
   step: 1, name: '', gender: '', city: '', areas: [], subjects: [], classes: [],
   boards: [], modes: [], qualification: '', experienceYears: '', bio: '',
   feeMin: '', feeMax: '', availability: '', phone: '', whatsapp: '', sameWa: true,
-  photoUrl: '', photoPublicId: '',
+  photoDataUrl: '', photoThumbUrl: '',
 });
 
 const wizard = document.getElementById('wizard');
@@ -140,7 +140,7 @@ if (wizard) {
     $<HTMLInputElement>('same-wa').checked = draft.sameWa;
     $('wa-field').hidden = draft.sameWa;
     updateBioCount();
-    if (draft.photoUrl) showPhoto(draft.photoUrl);
+    if (draft.photoDataUrl) showPhoto(draft.photoDataUrl);
   }
 
   /** Areas sirf us sheher ke jo select hua hai. */
@@ -308,7 +308,7 @@ if (wizard) {
       ['Monthly fee', draft.feeMin && draft.feeMax ? `Rs. ${Number(draft.feeMin).toLocaleString('en-PK')} – ${Number(draft.feeMax).toLocaleString('en-PK')}` : '—'],
       ['Availability', draft.availability || '—'],
       ['Phone (private)', draft.phone ? `+92${draft.phone}` : '—'],
-      ['Photo', draft.photoUrl ? 'Upload ho gayi' : 'Nahi di'],
+      ['Photo', draft.photoDataUrl ? `Taiyar (${dataUrlKb(draft.photoDataUrl)} KB)` : 'Nahi di'],
     ];
 
     $('review-list').innerHTML = rows
@@ -344,29 +344,32 @@ if (wizard) {
       return;
     }
 
-    // Foran preview — upload ke intezaar mein khali box na dikhe.
+    // Foran preview — process hone ke intezaar mein khali box na dikhe.
     showPhoto(URL.createObjectURL(file));
 
     try {
-      const { url, publicId } = await uploadPhoto(file);
-      draft.photoUrl = url;
-      draft.photoPublicId = publicId;
-      showPhoto(url);
+      // Browser mein hi 600x600 tak simat kar base64 ban jati hai. Koi upload
+      // nahi hota — photo profile ke saath Firestore mein jati hai.
+      const { dataUrl, thumbUrl } = await preparePhoto(file);
+      draft.photoDataUrl = dataUrl;
+      draft.photoThumbUrl = thumbUrl;
+      showPhoto(dataUrl);
+      okBox.textContent = `Photo taiyar hai (${dataUrlKb(dataUrl)} KB)`;
       okBox.hidden = false;
       saveDraft();
     } catch (err) {
       errBox.querySelector('span')!.textContent =
-        err instanceof Error ? err.message : 'Photo upload nahi ho saki.';
+        err instanceof Error ? err.message : 'Photo process nahi ho saki.';
       errBox.hidden = false;
       $('photo-preview').innerHTML = '';
-      draft.photoUrl = '';
-      draft.photoPublicId = '';
+      draft.photoDataUrl = '';
+      draft.photoThumbUrl = '';
     }
   });
 
   $('photo-remove').addEventListener('click', () => {
-    draft.photoUrl = '';
-    draft.photoPublicId = '';
+    draft.photoDataUrl = '';
+    draft.photoThumbUrl = '';
     $('photo-preview').innerHTML = '';
     $('photo-remove').hidden = true;
     $('photo-ok').hidden = true;
@@ -460,8 +463,11 @@ if (wizard) {
         email: session.user.email ?? '',
       });
 
-      if (draft.photoUrl && draft.photoPublicId) {
-        await setMyPhotoSubmission(uid, { url: draft.photoUrl, publicId: draft.photoPublicId });
+      if (draft.photoDataUrl && draft.photoThumbUrl) {
+        await setMyPhotoSubmission(uid, {
+          dataUrl: draft.photoDataUrl,
+          thumbUrl: draft.photoThumbUrl,
+        });
       }
 
       track('tutor_register_complete', { city: draft.city, subjects_count: draft.subjects.length });

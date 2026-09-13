@@ -19,8 +19,6 @@ export const env = {
   gtmId: import.meta.env.PUBLIC_GTM_ID ?? '',
   ga4Id: import.meta.env.PUBLIC_GA4_ID ?? '',
   metaPixelId: import.meta.env.PUBLIC_META_PIXEL_ID ?? '',
-  cloudinaryCloud: import.meta.env.PUBLIC_CLOUDINARY_CLOUD ?? '',
-  cloudinaryPreset: import.meta.env.PUBLIC_CLOUDINARY_PRESET ?? '',
   contactEmail: import.meta.env.PUBLIC_CONTACT_EMAIL ?? '',
   /** ApnaTutor ka apna number. SEO gate ke phone-leak check se mustasna hai. */
   officialWhatsapp: import.meta.env.PUBLIC_OFFICIAL_WHATSAPP ?? '',

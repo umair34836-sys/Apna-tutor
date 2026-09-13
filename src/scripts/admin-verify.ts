@@ -18,6 +18,7 @@ if (rootEl) {
   const tutorId = new URLSearchParams(window.location.search).get('id') ?? '';
   let adminUid = '';
   let tutor: Tutor | null = null;
+  let pendingPhoto: { dataUrl: string; thumbUrl: string } | null = null;
 
   const fail = (msg: string) => {
     q('[data-loading]').hidden = true;
@@ -111,9 +112,10 @@ if (rootEl) {
 
   // ---- Photo ----
   q('[data-photo-approve]').addEventListener('click', async () => {
-    const img = q<HTMLImageElement>('[data-photo-img]');
+    if (!pendingPhoto) return;
     try {
-      await approvePhoto(tutorId, img.src);
+      // Photo `photos/{uid}` mein jati hai — public tutor doc halka rehta hai.
+      await approvePhoto(tutorId, pendingPhoto);
       q('[data-photo-card]').hidden = true;
     } catch (e) { fail(firestoreError(e)); }
   });
@@ -188,8 +190,9 @@ if (rootEl) {
            ${contact.email ? `<a class="btn btn-ghost btn-sm" href="mailto:${esc(contact.email)}">${esc(contact.email)}</a>` : ''}`
         : '<span class="hint">Is tutor ne abhi contact add nahi kiya.</span>';
 
-      if (photo?.url) {
-        q<HTMLImageElement>('[data-photo-img]').src = photo.url;
+      if (photo?.dataUrl) {
+        pendingPhoto = photo;
+        q<HTMLImageElement>('[data-photo-img]').src = photo.dataUrl;
         q('[data-photo-card]').hidden = false;
       }
 

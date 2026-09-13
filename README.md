@@ -34,7 +34,7 @@ site empty states dikhati hai. Ye jaan boojh kar hai: jhoota demo data kabhi nah
 Visitor  →  static HTML (GitHub Pages)          →  0 Firestore reads
 Login    →  Firebase Auth                       →  free, 50k MAU
 Action   →  Firestore, Security Rules ke peeche →  50k reads/day
-Photo    →  Cloudinary unsigned preset          →  free tier
+Photo    →  Firestore mein base64 (600px/96px)   →  koi aur service nahi
 Build    →  GitHub Actions, cron har 6 ghante   →  Firestore → static HTML
 ```
 
@@ -68,7 +68,9 @@ Ye code ka kaam nahi — setup aur content ka hai:
 
 1. Firebase project banayein (`docs/04-DEPLOY.md` §1), rules aur indexes deploy karein
 2. Admin doc Firebase Console se haath se banayein — client se ban hi nahi sakta
-3. `.env` ki saari values bharein, aur wahi GitHub secrets mein daalein
+3. GitHub secret sirf ek: `FIREBASE_SERVICE_ACCOUNT`. Firebase web config
+   `src/lib/firebase.ts` mein pehle se committed hai (wo public hoti hai — asli
+   protection rules aur App Check hain)
 4. Cities aur subjects Firestore mein daalein, phir `/admin/content` se intro text likhein
    (har intro 120+ words aur har page ka apna — warna wo page banta hi nahi)
 5. Apna asli tutor profile khud banayein aur khud approve karein — end-to-end test

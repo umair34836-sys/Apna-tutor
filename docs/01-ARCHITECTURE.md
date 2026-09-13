@@ -1,7 +1,7 @@
 # ApnaTutor — Architecture
 
 **Version:** 1.0 · **Target:** production launch, Risalpur + Nowshera
-**Stack:** Astro (SSG) → GitHub Pages · Firebase Spark (free) · Cloudinary (free)
+**Stack:** Astro (SSG) → GitHub Pages · Firebase Spark (free) — aur kuch nahi
 
 ---
 
@@ -12,7 +12,7 @@ Firebase ka free **Spark** plan 2026 mein pehle jaisa nahi hai. Ye teen cheezein
 
 | Band hai | Kab se | Asar |
 |---|---|---|
-| **Cloud Storage** | 3 Feb 2026 — Blaze zaroori, default bucket bhi | Koi file upload Firebase par nahi → Cloudinary |
+| **Cloud Storage** | 3 Feb 2026 — Blaze zaroori, default bucket bhi | Photos Firestore mein base64 ke taur par (neeche §3 dekho) |
 | **Cloud Functions** | Cloud Run / Build / Artifact Registry Spark par "Not applicable" | **Koi server-side code nahi** → saara logic client + Security Rules |
 | **Phone OTP (SMS)** | Sep 2024 — billing account zaroori; sirf 10 SMS/day bill-free | Automated OTP nahi → manual phone check |
 
@@ -58,7 +58,7 @@ flowchart TB
         V -->|"login / request / unlock"| SDK["Firebase JS SDK"]
         SDK --> AUTH["Firebase Auth"]
         SDK -->|"gated by Rules"| FS2[("Firestore")]
-        V -->|"photo upload"| CL["Cloudinary<br/>unsigned preset"]
+        V -->|"photo (base64)"| FS2
     end
 
     subgraph admin["ADMIN — /admin (same static site, auth-gated)"]
@@ -128,8 +128,7 @@ qualification   : string     // "MSc Mathematics"
 experienceYears : number
 availability    : string     // "Mon–Sat, 4 PM – 9 PM"
 bio             : string     // max 600 chars
-photoUrl        : string|null      // SIRF admin likh sakta hai
-photoPending    : object|null      // {url, publicId} — tutor likhta hai
+photoUrl        : string|null      // build time par `photos/{uid}` se aata hai
 status          : 'pending' | 'approved' | 'rejected' | 'suspended'
 badges          : {                 // SIRF admin likh sakta hai
                     phoneChecked : bool
@@ -238,6 +237,31 @@ status      : 'open' | 'actioned' | 'dismissed'
 createdAt   : timestamp
 ```
 
+### `photos/{tutorUid}` — approve ho chuki profile photo
+
+Cloud Storage istemal nahi hoti (Spark par available bhi nahi), aur koi bahar
+ki service bhi nahi — poora backend Firebase hai. Isliye photo Firestore mein
+hi rehti hai, base64 data URI ke taur par.
+
+```
+dataUrl    : string     // 600px JPEG — sirf tutor ki apni profile page par
+thumbUrl   : string     // 96px JPEG — tutor cards par
+updatedAt  : timestamp
+```
+
+**Alag collection kyun?** Agar photo `tutors/{uid}` mein hoti to har search
+query (30 docs) ke saath 30 photos bhi download hotin. Alag rakhne se public
+tutor doc halka rehta hai, aur build script build ke waqt dono ko jor deta hai.
+
+**Do size kyun?** Ek city page par 30 cards hote hain. 600px wali photo har
+card par hoti to page 2.4 MB ka ban jata; 96px thumbnail (~6 KB) se wo page
+76 KB rehta hai.
+
+Photo browser mein hi simat jati hai (canvas par), isliye koi server ya
+transformation service nahi chahiye. Tutor `tutors/{uid}/private/photoSubmission`
+mein bhejta hai; admin dekh kar `photos/{uid}` mein laata hai — yani photo bhi
+usi trust rule ke tehat hai jaise badges.
+
 ### `cities/{citySlug}` aur `subjects/{subjectSlug}` — SEO content
 World-readable, sirf admin likhta hai. Build script inhe padh kar pages banata hai.
 
@@ -326,8 +350,8 @@ tootegi wo quota nahi — **tumhara manual verification ka waqt** hoga.
 ### Kab paisa lagega
 
 - **Firestore limit** — jab din ke ~15,000 logged-in actions hon. Bohat door hai.
-- **Cloudinary** — 25 monthly credits. ~300 photos/month tak theek. Uske baad
-  upload par `c_limit,w_600,q_auto` transformation lagao (ye documentation mein hai).
+- **Firestore storage** — 1 GiB free. Ek photo (thumb + full) taqreeban 100 KB
+  leti hai, yani ~10,000 profiles. Bohat door hai.
 - **Pehla asli kharcha** — jab SMS OTP chahiye hoga (Blaze) ya paid featured
   listings ke liye payment gateway. Dono Phase 3 ki baatein hain.
 

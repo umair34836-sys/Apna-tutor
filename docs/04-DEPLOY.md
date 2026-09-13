@@ -72,63 +72,41 @@ system bekaar hai.
 
 ---
 
-## 2. Cloudinary setup (photos)
+## 2. Photos — koi setup nahi
 
-Firebase Storage free plan par nahi hai, isliye photos Cloudinary par.
+Photos Firestore mein hi rehti hain, base64 ke taur par. **Na Cloud Storage, na
+Cloudinary, na koi aur service** — is step mein kuch karna hi nahi hai.
 
-1. cloudinary.com par free account
-2. Settings → Upload → **Add upload preset**
-   - Signing mode: **Unsigned** (server nahi hai, isliye ye majboori hai)
-   - Preset name: `apnatutor_tutor_photos`
-   - Folder: `tutors/pending`
-   - Allowed formats: `jpg, jpeg, png, webp`
-   - Max file size: `3 MB`
-   - **Incoming transformation:** `c_limit,w_600,h_600,q_auto,f_auto`
-     — ye lazmi hai. Credits bachata hai aur page speed theek rakhta hai
-   - Unique filename: on
-3. Cloud name aur preset name `.env` mein
+Kaise kaam karta hai:
 
-```js
-// Client-side upload
-const form = new FormData();
-form.append('file', file);
-form.append('upload_preset', import.meta.env.PUBLIC_CLOUDINARY_PRESET);
+1. Tutor photo chunta hai → browser canvas par usay **600×600 (profile) aur
+   96×96 (cards)** tak simat kar base64 JPEG bana leta hai
+2. Wo `tutors/{uid}/private/photoSubmission` mein jati hai — private
+3. Admin dekh kar approve karta hai → `photos/{uid}` mein aati hai, ab public
+4. Build script build ke waqt usay tutor ke saath jor deta hai
 
-const res = await fetch(
-  `https://api.cloudinary.com/v1_1/${import.meta.env.PUBLIC_CLOUDINARY_CLOUD}/image/upload`,
-  { method: 'POST', body: form }
-);
-const { secure_url, public_id } = await res.json();
-// → tutors/{uid}/private/photoSubmission likho
-// → admin approve karke tutors/{uid}.photoUrl set karega
-```
+Hisab: ek photo ~100 KB (thumb + full), Firestore free tier 1 GiB → ~10,000
+profiles. Aur 1 MiB ka document cap? Rules 300,000 characters par rok deti hain,
+yani cap ka taqreeban ek tihai.
 
-> ### ⚠️ Unsigned preset ki limitation — samajh lo
+> ### Kyun koi bahar ki service nahi
 >
-> Unsigned preset ka naam browser mein nazar aata hai. Koi bhi us preset par
-> upload kar sakta hai. Signed upload ke liye server chahiye, jo tumhare paas
-> nahi hai.
->
-> Jo bachav mumkin hai: format + size restrictions (upar), folder isolation,
-> aur Cloudinary dashboard par **har hafte usage check karna**. Abuse nazar aaye
-> to preset delete karke naya bana lo — ek minute ka kaam.
->
-> Ye MVP ke liye qabool hai kyunki nuqsan mehdood hai (credits, na ke data).
+> Cloud Storage Spark plan par available nahi (3 Feb 2026 se Blaze zaroori), aur
+> koi teesri service laane ka matlab ek aur account, ek aur dashboard, ek aur
+> bill aur ek aur jagah jahan se data leak ho sakta hai. Poora backend Firebase
+> hai — photos bhi wahin rehni chahiyein.
 
-> ### 🚫 Verification documents Cloudinary par KABHI nahi
+> ### 🚫 Verification documents kahin bhi nahi
 >
-> Cloudinary URLs **public** hote hain. CNIC ya degree ki image wahan rakhna
-> matlab: kisi ko URL mil gaya to shanakhti dastavez leak. Ye phir identity
-> fraud mein use hote hain.
+> Ye pehle jaisa hi hai aur badla nahi: CNIC ya degree ki image **kahin** store
+> nahi hoti — na Firestore mein, na kisi aur jagah. App mein aisa upload feature
+> hai hi nahi.
 >
 > Process: tum WhatsApp par document maangte ho → apni aankh se dekhte ho →
 > admin panel mein boolean set karte ho → **WhatsApp se message delete kar dete
 > ho**. Firestore mein sirf `idChecked: true`, `verifiedBy`, `verifiedAt`.
 >
-> Jo data tum store nahi karte, wo leak nahi ho sakta. Yahi sabse mazboot
-> security hai.
-
----
+> Jo data tum store nahi karte, wo leak nahi ho sakta.
 
 ## 3. Astro config
 
@@ -295,9 +273,8 @@ Repo → Settings → Secrets and variables → Actions:
 | Secret | Kahan se |
 |---|---|
 | `FIREBASE_SERVICE_ACCOUNT` | Firebase Console → Project Settings → Service accounts → Generate key → **poori JSON** |
-| `PUBLIC_FIREBASE_CONFIG` | Web app config JSON |
+| ~~`PUBLIC_FIREBASE_*`~~ | **Ab zaroori nahi** — web config `src/lib/firebase.ts` mein committed hai (wo public hoti hai) |
 | `PUBLIC_GTM_ID`, `PUBLIC_GA4_ID`, `PUBLIC_META_PIXEL_ID` | GTM / GA4 / Meta |
-| `PUBLIC_CLOUDINARY_CLOUD`, `PUBLIC_CLOUDINARY_PRESET` | Cloudinary |
 | `PUBLIC_RECAPTCHA_SITE_KEY` | App Check |
 
 > Service account key ki poori access hoti hai. Repo **private** rakho. Agar

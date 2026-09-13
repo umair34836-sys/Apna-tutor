@@ -126,6 +126,20 @@ async function main() {
     bySlug.set(t.slug, t.id);
   }
 
+  // ---- Photos
+  // Photos alag collection mein hain taake public tutor doc halka rahe (warna
+  // har search query 30 photos bhi kheench leti). Build ke waqt jor dete hain:
+  //   photoUrl  → 96px thumbnail, cards ke liye
+  //   photoFull → 600px, sirf us tutor ki apni profile page par
+  const photoSnap = await db.collection('photos').get();
+  const photos = new Map(photoSnap.docs.map((d) => [d.id, d.data()]));
+
+  for (const t of tutors) {
+    const photo = photos.get(t.id);
+    t.photoUrl = photo?.thumbUrl ?? null;
+    t.photoFull = photo?.dataUrl ?? null;
+  }
+
   // ---- SEO content
   const cities = (await db.collection('cities').get()).docs.map((d) => ({ slug: d.id, ...plain(d.data()) }));
   const subjects = (await db.collection('subjects').get()).docs.map((d) => ({ slug: d.id, ...plain(d.data()) }));
@@ -140,8 +154,10 @@ async function main() {
 
   await writeAll({ tutors, cities, subjects, reviews, offline: false });
 
+  const withPhoto = tutors.filter((t) => t.photoUrl).length;
   console.log(
-    `✓ ${tutors.length} tutors, ${cities.length} cities, ${subjects.length} subjects, ${reviews.length} reviews`
+    `✓ ${tutors.length} tutors (${withPhoto} photos ke saath), ${cities.length} cities, ` +
+      `${subjects.length} subjects, ${reviews.length} reviews`
   );
 }
 

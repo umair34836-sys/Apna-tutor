@@ -78,17 +78,30 @@ export async function setBadges(
   });
 }
 
-/** Tutor ki submit ki hui photo ko live karta hai. */
-export async function approvePhoto(tutorUid: string, url: string): Promise<void> {
+/**
+ * Tutor ki submit ki hui photo ko live karta hai.
+ *
+ * Photo `photos/{uid}` mein jati hai, `tutors/{uid}` mein nahi — public tutor
+ * doc halka rehna chahiye, warna har search query 30 photos bhi kheench leti.
+ * Build script build ke waqt donon ko jor deta hai.
+ */
+export async function approvePhoto(tutorUid: string, photo: { dataUrl: string; thumbUrl: string }): Promise<void> {
   const { db } = await getFirebase();
-  const { doc, updateDoc, serverTimestamp } = await import('firebase/firestore');
-  await updateDoc(doc(db, 'tutors', tutorUid), { photoUrl: url, updatedAt: serverTimestamp() });
+  const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+  await setDoc(doc(db, 'photos', tutorUid), { ...photo, updatedAt: serverTimestamp() });
 }
 
 export async function rejectPhoto(tutorUid: string): Promise<void> {
   const { db } = await getFirebase();
   const { deleteDoc, doc } = await import('firebase/firestore');
   await deleteDoc(doc(db, 'tutors', tutorUid, 'private', 'photoSubmission'));
+}
+
+/** Live photo hata deta hai (misal: report ke baad). */
+export async function removeLivePhoto(tutorUid: string): Promise<void> {
+  const { db } = await getFirebase();
+  const { deleteDoc, doc } = await import('firebase/firestore');
+  await deleteDoc(doc(db, 'photos', tutorUid));
 }
 
 export async function setFeaturedUntil(tutorUid: string, until: Date | null): Promise<void> {
@@ -108,7 +121,7 @@ export async function getPhotoSubmission(tutorUid: string) {
   const { db } = await getFirebase();
   const { doc, getDoc } = await import('firebase/firestore');
   const snap = await getDoc(doc(db, 'tutors', tutorUid, 'private', 'photoSubmission'));
-  return snap.exists() ? (snap.data() as { url: string; publicId: string }) : null;
+  return snap.exists() ? (snap.data() as { dataUrl: string; thumbUrl: string }) : null;
 }
 
 // ---------------------------------------------------------------------------
