@@ -64,20 +64,43 @@ jobs:
           # Project id wahi jo service account ka hai — hardcode karne se
           # ghalat project par deploy hone ka khatra rehta hai.
           node -e "
-            const sa = require(process.env.RUNNER_TEMP + '/sa.json');
+            let sa;
+            try { sa = require(process.env.RUNNER_TEMP + '/sa.json'); }
+            catch { console.error('::error::FIREBASE_SERVICE_ACCOUNT valid JSON nahi hai. Poori file paste karein — { se } tak.'); process.exit(1); }
             if (!sa.project_id) { console.error('::error::Service account JSON mein project_id nahi hai.'); process.exit(1); }
             require('fs').appendFileSync(process.env.GITHUB_ENV, 'FIREBASE_PROJECT=' + sa.project_id + '\n');
-            console.log('Project:', sa.project_id);
+            console.log('Project:      ', sa.project_id);
+            // Ye email IAM mein dhoondna parta hai agar deploy permission par ruk jaye.
+            console.log('Service acct: ', sa.client_email || '(nahi mila)');
           "
 
       - name: Rules aur indexes deploy karo
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
         run: |
+          set +e
           npx firebase deploy \
             --only firestore:rules,firestore:indexes \
             --project "$FIREBASE_PROJECT" \
             --non-interactive
+          code=$?
+          set -e
+
+          if [ $code -ne 0 ]; then
+            echo "::error::Deploy fail hui."
+            echo ""
+            echo "Agar upar 'permission' ya 'PERMISSION_DENIED' likha hai, to service"
+            echo "account ke paas ye do roles nahi hain. Ek baar dena parta hai:"
+            echo ""
+            echo "  console.cloud.google.com  →  IAM & Admin  →  IAM"
+            echo "  upar wale step mein jo 'Service acct' email chhapa hai usay dhoondein"
+            echo "  Edit (pencil)  →  Add another role  →  ye do add karein:"
+            echo "     • Firebase Rules Admin"
+            echo "     • Cloud Datastore Index Admin"
+            echo ""
+            echo "Phir ye workflow dobara chalayein."
+            exit $code
+          fi
 
       - name: Credentials mitao
         if: always()

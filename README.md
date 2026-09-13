@@ -46,14 +46,33 @@ karti hai. Ek page nahi — sab ek saath ruk jate hain.
 
 ### Deploy karne ka tareeqa
 
-**Bina kuch install kiye (aasan raasta):**
+**Bina kuch install kiye (aasan raasta — phone se bhi ho jata hai):**
 
 GitHub → **Actions** → **"Firestore rules aur indexes deploy"** → **Run workflow**
 
-Iske liye `FIREBASE_SERVICE_ACCOUNT` secret hona zaroori hai (wahi jo build
-istemal karti hai). Firebase Console → Project settings → Service accounts →
-Generate new private key; us JSON ko poora ka poora GitHub → Settings →
-Secrets and variables → Actions mein paste kar dein.
+Iske liye `FIREBASE_SERVICE_ACCOUNT` secret hona zaroori hai — wahi secret
+build bhi istemal karti hai (uske bagair site khali data ke saath banti hai,
+yani koi tutor nazar nahi aata). Ek baar set karna parta hai:
+
+1. **Firebase Console** → ⚙ Project settings → **Service accounts** →
+   **Generate new private key**. Ek `.json` file download hogi.
+2. Us file ka **poora text** copy karein — `{` se `}` tak, kuch chhora nahi.
+   Phone par file ko `.txt` par rename kar lein, phir wo text app mein khul
+   jati hai aur select-all kaam karta hai.
+3. **GitHub** → repo → Settings → Secrets and variables → **Actions** →
+   **New repository secret**
+   - Name: `FIREBASE_SERVICE_ACCOUNT`
+   - Secret: wahi poora JSON
+4. Ab Actions se workflow chala dein.
+
+★ Ye file ek **private key** hai. Kisi ko bhejni nahi, kisi chat mein paste
+nahi karni, aur repo mein commit to bilkul nahi (`.gitignore` ismein madad
+nahi karega agar naam alag ho). Sirf GitHub Secrets mein.
+
+Agar deploy "permission" ki wajah se ruke to service account ko do roles
+dene parte hain — **Firebase Rules Admin** aur **Cloud Datastore Index
+Admin** (Google Cloud Console → IAM). Workflow fail hone par ye hidayat khud
+print kar deta hai, service account ke email ke saath.
 
 **Ya apne computer se:**
 
