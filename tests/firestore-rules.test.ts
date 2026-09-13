@@ -689,6 +689,17 @@ describe('users/{uid}', () => {
     );
   });
 
+  it('student bhi account bana sakta hai', async () => {
+    // Student aur parent ek hi tarah ke account hain — dono tutor dhoondte
+    // hain. Rules mein `student` na hota to student ka signup fail ho jata.
+    const uid = 'fresh-student';
+    await assertSucceeds(
+      setDoc(doc(db(uid), `users/${uid}`), {
+        role: 'student', name: 'Naya Student', city: 'gunderi-payan', createdAt: serverTimestamp(),
+      })
+    );
+  });
+
   it('user role "admin" set nahi kar sakta ❗', async () => {
     const uid = 'sneaky-user';
     await assertFails(

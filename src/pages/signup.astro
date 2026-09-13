@@ -15,10 +15,15 @@ import Icon from '../components/Icon.astro';
 import { cities } from '../lib/data';
 import { AREA_LABEL, AREA_WORD, ONLY_AREA, SERVICE_AREA_NAME } from '../lib/site';
 ---
-<Base title="Create Account | ApnaTutor" description="ApnaTutor par naya account banayein — parent ya tutor." path="/signup" noindex>
-  <AuthCard heading="Naya account" sub="Parents ke liye bilkul free. Tutors ke liye bhi.">
+<Base title="Create Account | ApnaTutor" description="ApnaTutor par naya account banayein — parent, student ya tutor." path="/signup" noindex>
+  <AuthCard heading="Naya account" sub="Parents aur students ke liye bilkul free — hamesha.">
     <form id="signup-form" novalidate data-has-cities={cities.length > 0 ? '1' : ''}>
-      <!-- Role -->
+      {/* ★ Tarteeb jaan boojh kar hai: pehle wo log jo tutor DHOONDTE hain,
+          tutor sab se aakhir mein. Site ka daar-o-madar isi par hai ke
+          parents aur students pehle aayein — tutors unke peechay khud aate
+          hain. `student` aur `parent` system mein ek hi tarah chalte hain
+          (ek hi dashboard, ek hi rules ka raasta); farq sirf ye hai ke
+          tuition kis ke liye hai. */}
       <fieldset class="roles" id="role-block">
         <legend>Aap kaun hain?</legend>
         <label class="role">
@@ -27,6 +32,14 @@ import { AREA_LABEL, AREA_WORD, ONLY_AREA, SERVICE_AREA_NAME } from '../lib/site
             <Icon name="users" />
             <strong>Parent</strong>
             <small>Mujhe apne bachay ke liye tutor chahiye</small>
+          </span>
+        </label>
+        <label class="role">
+          <input type="radio" name="role" value="student" />
+          <span class="role-body">
+            <Icon name="book" />
+            <strong>Student</strong>
+            <small>Main khud apne liye tutor dhoond raha/rahi hoon</small>
           </span>
         </label>
         <label class="role">

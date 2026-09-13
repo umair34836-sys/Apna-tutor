@@ -103,13 +103,20 @@ const ready = cities.length > 0 && subjects.length > 0;
 
           <div class="field">
             <label for="f-budget">Monthly budget tak (Rs.)</label>
-            <select id="f-budget" name="budget">
-              <option value="">Koi bhi</option>
-              <option value="3000">3,000</option>
-              <option value="5000">5,000</option>
-              <option value="8000">8,000</option>
-              <option value="15000">15,000</option>
-            </select>
+            {/* Pehle ye fix options wala dropdown tha. Har ghar ka budget
+                apna hota hai — 4,500 wale ko 3,000 ya 5,000 mein se chunna
+                parta tha, aur dono ghalat thay. Ab koi bhi amount likh
+                sakte hain; datalist sirf tez raasta hai. */}
+            <input type="number" id="f-budget" name="budget" inputmode="numeric"
+                   min="500" max="200000" step="500" placeholder="Koi bhi"
+                   list="budget-amounts" autocomplete="off" />
+          <datalist id="budget-amounts">
+            <option value="2000"></option><option value="3000"></option>
+            <option value="4000"></option><option value="5000"></option>
+            <option value="6000"></option><option value="8000"></option>
+            <option value="10000"></option><option value="15000"></option>
+          </datalist>
+            <p class="hint">Apni marzi ka amount likh sakte hain.</p>
           </div>
 
           <div class="field">

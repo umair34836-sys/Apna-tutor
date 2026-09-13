@@ -62,7 +62,8 @@ const adminNav = [
   { href: '/admin/rebuild', label: 'Rebuild', icon: 'refresh' },
 ];
 
-const links = admin ? adminNav : role === 'tutor' ? tutorNav : role === 'parent' ? parentNav : [];
+// `student` bhi parent wala area istemal karta hai — dono tutor dhoondte hain.
+const links = admin ? adminNav : role === 'tutor' ? tutorNav : role ? parentNav : [];
 const current = path;
 ---
 <Base title={title} description={description} path={path} noindex>

@@ -122,7 +122,15 @@ const ready = cities.length > 0 && subjects.length > 0;
               <div class="field-grid">
                 <div class="field">
                   <label for="budgetMax">Zyada se zyada monthly budget (Rs.)</label>
-                  <input type="number" id="budgetMax" min="500" max="200000" step="500" required placeholder="5000" />
+                  <input type="number" id="budgetMax" min="500" max="200000" step="500" required
+                         inputmode="numeric" placeholder="5000" list="budget-amounts" autocomplete="off" />
+                  <datalist id="budget-amounts">
+                    <option value="2000"></option><option value="3000"></option>
+                    <option value="4000"></option><option value="5000"></option>
+                    <option value="6000"></option><option value="8000"></option>
+                    <option value="10000"></option><option value="15000"></option>
+                  </datalist>
+                  <p class="hint">Apni marzi ka amount likhein.</p>
                   <p class="err" id="e-budgetMax"><Icon name="alert-circle" size={15} strokeWidth={2.5} /><span></span></p>
                 </div>
 

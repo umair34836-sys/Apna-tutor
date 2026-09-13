@@ -78,7 +78,7 @@ service cloud.firestore {
       allow list: if isAdmin() && capped(50);
 
       allow create: if isOwner(userId)
-        && request.resource.data.role in ['parent', 'tutor']
+        && request.resource.data.role in ['parent', 'student', 'tutor']
         && request.resource.data.keys().hasOnly(['role', 'name', 'city', 'createdAt'])
         && request.resource.data.name is string
         && request.resource.data.name.size() >= 2

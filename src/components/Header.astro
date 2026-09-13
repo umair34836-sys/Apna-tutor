@@ -15,11 +15,17 @@ import Logo from './Logo.astro';
       <a href={url('/teachers')}>Saare tutors</a>
     </nav>
 
+    {/* ★ Header ka primary CTA "Tutor banein" tha. Ab Sign up hai.
+        Wajah: jitne zyada parents aur students account banayenge, utne hi
+        zyada tutors khud aayenge — ulta nahi. Tutors ka raasta phir bhi
+        mojood hai: footer ka "Tutors ke liye" aur homepage ka recruit
+        section. Login mobile par bhi dikhta hai — wapas aane wala banda
+        pehli cheez wahi dhoondta hai. */}
     <div class="nav-cta">
       <a class="btn btn-ghost btn-sm" href={url('/login')}>Login</a>
-      <a class="btn btn-primary btn-sm" href={url('/tutor/register')}>
+      <a class="btn btn-primary btn-sm" href={url('/signup')}>
         <Icon name="user-plus" />
-        Tutor banein
+        Sign up
       </a>
     </div>
   </div>
@@ -34,9 +40,10 @@ import Logo from './Logo.astro';
     font-weight:500;white-space:nowrap;font-size:15px}
   .nav-links a:hover{background:var(--bg-alt);color:var(--fg);text-decoration:none}
   .nav-cta{display:flex;gap:var(--space-1);align-items:center}
-  .nav-cta :global(.btn-ghost){display:none}
-  @media(min-width:1040px){
-    .nav-links{display:flex}
-    .nav-cta :global(.btn-ghost){display:inline-flex}
+  /* Chhoti screen par Sign up ka icon jagah kha jata hai — text kaafi hai. */
+  @media(max-width:420px){
+    .nav-cta :global(.btn-primary .icon){display:none}
+    .nav-cta :global(.btn){padding-inline:12px}
   }
+  @media(min-width:1040px){ .nav-links{display:flex} }
 </style>

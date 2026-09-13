@@ -86,6 +86,10 @@ if (root && root.dataset.ready === '1') {
 
   function currentFilters(): SearchFilters {
     const v = (id: string) => ($(id) as HTMLSelectElement).value;
+    // Budget ab likha jata hai, chuna nahi — is liye khud check karna parta
+    // hai. Minus ya 0 sab tutors ko filter kar deta (feeMin hamesha zyada
+    // hoti), yani parent ko bina wajah khali page milta.
+    const budget = Number(v('f-budget'));
     return {
       city: v('f-city'),
       subject: v('f-subject'),
@@ -94,7 +98,7 @@ if (root && root.dataset.ready === '1') {
       board: v('f-board') || undefined,
       gender: v('f-gender') || undefined,
       mode: v('f-mode') || undefined,
-      budgetMax: v('f-budget') ? Number(v('f-budget')) : undefined,
+      budgetMax: Number.isFinite(budget) && budget > 0 ? budget : undefined,
       minExperience: v('f-exp') ? Number(v('f-exp')) : undefined,
     };
   }
@@ -193,6 +197,10 @@ if (root && root.dataset.ready === '1') {
 
   $('filter-reset').addEventListener('click', () => {
     Object.values(MAP).forEach((id) => { ($(id) as HTMLSelectElement).value = ''; });
+    // Ek hi service area ho to city select mein khali option hoti hi nahi —
+    // usay khali kar dene se page "ilaqa select karein" par atak jata.
+    const cityEl = $('f-city') as HTMLSelectElement;
+    if (!cityEl.value && cityEl.options.length === 1) cityEl.selectedIndex = 0;
     renderAreas();
     formToUrl(true);
     run();

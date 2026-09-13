@@ -81,14 +81,17 @@ const manifest = comboPages().map((p) => p.slug);
         </div>
 
         <div class="field">
-          <label for="s-budget">Budget <span class="hint">(optional)</span></label>
-          <select id="s-budget" name="budget">
-            <option value="">Koi bhi</option>
-            <option value="3000">Rs. 3,000 tak</option>
-            <option value="5000">Rs. 3,000 – 5,000</option>
-            <option value="8000">Rs. 5,000 – 8,000</option>
-            <option value="999999">Rs. 8,000+</option>
-          </select>
+          <label for="s-budget">Monthly budget <span class="hint">(optional)</span></label>
+          {/* Fix ranges ki jagah asli amount — dekhein find-tutor.astro. */}
+          <input type="number" id="s-budget" name="budget" inputmode="numeric"
+                 min="500" max="200000" step="500" placeholder="Rs. — koi bhi"
+                 list="budget-amounts" autocomplete="off" />
+          <datalist id="budget-amounts">
+            <option value="2000"></option><option value="3000"></option>
+            <option value="4000"></option><option value="5000"></option>
+            <option value="6000"></option><option value="8000"></option>
+            <option value="10000"></option><option value="15000"></option>
+          </datalist>
         </div>
       </div>
 
@@ -226,7 +229,8 @@ const manifest = comboPages().map((p) => p.slug);
     const classLevel = (document.getElementById('s-class') as HTMLSelectElement).value;
     const subject = (document.getElementById('s-subject') as HTMLSelectElement).value;
     const [city, rawArea] = (document.getElementById('s-area') as HTMLSelectElement).value.split('|');
-    const budget = (document.getElementById('s-budget') as HTMLSelectElement).value;
+    const budgetRaw = Number((document.getElementById('s-budget') as HTMLInputElement).value);
+    const budget = Number.isFinite(budgetRaw) && budgetRaw > 0 ? String(budgetRaw) : '';
 
     // "Online" ek area nahi, teaching MODE hai. Pehle ye area ki tarah bheja
     // jata tha, is liye search hamesha khali aati thi — kisi tutor ke `areas`

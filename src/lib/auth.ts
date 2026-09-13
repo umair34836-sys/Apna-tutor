@@ -13,7 +13,17 @@ import { getFirebase, currentUser } from './firebase';
 import { url } from './site';
 import type { User } from 'firebase/auth';
 
-export type Role = 'parent' | 'tutor';
+/**
+ * `parent` aur `student` dono ek hi taraf ke hain — tutor dhoondte hain,
+ * request post karte hain, contact unlock karte hain. Farq sirf ye hai ke
+ * request kis ke liye hai. Is liye dono ka dashboard aur rules ka raasta ek
+ * hi hai; alag `student` area banana sirf do jaisi cheezein do jagah rakhta.
+ */
+export type Role = 'parent' | 'student' | 'tutor';
+
+/** Wo roles jo tutor DHOONDTE hain (parent side ki har page inke liye hai). */
+export const isLearnerRole = (role: Role | undefined): boolean =>
+  role === 'parent' || role === 'student';
 
 export interface UserProfile {
   role: Role;
@@ -183,7 +193,14 @@ export async function requireSession(role?: Role): Promise<Session | null> {
     return null;
   }
 
-  if (role && profile.role !== role) {
+  // `parent` maanga gaya ho to `student` bhi chalega — dono ka area ek hai.
+  const allowed = role
+    ? isLearnerRole(role)
+      ? isLearnerRole(profile.role)
+      : profile.role === role
+    : true;
+
+  if (!allowed) {
     window.location.replace(url(homeFor(profile.role)));
     return null;
   }
@@ -258,4 +275,9 @@ export function nextUrl(fallback = '/'): string {
 
 export function homeFor(role: Role | undefined): string {
   return role === 'tutor' ? '/tutor/dashboard' : '/parent/dashboard';
+}
+
+/** Roman Urdu label — role batane ke liye. */
+export function roleLabel(role: Role | undefined): string {
+  return role === 'tutor' ? 'Tutor' : role === 'student' ? 'Student' : 'Parent';
 }
