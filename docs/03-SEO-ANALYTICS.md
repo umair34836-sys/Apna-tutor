@@ -246,12 +246,13 @@ Static HTML ki wajah se tum already aage ho. Jo bacha:
 
 - **LCP** — hero mein koi bari image na ho. Font `display=swap` + preconnect
   (already hai). Target < 2.0s
-- **CLS** — har image par `width`/`height`. Cloudinary images par lazy loading,
-  magar hero par nahi. Target < 0.1
+- **CLS** — har image par `width`/`height`. Tutor cards ki photos par lazy
+  loading, magar hero par nahi. Target < 0.1
 - **INP** — Firebase SDK ko defer karo aur sirf un pages par load karo jahan
   chahiye. Homepage ko Firebase ki zarurat **nahi** hai (sab static hai) — usay
   wahan load hi na karo. Ye sabse bara performance win hai
-- Cloudinary URLs par `f_auto,q_auto,w_400,c_limit` — WebP khud serve ho jayegi
+- Photos base64 JPEG hain aur HTML mein hi baked — koi alag request nahi hoti.
+  Size browser mein hi cap hoti hai: cards par 96px (~6 KB), profile par 600px
 
 ### GitHub Pages ki do limitations
 1. **Custom HTTP headers set nahi kar sakte** — matlab asli CSP header nahi.
