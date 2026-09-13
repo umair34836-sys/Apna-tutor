@@ -1,8 +1,11 @@
 name: Build and deploy
 
 on:
+  # Har push par — magar deploy sirf DEFAULT branch se hota hai (neeche guard).
+  # Pehle yahan `branches: [main]` likha tha, aur repo ka default branch kuch
+  # aur tha — nateeja ye ke push par kabhi deploy hua hi nahi, sirf cron chalta
+  # raha. Ab branch ka naam kuch bhi ho, kaam karta hai.
   push:
-    branches: [main]
   schedule:
     # Har 6 ghante — naye approved tutors static pages par aa jayein.
     - cron: '0 */6 * * *'
@@ -20,6 +23,10 @@ concurrency:
 
 jobs:
   build:
+    # Push sirf default branch se deploy kare; cron aur manual hamesha chalein.
+    if: >-
+      github.event_name != 'push' ||
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
