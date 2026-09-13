@@ -6,7 +6,7 @@ import TutorGrid from '../../components/TutorGrid.astro';
 import Icon from '../../components/Icon.astro';
 import { tutors } from '../../lib/data';
 import { rank } from '../../lib/seo';
-import { TUTORS_PER_PAGE } from '../../lib/site';
+import { TUTORS_PER_PAGE, url } from '../../lib/site';
 import type { Tutor } from '../../lib/types';
 
 export const getStaticPaths = (async ({ paginate }) => {
@@ -48,7 +48,7 @@ const description =
         ? `${total} approved profiles. Kisi bhi profile par click karke poori detail dekhein.`
         : 'Abhi koi tutor approve nahi hua.'}
     </p>
-    <a class="btn btn-outline btn-sm" href="/find-tutor">
+    <a class="btn btn-outline btn-sm" href={url('/find-tutor')}>
       <Icon name="filter" />Filter ke saath dhoondein
     </a>
   </div>

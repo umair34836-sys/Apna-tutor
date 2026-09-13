@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 import Icon from './Icon.astro';
 ---
 <section>
@@ -8,8 +9,8 @@ import Icon from './Icon.astro';
       <p>Profile banayein, subjects aur areas set karein, aur apne ilaqay se aane wali tuition
         requests direct apne dashboard mein dekhein.</p>
       <div class="recruit-actions">
-        <a class="btn btn-primary" href="/tutor/register"><Icon name="user-plus" />Free profile banayein</a>
-        <a class="btn btn-outline" href="/for-tutors">Tutors ke liye tafseel</a>
+        <a class="btn btn-primary" href={url('/tutor/register')}><Icon name="user-plus" />Free profile banayein</a>
+        <a class="btn btn-outline" href={url('/for-tutors')}>Tutors ke liye tafseel</a>
       </div>
       <p class="recruit-free">Shuru ke tutors ke liye profile aur leads — bilkul free.</p>
     </div>

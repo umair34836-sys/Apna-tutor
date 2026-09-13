@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 import Base from '../layouts/Base.astro';
 import Prose from '../components/Prose.astro';
 import { cities, stats } from '../lib/data';
@@ -50,7 +51,7 @@ const liveCities = cities.filter((c) => c.slug).map((c) => c.name);
 
     <section>
       <h2>Rabta</h2>
-      <p>Koi mashwara, shikayat ya sawal ho to <a href="/contact">contact page</a> par likhein.</p>
+      <p>Koi mashwara, shikayat ya sawal ho to <a href={url('/contact')}>contact page</a> par likhein.</p>
     </section>
   </Prose>
 </Base>

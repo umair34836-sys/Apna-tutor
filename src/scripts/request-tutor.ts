@@ -5,6 +5,7 @@
 //   mein parentPhone/parentAddress/parentEmail nahi ja sakta.
 
 import { currentUser } from '../lib/firebase';
+import { url } from '../lib/site';
 import { firestoreError } from '../lib/firebase';
 import { getProfile } from '../lib/auth';
 import { createRequest, fanOutLeads, type RequestInput } from '../lib/queries';
@@ -166,8 +167,8 @@ if (root && root.dataset.ready === '1') {
       // Draft mehfooz hai — login ke baad seedha yahin wapas.
       saveDraft();
       $('login-note').hidden = false;
-      const next = encodeURIComponent('/request-tutor');
-      window.location.href = `/login?next=${next}`;
+      const next = encodeURIComponent(url('/request-tutor'));
+      window.location.href = url(`/login?next=${next}`);
       return;
     }
 

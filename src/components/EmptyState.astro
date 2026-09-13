@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // src/components/EmptyState.astro
 //
 // ★ Count zero ho to yahi dikhta hai — khali grid ya jhoota number kabhi nahi.
@@ -22,5 +23,5 @@ const {
   <Icon name={icon} />
   <h3>{title}</h3>
   <p>{body}</p>
-  {ctaHref && <a class="btn btn-primary" href={ctaHref}>{ctaLabel}</a>}
+  {ctaHref && <a class="btn btn-primary" href={url(ctaHref)}>{ctaLabel}</a>}
 </div>

@@ -19,7 +19,7 @@ import SeoIntro from '../components/SeoIntro.astro';
 import TutorGrid from '../components/TutorGrid.astro';
 import Icon from '../components/Icon.astro';
 import { breadcrumbJsonLd, comboPages } from '../lib/seo';
-import { SITE } from '../lib/site';
+import { SITE, url } from '../lib/site';
 import type { ComboPage } from '../lib/seo';
 
 export function getStaticPaths() {
@@ -64,9 +64,9 @@ const siblings = comboPages()
         <div class="sec-head"><h2>{page.city.name} mein aur dhoondein</h2></div>
         <ul class="links">
           {siblings.map((p) => (
-            <li><a href={`/${p.slug}`}>{p.h1}&#32;<span>({p.tutors.length})</span></a></li>
+            <li><a href={url(`/${p.slug}`)}>{p.h1}&#32;<span>({p.tutors.length})</span></a></li>
           ))}
-          <li><a href={`/city/${page.city.slug}`}>{page.city.name} ke saare tutors</a></li>
+          <li><a href={url(`/city/${page.city.slug}`)}>{page.city.name} ke saare tutors</a></li>
         </ul>
       </div>
     </section>

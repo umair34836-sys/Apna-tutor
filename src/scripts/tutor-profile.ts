@@ -6,6 +6,7 @@
 //   update fail ho jata hai.
 
 import { getSession } from '../lib/auth';
+import { url } from '../lib/site';
 import { firestoreError } from '../lib/firebase';
 import { getMyContact, getMyPhotoSubmission, getMyTutorProfile, setMyContact, updateTutorProfile } from '../lib/queries';
 import { statusLabel } from '../lib/queries';
@@ -115,8 +116,8 @@ if (root) {
         : 'Koi photo nahi';
 
     q('[data-f-slug]').innerHTML = t.status === 'approved'
-      ? `<a href="/teacher/${encodeURIComponent(t.slug)}">/teacher/${esc(t.slug)}</a>`
-      : `/teacher/${esc(t.slug)} <small>(approve hone par live)</small>`;
+      ? `<a href="${url(`/teacher/${encodeURIComponent(t.slug)}`)}">/teacher/${esc(t.slug)}</a>`
+      : `${esc(url(`/teacher/${t.slug}`))} <small>(approve hone par live)</small>`;
 
     q('[data-f-featured]').textContent = isFeatured(t) ? 'Chal raha hai' : 'Nahi';
   }

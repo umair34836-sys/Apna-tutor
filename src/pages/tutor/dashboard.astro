@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/site';
 // src/pages/tutor/dashboard.astro
 //
 // ★ Profile views ka counter Firestore mein NAHI rakha. Har view par ek write
@@ -25,7 +26,7 @@ import Icon from '../../components/Icon.astro';
         <Icon name="user-plus" />
         <h3>Abhi profile nahi bani</h3>
         <p>Profile banaye bagair aap search mein nazar nahi aayenge aur na hi leads milengi. 10 minute ka kaam hai.</p>
-        <a class="btn btn-primary" href="/tutor/register"><Icon name="user-plus" />Profile banayein</a>
+        <a class="btn btn-primary" href={url('/tutor/register')}><Icon name="user-plus" />Profile banayein</a>
       </div>
     </div>
 
@@ -51,7 +52,7 @@ import Icon from '../../components/Icon.astro';
         <p class="card-note">
           <Icon name="shield-check" size={16} />
           Verification ke liye hum aap ke number par rabta karte hain. Document dekh kar delete kar dete hain —
-          kahin save nahi karte. <a href="/safety">Tafseel</a>
+          kahin save nahi karte. <a href={url('/safety')}>Tafseel</a>
         </p>
       </section>
 
@@ -59,7 +60,7 @@ import Icon from '../../components/Icon.astro';
       <section class="card">
         <div class="card-head">
           <h2>Nayi leads</h2>
-          <a class="btn btn-outline btn-sm" href="/tutor/leads">Saari leads</a>
+          <a class="btn btn-outline btn-sm" href={url('/tutor/leads')}>Saari leads</a>
         </div>
         <div data-leads></div>
       </section>

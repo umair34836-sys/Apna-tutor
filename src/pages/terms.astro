@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // src/pages/terms.astro
 //
 // ★ Launch se pehle live hona LAZMI hai — Google Ads aur Meta dono iske bagair
@@ -106,7 +107,7 @@ const UPDATED = '12 September 2026';
 
     <section>
       <h2>11. Account band karna</h2>
-      <p>Aap kabhi bhi apna account delete karwa sakte hain — <a href="/contact">contact page</a> se likh dein.</p>
+      <p>Aap kabhi bhi apna account delete karwa sakte hain — <a href={url('/contact')}>contact page</a> se likh dein.</p>
       <p>Hum bhi account band kar sakte hain agar in shurait ki khilaaf-warzi ho.</p>
     </section>
 
@@ -118,7 +119,7 @@ const UPDATED = '12 September 2026';
 
     <section>
       <h2>13. Rabta</h2>
-      <p>In shurait ke baare mein koi sawal ho to <a href="/contact">contact page</a> se likhein.</p>
+      <p>In shurait ke baare mein koi sawal ho to <a href={url('/contact')}>contact page</a> se likhein.</p>
     </section>
   </Prose>
 </Base>

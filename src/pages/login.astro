@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 import Base from '../layouts/Base.astro';
 import AuthCard from '../components/AuthCard.astro';
 import Icon from '../components/Icon.astro';
@@ -22,7 +23,7 @@ import Icon from '../components/Icon.astro';
 
       <button type="submit" class="btn btn-primary btn-block" id="submit">Login</button>
 
-      <p class="forgot"><a href="/forgot-password">Password bhool gaye?</a></p>
+      <p class="forgot"><a href={url('/forgot-password')}>Password bhool gaye?</a></p>
     </form>
 
     <div class="divider"><span>ya</span></div>
@@ -37,7 +38,7 @@ import Icon from '../components/Icon.astro';
       Google se login karein
     </button>
 
-    <p class="alt">Account nahi hai? <a href="/signup" data-signup-link>Naya account banayein</a></p>
+    <p class="alt">Account nahi hai? <a href={url('/signup')} data-signup-link>Naya account banayein</a></p>
   </AuthCard>
 
   <style>
@@ -50,6 +51,7 @@ import Icon from '../components/Icon.astro';
   </style>
 
   <script>
+    import { url } from '../lib/site';
     import { signInWithEmail, signInWithGoogle, authError, getProfile, nextUrl, homeFor } from '../lib/auth';
     import { currentUser } from '../lib/firebase';
 
@@ -64,7 +66,7 @@ import Icon from '../components/Icon.astro';
     const nextParam = new URLSearchParams(window.location.search).get('next');
     if (nextParam) {
       const link = document.querySelector<HTMLAnchorElement>('[data-signup-link]');
-      if (link) link.href = `/signup?next=${encodeURIComponent(nextParam)}`;
+      if (link) link.href = url(`/signup?next=${encodeURIComponent(nextParam)}`);
     }
 
     // Pehle se logged in ho to login page dikhane ka koi matlab nahi.
@@ -132,7 +134,7 @@ import Icon from '../components/Icon.astro';
         if (isNew) {
           // Google se naya user — role aur city abhi nahi di.
           const next = nextUrl('');
-          window.location.href = `/signup?complete=1${next ? `&next=${encodeURIComponent(next)}` : ''}`;
+          window.location.href = url(`/signup?complete=1${next ? `&next=${encodeURIComponent(next)}` : ''}`);
           return;
         }
         const profile = await getProfile(user.uid);

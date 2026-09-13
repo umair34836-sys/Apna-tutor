@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // src/components/AuthCard.astro — login/signup/reset ka centered card
 import Logo from './Logo.astro';
 
@@ -7,13 +8,13 @@ const { heading, sub } = Astro.props;
 ---
 <div class="auth">
   <div class="auth-card">
-    <Logo href="/" size={34} class="auth-logo" />
+    <Logo href={url('/')} size={34} class="auth-logo" />
     <h1>{heading}</h1>
     {sub && <p class="auth-sub">{sub}</p>}
     <slot />
   </div>
   <p class="auth-foot">
-    <a href="/">Homepage</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
+    <a href={url('/')}>Homepage</a> · <a href={url('/privacy')}>Privacy</a> · <a href={url('/terms')}>Terms</a>
   </p>
 </div>
 

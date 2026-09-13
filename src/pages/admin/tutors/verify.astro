@@ -1,4 +1,5 @@
 ---
+import { url } from '../../../lib/site';
 // src/pages/admin/tutors/verify.astro
 //
 // Spec mein /admin/tutors/[id]/verify tha; site SSG hai aur build time par
@@ -19,7 +20,7 @@ import Icon from '../../../components/Icon.astro';
   path="/admin/tutors/verify"
 >
   <div id="verify-page">
-    <a class="back-link" href="/admin/tutors"><Icon name="chevron-left" size={16} />Tutors queue</a>
+    <a class="back-link" href={url('/admin/tutors')}><Icon name="chevron-left" size={16} />Tutors queue</a>
 
     <div class="skeleton sk-box" data-loading></div>
     <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>

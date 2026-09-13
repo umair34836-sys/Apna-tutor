@@ -10,6 +10,7 @@
 // =============================================================================
 
 import { svg } from './icons';
+import { url } from './site';
 import { classLabel, feeRange, initials, modeLabel } from './taxonomy';
 import { isFeatured, isFullyVerified, type Tutor } from './types';
 
@@ -93,8 +94,8 @@ export function tutorCardHtml(tutor: Tutor): string {
       </div>
 
       <div class="tutor-actions">
-        <a class="btn btn-primary btn-sm" href="/teacher/${encodeURIComponent(tutor.slug)}">Profile dekhein</a>
-        <a class="btn btn-outline btn-sm" href="/teacher/${encodeURIComponent(tutor.slug)}#contact">
+        <a class="btn btn-primary btn-sm" href="${url(`/teacher/${encodeURIComponent(tutor.slug)}`)}">Profile dekhein</a>
+        <a class="btn btn-outline btn-sm" href="${url(`/teacher/${encodeURIComponent(tutor.slug)}#contact`)}">
           ${svg('message-square')}Contact dekhein
         </a>
       </div>

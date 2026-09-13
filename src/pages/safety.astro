@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 import Base from '../layouts/Base.astro';
 import Prose from '../components/Prose.astro';
 import TrustSection from '../components/TrustSection.astro';
@@ -57,7 +58,7 @@ import TrustSection from '../components/TrustSection.astro';
       <h2>Report kaise karein</h2>
       <p>Har tutor profile par "Is profile ko report karein" ka button hai. Report karne ke liye login zaroori hai (taake jhooti reports na aayein), magar <strong>tutor ko aapka naam nahi jata</strong>.</p>
       <p>Reported accounts hum manually dekhte hain. Safety ka masla ho to hum account foran suspend kar dete hain aur baad mein tehqeeq karte hain — doosra tareeqa nahi.</p>
-      <p>Foran rabte ke liye: <a href="/contact">Contact page</a>.</p>
+      <p>Foran rabte ke liye: <a href={url('/contact')}>Contact page</a>.</p>
     </section>
 
     <section>

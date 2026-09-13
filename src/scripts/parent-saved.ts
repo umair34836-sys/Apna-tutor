@@ -1,4 +1,5 @@
 import { getSession } from '../lib/auth';
+import { url } from '../lib/site';
 import { firestoreError } from '../lib/firebase';
 import { createReview, getMyReview, getTutorById, listMyConnections } from '../lib/queries';
 import { tutorCardHtml } from '../lib/tutor-card';
@@ -119,7 +120,7 @@ if (root) {
           ${svg('bookmark')}
           <h3>Abhi kisi tutor ka contact nahi khola</h3>
           <p>Jab aap kisi tutor ka contact kholenge, wo yahan mehfooz ho jayega — aur aap us ke baare mein review bhi likh sakenge.</p>
-          <a class="btn btn-primary" href="/find-tutor">Tutors dekhein</a>
+          <a class="btn btn-primary" href="${url('/find-tutor')}">Tutors dekhein</a>
         </div>`;
         q('[data-list]').hidden = false;
         return;

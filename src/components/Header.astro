@@ -1,22 +1,23 @@
 ---
+import { url } from '../lib/site';
 // src/components/Header.astro — index.html ka header, waisa ka waisa
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 ---
 <header>
   <div class="wrap nav">
-    <Logo href="/" size={38} />
+    <Logo href={url('/')} size={38} />
 
     <nav class="nav-links" aria-label="Main">
-      <a href="/find-tutor">Tutor dhoondein</a>
-      <a href="/request-tutor">Request post karein</a>
-      <a href="/how-it-works">Kaise kaam karta hai</a>
-      <a href="/teachers">Saare tutors</a>
+      <a href={url('/find-tutor')}>Tutor dhoondein</a>
+      <a href={url('/request-tutor')}>Request post karein</a>
+      <a href={url('/how-it-works')}>Kaise kaam karta hai</a>
+      <a href={url('/teachers')}>Saare tutors</a>
     </nav>
 
     <div class="nav-cta">
-      <a class="btn btn-ghost btn-sm" href="/login">Login</a>
-      <a class="btn btn-primary btn-sm" href="/tutor/register">
+      <a class="btn btn-ghost btn-sm" href={url('/login')}>Login</a>
+      <a class="btn btn-primary btn-sm" href={url('/tutor/register')}>
         <Icon name="user-plus" />
         Tutor banein
       </a>

@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/site';
 import App from '../../layouts/App.astro';
 import Icon from '../../components/Icon.astro';
 ---
@@ -66,7 +67,7 @@ import Icon from '../../components/Icon.astro';
     function card(r: Report): string {
       const target =
         r.targetType === 'tutor'
-          ? `<a class="btn btn-outline btn-sm" href="/admin/tutors/verify?id=${encodeURIComponent(r.targetId)}">Tutor dekhein</a>`
+          ? `<a class="btn btn-outline btn-sm" href={url('/admin/tutors/verify?id=${encodeURIComponent(r.targetId)}')}>Tutor dekhein</a>`
           : `<span class="hint">${esc(r.targetType)}: ${esc(r.targetId)}</span>`;
 
       const actions = active === 'open'

@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/site';
 // src/pages/parent/requests.astro
 //
 // List aur detail dono yahin. Detail `?id=…` se khulti hai.
@@ -24,14 +25,14 @@ import Icon from '../../components/Icon.astro';
     <!-- LIST -->
     <div data-list-view hidden>
       <div class="bar">
-        <a class="btn btn-primary btn-sm" href="/request-tutor"><Icon name="send" />Nayi request</a>
+        <a class="btn btn-primary btn-sm" href={url('/request-tutor')}><Icon name="send" />Nayi request</a>
       </div>
       <div data-requests></div>
     </div>
 
     <!-- DETAIL -->
     <div data-detail-view hidden>
-      <a class="back-link" href="/parent/requests"><Icon name="chevron-left" size={16} />Saari requests</a>
+      <a class="back-link" href={url('/parent/requests')}><Icon name="chevron-left" size={16} />Saari requests</a>
 
       <section class="card">
         <div class="card-head">

@@ -2,9 +2,30 @@
 // src/lib/site.ts — ek jagah site-wide constants
 // =============================================================================
 
+/**
+ * Base path — project page par `/Apna-tutor/`, custom domain par `/`.
+ * Astro ye `base` config se khud set karta hai.
+ */
+const BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+
+/**
+ * Har internal link isi se guzarta hai.
+ *
+ *   url('/find-tutor')  →  '/Apna-tutor/find-tutor'   (project page par)
+ *                       →  '/find-tutor'              (custom domain par)
+ *
+ * ★ Kisi bhi page ya script mein `href="/kuch"` seedha na likhein — project
+ *   page par wo domain ki jar par chala jata hai aur 404 deta hai.
+ *   scripts/validate-links.mjs build ke baad ye pakad leta hai.
+ */
+export function url(path: string): string {
+  if (!path.startsWith('/')) return path; // bahar ka link, mailto, #anchor
+  return `${BASE}${path}` || '/';
+}
+
 export const SITE = {
   name: 'ApnaTutor',
-  url: 'https://apnatutor.com',
+  url: import.meta.env.SITE ?? 'https://apnatutor.com',
   /** Roman Urdu UI, English SEO — isliye ur-Latn-PK */
   lang: 'ur-Latn-PK',
   ogLocale: 'ur_PK',
@@ -38,5 +59,5 @@ export const TUTORS_PER_PAGE = 24;
 
 /** Har canonical absolute honi chahiye (docs/03-SEO-ANALYTICS.md §4). */
 export function absoluteUrl(path: string): string {
-  return new URL(path, SITE.url).href;
+  return new URL(url(path), SITE.url).href;
 }

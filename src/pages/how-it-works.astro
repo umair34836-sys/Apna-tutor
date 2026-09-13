@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 import Base from '../layouts/Base.astro';
 import Prose from '../components/Prose.astro';
 import HowItWorks from '../components/HowItWorks.astro';
@@ -32,7 +33,7 @@ import Icon from '../components/Icon.astro';
         <li><strong>Leads dekhein</strong> — aapke area aur subjects ki tuition requests seedha aapke dashboard mein aati hain. Jo pasand aaye us par "I'm Interested" karein.</li>
       </ol>
       <p>Profile aur leads abhi bilkul free hain.</p>
-      <p><a href="/for-tutors">Tutors ke liye tafseel dekhein</a></p>
+      <p><a href={url('/for-tutors')}>Tutors ke liye tafseel dekhein</a></p>
     </section>
 
     <section>

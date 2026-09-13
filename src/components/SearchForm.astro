@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // src/components/SearchForm.astro — hero ka search card (index.html se)
 //
 // Do raste (index.html ke do tabs):
@@ -75,7 +76,7 @@ const manifest = comboPages().map((p) => p.slug);
 
       <div class="panel-actions">
         <button type="submit" class="btn btn-primary"><Icon name="search" />Find My Tutor</button>
-        <a class="btn btn-outline" href="/teachers">Saare tutors dekhein</a>
+        <a class="btn btn-outline" href={url('/teachers')}>Saare tutors dekhein</a>
         <span class="panel-note"><Icon name="check" />Parents ke liye hamesha free</span>
       </div>
     </form>
@@ -83,7 +84,7 @@ const manifest = comboPages().map((p) => p.slug);
 
   <!-- PANEL 2 -->
   <div class="panel" id="panel-request" role="tabpanel" aria-labelledby="tab-request" hidden>
-    <form id="form-request" novalidate action="/request-tutor" method="get">
+    <form id="form-request" novalidate action={url('/request-tutor')} method="get">
       <div class="field-grid">
         <div class="field">
           <label for="r-need">Aapko kya chahiye?</label>
@@ -137,6 +138,7 @@ const manifest = comboPages().map((p) => p.slug);
 </style>
 
 <script>
+    import { url } from '../lib/site';
   import { track } from '../lib/analytics';
 
   const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
@@ -214,7 +216,7 @@ const manifest = comboPages().map((p) => p.slug);
     const manifest: string[] = JSON.parse(form.dataset.manifest || '[]');
     const comboSlug = `${subject}-tutor-${city}`;
     if (city && manifest.includes(comboSlug)) {
-      window.location.href = `/${comboSlug}`;
+      window.location.href = url(`/${comboSlug}`);
       return;
     }
 
@@ -222,7 +224,7 @@ const manifest = comboPages().map((p) => p.slug);
     if (city) q.set('city', city);
     if (area) q.set('area', area);
     if (budget) q.set('budget', budget);
-    window.location.href = `/find-tutor?${q.toString()}`;
+    window.location.href = url(`/find-tutor?${q.toString()}`);
   });
 
   document.getElementById('form-request')?.addEventListener('submit', () => {

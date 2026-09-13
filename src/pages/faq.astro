@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // src/pages/faq.astro
 //
 // ★ FAQPage JSON-LD usi array se banta hai jo page par render hota hai. Google
@@ -86,7 +87,7 @@ const faqJsonLd = {
 
     <section>
       <h2>Aur koi sawal?</h2>
-      <p>Hamein <a href="/contact">contact page</a> se likh dein. Hum aam taur par ek working day mein jawab dete hain.</p>
+      <p>Hamein <a href={url('/contact')}>contact page</a> se likh dein. Hum aam taur par ek working day mein jawab dete hain.</p>
     </section>
   </Prose>
 

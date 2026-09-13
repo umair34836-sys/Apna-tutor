@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/site';
 // src/pages/tutor/profile.astro — apni profile edit karein
 //
 // ★ Trust fields (status, badges, ratings, featured placement, approved photo)
@@ -28,7 +29,7 @@ const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
         <Icon name="user-plus" />
         <h3>Abhi profile nahi bani</h3>
         <p>Profile banaye bagair aap search mein nazar nahi aayenge.</p>
-        <a class="btn btn-primary" href="/tutor/register">Profile banayein</a>
+        <a class="btn btn-primary" href={url('/tutor/register')}>Profile banayein</a>
       </div>
     </div>
 
@@ -55,7 +56,7 @@ const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
         <p class="card-note">
           <Icon name="info" size={16} />
           Profile URL isliye fix hai ke badalne se Google aur share kiye hue links toot jate hain.
-          Badalwana zaroori ho to <a href="/contact">hamein likhein</a>.
+          Badalwana zaroori ho to <a href={url('/contact')}>hamein likhein</a>.
         </p>
       </section>
 

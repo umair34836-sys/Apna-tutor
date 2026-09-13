@@ -9,7 +9,7 @@ import SeoIntro from '../../components/SeoIntro.astro';
 import TutorGrid from '../../components/TutorGrid.astro';
 import Icon from '../../components/Icon.astro';
 import { cityPages, breadcrumbJsonLd, comboPages } from '../../lib/seo';
-import { SITE } from '../../lib/site';
+import { SITE, url } from '../../lib/site';
 import type { City, Tutor } from '../../lib/types';
 
 export function getStaticPaths() {
@@ -59,7 +59,7 @@ const description =
         <div class="sec-head"><h2>{city.name} mein aur dhoondein</h2></div>
         <ul class="links">
           {related.map((p) => (
-            <li><a href={`/${p.slug}`}>{p.h1}&#32;<span>({p.tutors.length})</span></a></li>
+            <li><a href={url(`/${p.slug}`)}>{p.h1}&#32;<span>({p.tutors.length})</span></a></li>
           ))}
         </ul>
       </div>

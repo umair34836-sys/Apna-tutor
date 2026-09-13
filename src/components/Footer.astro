@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // src/components/Footer.astro
 //
 // Footer ke SEO links sirf un pages par jate hain jo waqai bani hain. Phase 1
@@ -43,32 +44,32 @@ const year = new Date().getFullYear();
       {cityLinks.length > 0 && (
         <div>
           <h4>Areas</h4>
-          <ul>{cityLinks.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+          <ul>{cityLinks.map((l) => <li><a href={url(l.href)}>{l.label}</a></li>)}</ul>
         </div>
       )}
 
       {subjectLinks.length > 0 && (
         <div>
           <h4>Popular searches</h4>
-          <ul>{subjectLinks.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+          <ul>{subjectLinks.map((l) => <li><a href={url(l.href)}>{l.label}</a></li>)}</ul>
         </div>
       )}
 
       <div>
         <h4>ApnaTutor</h4>
         <ul>
-          <li><a href="/how-it-works">Kaise kaam karta hai</a></li>
-          <li><a href="/for-tutors">Tutors ke liye</a></li>
-          <li><a href="/safety">Safety policy</a></li>
-          <li><a href="/faq">FAQ</a></li>
-          <li><a href="/contact">Rabta karein</a></li>
+          <li><a href={url('/how-it-works')}>Kaise kaam karta hai</a></li>
+          <li><a href={url('/for-tutors')}>Tutors ke liye</a></li>
+          <li><a href={url('/safety')}>Safety policy</a></li>
+          <li><a href={url('/faq')}>FAQ</a></li>
+          <li><a href={url('/contact')}>Rabta karein</a></li>
         </ul>
       </div>
     </div>
 
     <div class="foot-bottom">
       <span>&copy; {year} ApnaTutor. Pakistan.</span>
-      <span><a href="/privacy">Privacy</a> &nbsp;·&nbsp; <a href="/terms">Terms</a></span>
+      <span><a href={url('/privacy')}>Privacy</a> &nbsp;·&nbsp; <a href={url('/terms')}>Terms</a></span>
     </div>
   </div>
 </footer>

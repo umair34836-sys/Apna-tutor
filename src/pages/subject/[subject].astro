@@ -5,7 +5,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import SeoIntro from '../../components/SeoIntro.astro';
 import TutorGrid from '../../components/TutorGrid.astro';
 import { subjectPages, breadcrumbJsonLd, comboPages } from '../../lib/seo';
-import { SITE } from '../../lib/site';
+import { SITE, url } from '../../lib/site';
 import type { Subject, Tutor } from '../../lib/types';
 
 export function getStaticPaths() {
@@ -43,7 +43,7 @@ const description =
         <div class="sec-head"><h2>Sheher ke hisaab se</h2></div>
         <ul class="links">
           {related.map((p) => (
-            <li><a href={`/${p.slug}`}>{p.h1}&#32;<span>({p.tutors.length})</span></a></li>
+            <li><a href={url(`/${p.slug}`)}>{p.h1}&#32;<span>({p.tutors.length})</span></a></li>
           ))}
         </ul>
       </div>

@@ -27,5 +27,8 @@ jobs:
       - name: Types aur Astro check
         run: npx astro check
 
+      - name: Build aur link check
+        run: npm run build && node scripts/validate-links.mjs
+
       - name: Firestore rules tests
         run: npm run test:rules

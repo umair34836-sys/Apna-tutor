@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // src/pages/404.astro — GitHub Pages isay 404.html se serve karta hai
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
@@ -17,9 +18,9 @@ import Icon from '../components/Icon.astro';
       Neeche se apna rasta chunein.
     </p>
     <div class="actions">
-      <a class="btn btn-primary" href="/find-tutor"><Icon name="search" />Tutor dhoondein</a>
-      <a class="btn btn-outline" href="/request-tutor"><Icon name="send" />Request post karein</a>
-      <a class="btn btn-ghost" href="/">Homepage</a>
+      <a class="btn btn-primary" href={url('/find-tutor')}><Icon name="search" />Tutor dhoondein</a>
+      <a class="btn btn-outline" href={url('/request-tutor')}><Icon name="send" />Request post karein</a>
+      <a class="btn btn-ghost" href={url('/')}>Homepage</a>
     </div>
   </div>
 

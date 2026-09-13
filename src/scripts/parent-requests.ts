@@ -1,4 +1,5 @@
 import { getSession } from '../lib/auth';
+import { url } from '../lib/site';
 import { firestoreError } from '../lib/firebase';
 import { closeRequest, getRequest, getTutorById, listLeadsForRequest, listMyRequests, type TuitionRequest } from '../lib/queries';
 import { classLabel, modeLabel } from '../lib/taxonomy';
@@ -26,7 +27,7 @@ if (root) {
 
     q('[data-requests]').innerHTML = requests.length
       ? `<div class="req-list">${requests.map((r) => `
-          <a class="req-row" href="/parent/requests?id=${encodeURIComponent(r.id)}">
+          <a class="req-row" href="${url(`/parent/requests?id=${encodeURIComponent(r.id)}`)}">
             <div>
               <b>${esc(r.subject)} — ${esc(classLabel(r.classLevel))}</b>
               <span>${esc(r.area)} · Rs. ${Number(r.budgetMax).toLocaleString('en-PK')} tak</span>
@@ -37,7 +38,7 @@ if (root) {
            ${svg('file-text')}
            <h3>Abhi koi request nahi</h3>
            <p>Apni requirement post kar dein — hum aap ke area ke matching tutors tak pohancha denge, aur jo dilchaspi lein wo yahan nazar aayenge.</p>
-           <a class="btn btn-primary" href="/request-tutor">Request post karein</a>
+           <a class="btn btn-primary" href="${url('/request-tutor')}">Request post karein</a>
          </div>`;
 
     q('[data-loading]').hidden = true;
@@ -98,7 +99,7 @@ if (root) {
         ${svg('clock')}
         <h3>Abhi kisi tutor ne jawab nahi diya</h3>
         <p>Aap ki request matching tutors tak pohanch chuki hai. Jab koi dilchaspi lega, wo yahan nazar aayega — aap ko email nahi aayegi, isliye kabhi kabhi ye page dekh lein.</p>
-        <a class="btn btn-outline" href="/find-tutor">Khud bhi tutors dekhein</a>
+        <a class="btn btn-outline" href="${url('/find-tutor')}">Khud bhi tutors dekhein</a>
       </div>`;
       return;
     }

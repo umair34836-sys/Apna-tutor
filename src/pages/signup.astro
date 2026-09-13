@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // src/pages/signup.astro
 //
 // Do modes:
@@ -81,8 +82,8 @@ import { cities } from '../lib/data';
         <input type="checkbox" id="agree" required />
         <span>
           Meri umr <strong>18 saal ya zyada</strong> hai, aur main
-          <a href="/terms" target="_blank" rel="noopener">Terms</a> aur
-          <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> se ittefaq karta/karti hoon.
+          <a href={url('/terms')} target="_blank" rel="noopener">Terms</a> aur
+          <a href={url('/privacy')} target="_blank" rel="noopener">Privacy Policy</a> se ittefaq karta/karti hoon.
         </span>
       </label>
       <p class="err" id="e-agree"><Icon name="alert-circle" size={15} strokeWidth={2.5} /> <span>Aage barhne ke liye ye zaroori hai</span></p>
@@ -105,7 +106,7 @@ import { cities } from '../lib/data';
         Google se jari rakhein
       </button>
 
-      <p class="alt">Pehle se account hai? <a href="/login" data-login-link>Login karein</a></p>
+      <p class="alt">Pehle se account hai? <a href={url('/login')} data-login-link>Login karein</a></p>
     </div>
   </AuthCard>
 
@@ -138,6 +139,7 @@ import { cities } from '../lib/data';
   </style>
 
   <script>
+    import { url } from '../lib/site';
     import { signUpWithEmail, signInWithGoogle, completeProfile, getProfile, authError, nextUrl, homeFor } from '../lib/auth';
     import type { Role } from '../lib/auth';
     import { currentUser } from '../lib/firebase';
@@ -162,7 +164,7 @@ import { cities } from '../lib/data';
     const nextParam = params.get('next');
     if (nextParam) {
       const link = document.querySelector<HTMLAnchorElement>('[data-login-link]');
-      if (link) link.href = `/login?next=${encodeURIComponent(nextParam)}`;
+      if (link) link.href = url(`/login?next=${encodeURIComponent(nextParam)}`);
     }
 
     // ---- "complete" mode: Google se aaya user, sirf role + city chahiye ----
@@ -177,7 +179,7 @@ import { cities } from '../lib/data';
       if (sub) sub.textContent = 'Bas do cheezein — aap kaun hain aur kis sheher se.';
 
       currentUser().then((user) => {
-        if (!user) { window.location.replace('/signup'); return; }
+        if (!user) { window.location.replace(url('/signup')); return; }
         if (user.displayName) nameInput.value = user.displayName;
       });
     } else {

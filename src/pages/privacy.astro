@@ -8,7 +8,7 @@
 // to ye page bhi usi commit mein update karein.
 import Base from '../layouts/Base.astro';
 import Prose from '../components/Prose.astro';
-import { env } from '../lib/site';
+import { env, url } from '../lib/site';
 
 const UPDATED = '12 September 2026';
 ---
@@ -119,7 +119,7 @@ const UPDATED = '12 September 2026';
         <li>Mera account aur data delete karo</li>
         <li>Meri profile search se hata do</li>
       </ul>
-      <p>{env.contactEmail ? <>Iske liye <a href={`mailto:${env.contactEmail}`}>{env.contactEmail}</a> par likhein</> : <>Iske liye <a href="/contact">contact page</a> se rabta karein</>}. Hum 30 din ke andar kaam karte hain. Account delete karne par aap ki profile, requests aur contact maloomat hata di jati hain.</p>
+      <p>{env.contactEmail ? <>Iske liye <a href={`mailto:${env.contactEmail}`}>{env.contactEmail}</a> par likhein</> : <>Iske liye <a href={url('/contact')}>contact page</a> se rabta karein</>}. Hum 30 din ke andar kaam karte hain. Account delete karne par aap ki profile, requests aur contact maloomat hata di jati hain.</p>
     </section>
 
     <section>

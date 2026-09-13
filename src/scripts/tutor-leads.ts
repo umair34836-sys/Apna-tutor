@@ -1,4 +1,5 @@
 import { getSession } from '../lib/auth';
+import { url } from '../lib/site';
 import { firestoreError } from '../lib/firebase';
 import { getMyTutorProfile, listMyLeads, respondToLead, type Lead } from '../lib/queries';
 import { classLabel, modeLabel } from '../lib/taxonomy';
@@ -102,7 +103,7 @@ if (root) {
              </svg>
              <h3>${EMPTY[active].title}</h3>
              <p>${EMPTY[active].body}</p>
-             <a class="btn btn-outline" href="/tutor/profile">Profile behtar karein</a>
+             <a class="btn btn-outline" href="${url('/tutor/profile')}">Profile behtar karein</a>
            </div>`;
 
       loading.hidden = true;

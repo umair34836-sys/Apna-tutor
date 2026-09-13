@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/site';
 // =============================================================================
 // src/pages/tutor/register.astro — tutor profile banane ka 7-step form
 //
@@ -54,7 +55,7 @@ const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
         <Icon name="alert-circle" />
         <span>
           Registration abhi band hai — hum cities aur subjects set kar rahe hain.
-          Thori dair baad koshish karein, ya <a href="/contact">hamein likhein</a>.
+          Thori dair baad koshish karein, ya <a href={url('/contact')}>hamein likhein</a>.
         </span>
       </p>
     )}
@@ -73,7 +74,7 @@ const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
     <div id="already" hidden>
       <p class="state state-info">
         <Icon name="check-circle" />
-        <span>Aap ki profile pehle se mojood hai. Use <a href="/tutor/profile">profile page</a> se edit karein.</span>
+        <span>Aap ki profile pehle se mojood hai. Use <a href={url('/tutor/profile')}>profile page</a> se edit karein.</span>
       </p>
     </div>
 
@@ -341,8 +342,8 @@ const cityAreas = Object.fromEntries(cities.map((c) => [c.slug, c.areas]));
         </p>
         <p class="done-next">Verification ke liye hum aap ke number par rabta karenge — apna WhatsApp dekhte rahein.</p>
         <div class="done-actions">
-          <a class="btn btn-primary" href="/tutor/dashboard">Dashboard par jayein</a>
-          <a class="btn btn-outline" href="/for-tutors">Tutors ke liye guide</a>
+          <a class="btn btn-primary" href={url('/tutor/dashboard')}>Dashboard par jayein</a>
+          <a class="btn btn-outline" href={url('/for-tutors')}>Tutors ke liye guide</a>
         </div>
       </div>
     </div>

@@ -43,6 +43,13 @@ jobs:
 
       - name: Build
         env:
+          # Custom domain abhi nahi hai — default GitHub project page hai.
+          # Domain lene ke baad repo → Settings → Secrets and variables →
+          # Actions → Variables mein ye do set kar dein:
+          #   PUBLIC_SITE_URL  = https://apnatutor.com
+          #   PUBLIC_BASE_PATH = /
+          PUBLIC_SITE_URL:             ${{ vars.PUBLIC_SITE_URL }}
+          PUBLIC_BASE_PATH:            ${{ vars.PUBLIC_BASE_PATH }}
           PUBLIC_FIREBASE_API_KEY:     ${{ secrets.PUBLIC_FIREBASE_API_KEY }}
           PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.PUBLIC_FIREBASE_AUTH_DOMAIN }}
           PUBLIC_FIREBASE_PROJECT_ID:  ${{ secrets.PUBLIC_FIREBASE_PROJECT_ID }}
@@ -66,6 +73,11 @@ jobs:
         run: node scripts/validate-seo.mjs
         # 3 se kam tutors wala page, ya kisi page ke source mein phone number
         # mila, to yahan build TOOT jayegi. Ye jaan boojh kar hai.
+
+      - name: Link check — har internal link base path ke andar ho
+        env:
+          PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH }}
+        run: node scripts/validate-links.mjs
 
       - uses: actions/upload-pages-artifact@v3
         with:

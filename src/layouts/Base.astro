@@ -14,7 +14,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { SITE, absoluteUrl, env } from '../lib/site';
+import { SITE, absoluteUrl, env, url } from '../lib/site';
 
 export interface Props {
   title: string;
@@ -129,8 +129,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImage} />
 
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/favicon.svg" />
+  <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+  <link rel="apple-touch-icon" href={url('/favicon.svg')} />
   <meta name="theme-color" content="#1F3A63" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -160,8 +160,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe>`} />
 
   {showStickyCta && (
     <div class="sticky-cta">
-      <a class="btn btn-primary btn-sm" href="/find-tutor">Tutor dhoondein</a>
-      <a class="btn btn-outline btn-sm" href="/request-tutor">Request post karein</a>
+      <a class="btn btn-primary btn-sm" href={url('/find-tutor')}>Tutor dhoondein</a>
+      <a class="btn btn-outline btn-sm" href={url('/request-tutor')}>Request post karein</a>
     </div>
   )}
 

@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/site';
 import App from '../../layouts/App.astro';
 import Icon from '../../components/Icon.astro';
 ---
@@ -15,17 +16,17 @@ import Icon from '../../components/Icon.astro';
 
     <div data-content hidden>
       <div class="stat-row">
-        <a class="stat-card" href="/parent/requests">
+        <a class="stat-card" href={url('/parent/requests')}>
           <Icon name="file-text" />
           <strong data-stat-requests>0</strong>
           <span>Open requests</span>
         </a>
-        <a class="stat-card" href="/parent/requests">
+        <a class="stat-card" href={url('/parent/requests')}>
           <Icon name="users" />
           <strong data-stat-interested>0</strong>
           <span>Interested tutors</span>
         </a>
-        <a class="stat-card" href="/parent/saved-tutors">
+        <a class="stat-card" href={url('/parent/saved-tutors')}>
           <Icon name="bookmark" />
           <strong data-stat-saved>0</strong>
           <span>Unlocked tutors</span>
@@ -35,7 +36,7 @@ import Icon from '../../components/Icon.astro';
       <section class="card">
         <div class="card-head">
           <h2>Aap ki requests</h2>
-          <a class="btn btn-outline btn-sm" href="/parent/requests">Sab dekhein</a>
+          <a class="btn btn-outline btn-sm" href={url('/parent/requests')}>Sab dekhein</a>
         </div>
         <div data-requests></div>
       </section>
@@ -43,9 +44,9 @@ import Icon from '../../components/Icon.astro';
       <section class="card next-steps">
         <h2>Aage kya karein</h2>
         <ul>
-          <li><Icon name="search" size={18} /><span><a href="/find-tutor">Khud tutors dekhein</a> — aap ke area ke verified profiles.</span></li>
-          <li><Icon name="send" size={18} /><span><a href="/request-tutor">Nayi request post karein</a> — har bachay ya subject ke liye alag.</span></li>
-          <li><Icon name="shield-check" size={18} /><span><a href="/safety">Safety policy parhein</a> — pehli class se pehle kya dekhna hai.</span></li>
+          <li><Icon name="search" size={18} /><span><a href={url('/find-tutor')}>Khud tutors dekhein</a> — aap ke area ke verified profiles.</span></li>
+          <li><Icon name="send" size={18} /><span><a href={url('/request-tutor')}>Nayi request post karein</a> — har bachay ya subject ke liye alag.</span></li>
+          <li><Icon name="shield-check" size={18} /><span><a href={url('/safety')}>Safety policy parhein</a> — pehli class se pehle kya dekhna hai.</span></li>
         </ul>
       </section>
     </div>

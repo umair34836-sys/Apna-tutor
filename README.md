@@ -27,6 +27,27 @@ site empty states dikhati hai. Ye jaan boojh kar hai: jhoota demo data kabhi nah
 | `npm run build:full` | Teeno ek saath (jo CI karta hai) |
 | `npm run test:rules` | Firestore rules tests (emulator par — Java chahiye) |
 | `npm run check` | Astro + TypeScript type checking |
+| `npm run validate-links` | Har internal link base path ke andar hai? |
+
+## Site kahan chalti hai
+
+Custom domain abhi nahi hai, isliye site GitHub ke project page par hai:
+**https://umair34836-sys.github.io/Apna-tutor/**
+
+Iska matlab site `/Apna-tutor/` ke neeche chalti hai, root par nahi. Isliye har
+internal link `url()` se guzarta hai (`src/lib/site.ts`) — seedha `href="/x"`
+likhne par wo domain ki jar par chala jata hai aur 404 deta hai.
+`npm run validate-links` build ke baad ye pakad leta hai.
+
+**Domain lene ke baad:** repo → Settings → Secrets and variables → Actions →
+Variables mein do cheezein set karein, aur bas —
+
+```
+PUBLIC_SITE_URL  = https://apnatutor.com
+PUBLIC_BASE_PATH = /
+```
+
+CNAME file build khud bana leti hai jab domain github.io ka na ho.
 
 ## Architecture ek nazar mein
 

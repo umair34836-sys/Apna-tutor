@@ -23,7 +23,7 @@ import { cityBySlug, reviewsForTutor, subjectBySlug, tutors } from '../../lib/da
 import { breadcrumbJsonLd, hasCityPage } from '../../lib/seo';
 import { boardLabel, classLabel, feeRange, initials, modeLabel } from '../../lib/taxonomy';
 import { isFullyVerified, type Tutor } from '../../lib/types';
-import { SITE, absoluteUrl } from '../../lib/site';
+import { SITE, absoluteUrl, url } from '../../lib/site';
 
 export function getStaticPaths() {
   // Sirf approved tutors (fetch-data.mjs pehle hi filter karti hai). Tutor
@@ -193,7 +193,7 @@ if (tutor.ratingCount > 0) {
           <div>
             <h2>ApnaTutor Verified</h2>
             <p>Phone, identity aur qualification — teeno check ho chuke hain.
-              <a href="/safety">Har badge ka matlab</a>.</p>
+              <a href={url('/safety')}>Har badge ka matlab</a>.</p>
           </div>
         </div>
       )}
@@ -201,7 +201,7 @@ if (tutor.ratingCount > 0) {
       <div class="side-card">
         <h2>Apni requirement post karein</h2>
         <p class="fee-note">Ek request bhejein aur apne area ke matching tutors ko aap tak aane dein.</p>
-        <a class="btn btn-outline btn-block" href="/request-tutor" style="margin-top:var(--space-2)">
+        <a class="btn btn-outline btn-block" href={url('/request-tutor')} style="margin-top:var(--space-2)">
           <Icon name="send" />Request post karein
         </a>
       </div>

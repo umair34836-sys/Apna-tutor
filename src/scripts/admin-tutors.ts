@@ -1,4 +1,5 @@
 import { getAdminSession } from '../lib/auth';
+import { url } from '../lib/site';
 import { firestoreError } from '../lib/firebase';
 import { listTutorsByStatus, setTutorStatus } from '../lib/admin';
 import { isFullyVerified, type Tutor, type TutorStatus } from '../lib/types';
@@ -33,7 +34,7 @@ if (root) {
 
   function row(t: Tutor): string {
     const actions: string[] = [
-      `<a class="btn btn-outline btn-sm" href="/admin/tutors/verify?id=${encodeURIComponent(t.id)}">${svg('shield-check', { size: 16 })}Verify</a>`,
+      `<a class="btn btn-outline btn-sm" href="${url(`/admin/tutors/verify?id=${encodeURIComponent(t.id)}`)}">${svg('shield-check', { size: 16 })}Verify</a>`,
     ];
 
     if (t.status !== 'approved') {
@@ -43,7 +44,7 @@ if (root) {
       actions.push(`<button type="button" class="btn btn-ghost btn-sm" data-act="rejected" data-id="${esc(t.id)}">Reject</button>`);
     }
     if (t.status === 'approved') {
-      actions.push(`<a class="btn btn-ghost btn-sm" href="/teacher/${encodeURIComponent(t.slug)}">Public page</a>`);
+      actions.push(`<a class="btn btn-ghost btn-sm" href="${url(`/teacher/${encodeURIComponent(t.slug)}`)}">Public page</a>`);
       actions.push(`<button type="button" class="btn btn-ghost btn-sm" data-act="suspended" data-id="${esc(t.id)}">Suspend</button>`);
     }
     if (t.status === 'suspended' || t.status === 'rejected') {

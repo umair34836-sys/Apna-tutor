@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // =============================================================================
 // src/components/ContactUnlock.astro
 //
@@ -56,8 +57,8 @@ const { tutorId, tutorSlug, tutorName, city } = Astro.props;
       <span>Number dekhne ke liye login karein. Account banana free hai.</span>
     </p>
     <div class="unlock-actions">
-      <a class="btn btn-primary" data-login-link href="/login"><Icon name="user" />Login karein</a>
-      <a class="btn btn-outline" data-signup-link href="/signup">Naya account banayein</a>
+      <a class="btn btn-primary" data-login-link href={url('/login')}><Icon name="user" />Login karein</a>
+      <a class="btn btn-outline" data-signup-link href={url('/signup')}>Naya account banayein</a>
     </div>
   </div>
 
@@ -96,6 +97,7 @@ const { tutorId, tutorSlug, tutorName, city } = Astro.props;
 </style>
 
 <script>
+  import { url } from '../lib/site';
   import { track } from '../lib/analytics';
 
   const root = document.getElementById('contact');
@@ -120,8 +122,8 @@ const { tutorId, tutorSlug, tutorName, city } = Astro.props;
 
     // Login ke baad wapas isi profile par aana chahiye.
     const back = encodeURIComponent(window.location.pathname + '#contact');
-    root.querySelector<HTMLAnchorElement>('[data-login-link]')?.setAttribute('href', `/login?next=${back}`);
-    root.querySelector<HTMLAnchorElement>('[data-signup-link]')?.setAttribute('href', `/signup?next=${back}`);
+    root.querySelector<HTMLAnchorElement>('[data-login-link]')?.setAttribute('href', url(`/login?next=${back}`));
+    root.querySelector<HTMLAnchorElement>('[data-signup-link]')?.setAttribute('href', url(`/signup?next=${back}`));
 
     function reveal(contact: { phone?: string; whatsapp?: string }) {
       const phone = contact.phone ?? contact.whatsapp ?? '';

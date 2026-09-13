@@ -10,6 +10,7 @@
 // =============================================================================
 
 import { getFirebase, currentUser } from './firebase';
+import { url } from './site';
 import type { User } from 'firebase/auth';
 
 export type Role = 'parent' | 'tutor';
@@ -169,7 +170,7 @@ export async function requireSession(role?: Role): Promise<Session | null> {
 
   if (!user) {
     const next = encodeURIComponent(window.location.pathname + window.location.search);
-    window.location.replace(`/login?next=${next}`);
+    window.location.replace(url(`/login?next=${next}`));
     return null;
   }
 
@@ -178,12 +179,12 @@ export async function requireSession(role?: Role): Promise<Session | null> {
   // Google se aaya naya user — abhi role aur city nahi di.
   if (!profile) {
     const next = encodeURIComponent(window.location.pathname + window.location.search);
-    window.location.replace(`/signup?complete=1&next=${next}`);
+    window.location.replace(url(`/signup?complete=1&next=${next}`));
     return null;
   }
 
   if (role && profile.role !== role) {
-    window.location.replace(profile.role === 'tutor' ? '/tutor/dashboard' : '/parent/dashboard');
+    window.location.replace(url(homeFor(profile.role)));
     return null;
   }
 
@@ -202,14 +203,14 @@ export async function requireAdmin(): Promise<Session | null> {
 
   if (!user) {
     const next = encodeURIComponent(window.location.pathname + window.location.search);
-    window.location.replace(`/login?next=${next}`);
+    window.location.replace(url(`/login?next=${next}`));
     return null;
   }
 
   const { isAdmin } = await import('./firebase');
   if (!(await isAdmin())) {
     const profile = await getProfile(user.uid);
-    window.location.replace(homeFor(profile?.role));
+    window.location.replace(url(homeFor(profile?.role)));
     return null;
   }
 
@@ -238,12 +239,21 @@ export function getSession(role?: Role): Promise<Session | null> {
   return sessionOnce;
 }
 
-/** Login ke baad kahan jana hai — `?next=` sirf isi site ke andar chalta hai. */
+/**
+ * Login ke baad kahan jana hai. Seedha `window.location.href` mein daal sakte
+ * hain — base path yahin lag jata hai.
+ *
+ * `next` do shakal mein aa sakta hai: `window.location.pathname` se (jismein
+ * base pehle se hai) ya code se likha hua bare path. Dono handle hote hain.
+ */
 export function nextUrl(fallback = '/'): string {
   const next = new URLSearchParams(window.location.search).get('next');
   // Open redirect se bachao: sirf relative path, protocol-relative "//" nahi.
-  if (next && next.startsWith('/') && !next.startsWith('//')) return next;
-  return fallback;
+  if (next && next.startsWith('/') && !next.startsWith('//')) {
+    const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+    return base && next.startsWith(`${base}/`) ? next : url(next);
+  }
+  return url(fallback);
 }
 
 export function homeFor(role: Role | undefined): string {

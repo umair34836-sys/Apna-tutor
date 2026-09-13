@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // =============================================================================
 // src/pages/request-tutor.astro
 //
@@ -185,8 +186,8 @@ const ready = cities.length > 0 && subjects.length > 0;
               kis se rabta karna hai — aap ka number kisi ko khud-ba-khud nahi jata.
             </p>
             <div class="done-actions">
-              <a class="btn btn-primary" href="/parent/requests">Meri requests dekhein</a>
-              <a class="btn btn-outline" href="/find-tutor">Khud bhi tutors dekhein</a>
+              <a class="btn btn-primary" href={url('/parent/requests')}>Meri requests dekhein</a>
+              <a class="btn btn-outline" href={url('/find-tutor')}>Khud bhi tutors dekhein</a>
             </div>
           </div>
         </div>

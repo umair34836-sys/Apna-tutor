@@ -1,4 +1,5 @@
 import { getSession } from '../lib/auth';
+import { url } from '../lib/site';
 import { firestoreError } from '../lib/firebase';
 import { getMyTutorProfile, listMyLeads } from '../lib/queries';
 import { classLabel } from '../lib/taxonomy';
@@ -33,26 +34,27 @@ if (root) {
         tone: 'pending',
         title: 'Review ka intezaar',
         body: 'Aap ki profile hamare paas aa gayi hai. Hum 24–48 ghante mein check karke aap ko WhatsApp par batayenge. Us waqt tak profile search mein nazar nahi aayegi.',
-        actions: '<a class="btn btn-outline btn-sm" href="/tutor/profile">Profile dekhein</a>',
+        actions: `<a class="btn btn-outline btn-sm" href="${url('/tutor/profile')}">Profile dekhein</a>`,
       },
       approved: {
         tone: 'approved',
         title: 'Profile live hai',
         body: 'Aap ki profile search mein nazar aa rahi hai aur aap ke area ki leads aap tak aayengi.',
-        actions: `<a class="btn btn-primary btn-sm" href="/teacher/${encodeURIComponent(tutor.slug)}">Apni public profile dekhein</a>
-                  <a class="btn btn-outline btn-sm" href="/tutor/profile">Edit karein</a>`,
+        actions: `<a class="btn btn-primary btn-sm" href="${url(`/teacher/${encodeURIComponent(tutor.slug)}`)}">Apni public profile dekhein</a>
+                  <a class="btn btn-outline btn-sm" href="${url('/tutor/profile')}">Edit karein</a>`,
       },
       rejected: {
         tone: 'bad',
         title: 'Profile approve nahi hui',
         body: 'Kuch maloomat check nahi ho saki. Profile theek karke dobara bhejein, ya hum se rabta karein — hum bata denge kya kami hai.',
-        actions: '<a class="btn btn-primary btn-sm" href="/tutor/profile">Profile theek karein</a><a class="btn btn-outline btn-sm" href="/contact">Rabta karein</a>',
+        actions: `<a class="btn btn-primary btn-sm" href="${url('/tutor/profile')}">Profile theek karein</a>`
+          + `<a class="btn btn-outline btn-sm" href="${url('/contact')}">Rabta karein</a>`,
       },
       suspended: {
         tone: 'bad',
         title: 'Profile suspend hai',
         body: 'Ye profile filhal band hai. Wajah jaanne ke liye hum se rabta karein.',
-        actions: '<a class="btn btn-primary btn-sm" href="/contact">Rabta karein</a>',
+        actions: `<a class="btn btn-primary btn-sm" href="${url('/contact')}">Rabta karein</a>`,
       },
     };
 
@@ -106,7 +108,7 @@ if (root) {
             <b>${esc(l.subject)} — ${esc(classLabel(l.classLevel))}</b>
             <span>${esc(l.area)} · Rs. ${Number(l.budgetMax).toLocaleString('en-PK')} tak</span>
           </div>
-          <a class="btn btn-outline btn-sm" href="/tutor/leads">Dekhein</a>
+          <a class="btn btn-outline btn-sm" href="${url('/tutor/leads')}">Dekhein</a>
         </div>`)
       .join('')}</div>`;
   }

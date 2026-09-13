@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // =============================================================================
 // src/pages/find-tutor.astro — search results
 //
@@ -167,7 +168,7 @@ const ready = cities.length > 0 && subjects.length > 0;
           <p data-zero-tip></p>
           <div class="zero-actions">
             <button type="button" class="btn btn-outline" data-relax>Kuch filters hata dein</button>
-            <a class="btn btn-primary" href="/request-tutor"><Icon name="send" />Request post karein</a>
+            <a class="btn btn-primary" href={url('/request-tutor')}><Icon name="send" />Request post karein</a>
           </div>
         </div>
       </div>

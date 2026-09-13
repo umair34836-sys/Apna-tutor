@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // src/components/SubjectTiles.astro
 //
 // ★ Sirf wo subjects dikhte hain jinke 1+ approved tutor hain, aur count ASLI
@@ -39,12 +40,12 @@ const tiles = subjects
           <h2>Popular subjects</h2>
           <p>Sabse zyada demand in subjects mein hai. Kisi bhi tile par click karein.</p>
         </div>
-        <a class="btn btn-outline btn-sm" href="/teachers">Saare tutors</a>
+        <a class="btn btn-outline btn-sm" href={url('/teachers')}>Saare tutors</a>
       </div>
 
       <div class="tiles reveal">
         {tiles.map((t) => (
-          <a class="tile" href={t.href}>
+          <a class="tile" href={url(t.href)}>
             <Icon name={t.icon} />
             <b>{t.name}</b><span>{`${t.count} ${t.count === 1 ? 'tutor' : 'tutors'}`}</span>
           </a>

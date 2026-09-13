@@ -1,4 +1,5 @@
 import { getAdminSession } from '../lib/auth';
+import { url } from '../lib/site';
 import { firestoreError } from '../lib/firebase';
 import { approvePhoto, getPhotoSubmission, getTutorContact, rejectPhoto, setBadges, setTutorStatus } from '../lib/admin';
 import { getTutorById } from '../lib/queries';
@@ -102,7 +103,7 @@ if (rootEl) {
 
     try {
       await setTutorStatus(tutorId, next, adminUid, note);
-      window.location.href = '/admin/tutors';
+      window.location.href = url('/admin/tutors');
     } catch (e2) {
       err.querySelector('span')!.textContent = firestoreError(e2);
       err.hidden = false;

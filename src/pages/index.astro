@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/site';
 // =============================================================================
 // src/pages/index.astro — Homepage
 //
@@ -78,7 +79,7 @@ const description = hasTutors
               : 'Pehle tutors onboard ho rahe hain.'}
           </p>
         </div>
-        {hasTutors && <a class="btn btn-outline btn-sm" href="/teachers">Saare tutors dekhein</a>}
+        {hasTutors && <a class="btn btn-outline btn-sm" href={url('/teachers')}>Saare tutors dekhein</a>}
       </div>
 
       <TutorGrid

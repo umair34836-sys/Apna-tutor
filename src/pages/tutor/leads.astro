@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/site';
 // src/pages/tutor/leads.astro — tutor ka leads inbox
 //
 // ★ Lead card par parent ka number KABHI nahi hota — rules `parentPhone` wala
@@ -34,7 +35,7 @@ import Icon from '../../components/Icon.astro';
         <Icon name="clock" />
         <h3>Leads approve hone ke baad aati hain</h3>
         <p>Aap ki profile abhi review mein hai. Approve hote hi aap ke area ki requests yahan aane lagengi.</p>
-        <a class="btn btn-primary" href="/tutor/dashboard">Dashboard</a>
+        <a class="btn btn-primary" href={url('/tutor/dashboard')}>Dashboard</a>
       </div>
     </div>
 
