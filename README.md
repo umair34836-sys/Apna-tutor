@@ -1,6 +1,6 @@
 # ApnaTutor
 
-Pakistan ke liye tutor marketplace. **Astro (SSG) → GitHub Pages · Firebase Spark (free) · Cloudinary.**
+Pakistan ke liye tutor marketplace. **Astro (SSG) → GitHub Pages · Firebase Spark (free).**
 
 Poori specification [`docs/`](docs/) mein hai — koi bhi kaam shuru karne se pehle
 [`docs/README.md`](docs/README.md) padho.

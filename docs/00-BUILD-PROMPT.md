@@ -30,7 +30,7 @@ ye char files padho:
 - Vanilla TypeScript + Firebase JS SDK v10+ (modular). Koi React/Vue nahi
 - Plain CSS with custom properties — tokens `index.html` se lo. Koi Tailwind nahi
 - Firebase Spark (free) — Firestore + Auth + App Check
-- Cloudinary unsigned upload — photos ke liye
+- Photos Firestore mein base64 (browser mein simat kar) — koi aur service nahi
 - GitHub Pages, custom domain apnatutor.com
 
 ## Non-negotiable constraints
@@ -113,8 +113,7 @@ Homepage (`index.html` ko Astro components mein todo — design dobara na likho)
 
 ### Phase 4 — Auth + tutor flows
 `/login`, `/signup`, `/forgot-password`, `/tutor/register` (7-step, localStorage
-draft), `/tutor/dashboard`, `/tutor/leads`, `/tutor/profile`. Cloudinary photo
-upload.
+draft), `/tutor/dashboard`, `/tutor/leads`, `/tutor/profile`. Photo upload.
 
 ### Phase 5 — Parent flows
 `/request-tutor`, `/find-tutor` (client-side search + filters + bottom sheet on
