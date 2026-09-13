@@ -63,7 +63,12 @@ jobs:
           # bante to hain, magar khali/disabled rehte hain.
           PUBLIC_CONTACT_EMAIL:        ${{ secrets.PUBLIC_CONTACT_EMAIL }}
           PUBLIC_OFFICIAL_WHATSAPP:    ${{ secrets.PUBLIC_OFFICIAL_WHATSAPP }}
-          PUBLIC_GITHUB_REPO:          ${{ secrets.PUBLIC_GITHUB_REPO }}
+          # Repo ka naam koi raaz nahi — Actions ko wo pehle se maloom hai.
+          # Isay secret banane ka matlab tha ek aur setup step jo bhoolne par
+          # /admin/rebuild ka button chupchap bekaar ho jata. Ab default khud
+          # theek hai; secret sirf tab chahiye jab kisi DOOSRE repo ki build
+          # trigger karni ho.
+          PUBLIC_GITHUB_REPO:          ${{ secrets.PUBLIC_GITHUB_REPO || github.repository }}
           PUBLIC_GITHUB_WORKFLOW:      deploy.yml
         run: npm run build
 
