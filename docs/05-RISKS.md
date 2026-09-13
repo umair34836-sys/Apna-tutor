@@ -37,13 +37,13 @@ par shift kar do. Tab tak risk chhota hai.
 Ye is poore document ka sabse ahem section hai.
 
 **Kya na karo:** CNIC, B-Form, degree, ya kisi bhi shanakhti dastavez ki image
-Cloudinary, Firestore, ya kahin bhi upload karna.
+Firestore mein, ya kahin bhi, upload karna.
 
 **Kyun:**
-- Cloudinary ke URLs **public** hote hain. Ek URL leak = ek shanakhti dastavez
-  leak
-- Firestore mein base64 rakhna bhi bekaar hai — jis ke paas read access hai wo
-  padh lega, aur 1 MB document limit bhi hai
+- Firestore mein base64 rakhna bilkul bekaar hai — jis ke paas read access hai
+  wo padh lega, aur 1 MiB document limit bhi hai
+- Profile photos Firestore mein hain (aur wo theek hai — wo public hoti hi
+  hain), magar shanakhti dastavez ka maamla bilkul alag hai
 - Pakistan mein CNIC copies identity fraud ka sabse aam zariya hain — SIM
   registration, bank accounts, loans
 - Server nahi hai, isliye signed/expiring URLs bana bhi nahi sakte
@@ -189,7 +189,7 @@ Ye dekho, guess na karo:
 |---|---|
 | Firestore reads > 35k/day (70%) | Firebase Console mein usage dekho, rules ke `get()` calls kam karo |
 | `resource-exhausted` errors dikhein | **Blaze par jao, $10/month budget alert set karo.** Blaze par bhi free quota shamil hai — agar usage andar rahe to bill zero hi rahega |
-| Cloudinary credits > 20/25 | Transformation `w_400` karo, purane pending photos delete karo |
+| Firestore storage > 700 MiB | Purane pending photo submissions delete karo; photo ki hadd 400px kar do |
 | Ek city mein 500+ tutors | Algolia ya Typesense free tier par search shift karo |
 | SMS OTP ki asli zarurat | Blaze lazmi. Pakistan SMS ~$0.02–0.05 per message — budget bana lo |
 | Paid featured listings bikna shuru | Cloudflare Pages par shift karo (§1) |
