@@ -29,6 +29,10 @@ const esc = (s: unknown) =>
 const SLOTS: PromoSlot[] = JSON.parse(root.dataset.slots || '[]');
 const slotLabel = (id: string) => SLOTS.find((s) => s.id === id)?.label ?? id;
 
+/** Kya ye jagah is shakal ko leti hai. */
+const slotTakes = (id: string, sh: string) =>
+  SLOTS.find((s) => s.id === id)?.shapes.includes(sh as 'card' | 'banner') ?? true;
+
 const loading = q('[data-loading]');
 const errorBox = q('[data-error]');
 const listBox = q('[data-list]');
@@ -69,18 +73,18 @@ const fail = (box: HTMLElement, msg: string) => {
 // ---------------------------------------------------------------------------
 
 function statusPill(p: PromoRow): string {
-  if (!p.active) return '<span class="pill off">Band</span>';
+  if (!p.active) return '<span class="promo-pill off">Band</span>';
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   if (p.startsAt && today < new Date(p.startsAt)) {
-    return `<span class="pill">Shuru ${esc(fmtDate(p.startsAt))} se</span>`;
+    return `<span class="promo-pill">Shuru ${esc(fmtDate(p.startsAt))} se</span>`;
   }
   if (p.endsAt) {
     const end = new Date(p.endsAt);
     end.setHours(23, 59, 59, 999);
-    if (today > end) return '<span class="pill gone">Waqt khatam</span>';
+    if (today > end) return '<span class="promo-pill gone">Waqt khatam</span>';
   }
-  return '<span class="pill on">Chal raha hai</span>';
+  return '<span class="promo-pill on">Chal raha hai</span>';
 }
 
 function fmtDate(iso: string | null): string {
@@ -91,35 +95,51 @@ function fmtDate(iso: string | null): string {
 function rowHtml(p: PromoRow): string {
   const t = totals.get(p.id) ?? { views: 0, clicks: 0, days: 0 };
   const thumb = p.imageData
-    ? `<img class="row-thumb" src="${esc(p.imageData)}" alt="" />`
-    : `<div class="row-thumb"></div>`;
+    ? `<img class="promo-row-thumb" src="${esc(p.imageData)}" alt="" />`
+    : `<div class="promo-row-thumb"></div>`;
 
   const bill = p.billing.amount
-    ? `<div class="num"><b>Rs ${esc(p.billing.amount)}</b><span>${p.billing.paid ? 'mil gaye' : 'baqi hain'}</span></div>`
+    ? `<div class="promo-num"><b>Rs ${esc(p.billing.amount)}</b><span>${p.billing.paid ? 'mil gaye' : 'baqi hain'}</span></div>`
     : '';
 
   return `
     <article class="promo-row">
-      <div class="row-top">
+      <div class="promo-row-top">
         ${thumb}
-        <div class="row-main">
+        <div class="promo-row-main">
           <h3>${esc(p.title || p.brand)} ${statusPill(p)}</h3>
-          <p class="row-brand">${esc(p.brand)} · ${p.shape === 'banner' ? 'Banner' : 'Card'} · wazan ${esc(p.weight ?? 1)}</p>
-          <p class="row-sub">${esc(p.href)}</p>
+          <p class="promo-row-brand">${esc(p.brand)} · ${p.shape === 'banner' ? 'Banner' : 'Card'} · wazan ${esc(p.weight ?? 1)}</p>
+          <p class="promo-row-sub">${esc(p.href)}</p>
         </div>
       </div>
 
-      <div class="row-slots">
-        ${(p.slots ?? []).map((s) => `<span class="pill">${esc(slotLabel(s))}</span>`).join('')}
+      <div class="promo-row-slots">
+        ${(p.slots ?? [])
+          .map((s) =>
+            slotTakes(s, p.shape)
+              ? `<span class="promo-pill">${esc(slotLabel(s))}</span>`
+              : `<span class="promo-pill warn" title="Ye jagah ${esc(p.shape === 'banner' ? 'Banner' : 'Card')} nahi leti">
+                   ⚠ ${esc(slotLabel(s))}
+                 </span>`
+          )
+          .join('')}
       </div>
+      ${
+        (p.slots ?? []).some((s) => !slotTakes(s, p.shape))
+          ? `<p class="promo-row-warn">${svg('alert-triangle', { size: 16 })}
+               Nishan wali jagah ye shakal nahi leti — wahan ad site ke design se mail nahi
+               khayega. "Badlein" se ya wo jagah hata dein, ya doosri shakal chunein.
+             </p>`
+          : ''
+      }
 
-      <div class="row-nums">
-        <div class="num"><b>${t.views}</b><span>logon ne dekha</span></div>
-        <div class="num"><b>${t.clicks}</b><span>ne click kiya</span></div>
+      <div class="promo-row-nums">
+        <div class="promo-num"><b>${t.views}</b><span>logon ne dekha</span></div>
+        <div class="promo-num"><b>${t.clicks}</b><span>ne click kiya</span></div>
         ${bill}
       </div>
 
-      <div class="row-actions">
+      <div class="promo-row-actions">
         <button type="button" class="btn btn-outline btn-sm" data-edit="${esc(p.id)}">
           ${svg('edit', { size: 16 })}Badlein
         </button>
@@ -152,17 +172,60 @@ function render(): void {
 // Form
 // ---------------------------------------------------------------------------
 
+const shapeWord = (sh: string) => (sh === 'banner' ? 'Banner' : 'Card');
+
 function buildSlotOptions(): void {
   q('[data-slot-list]').innerHTML = SLOTS.map(
     (s) => `
-    <label class="slot-opt">
+    <label class="promo-slot-opt" data-slot-opt="${esc(s.id)}">
       <input type="checkbox" name="slots" value="${esc(s.id)}" />
       <span>
         <strong>${esc(s.label)}</strong>
         <em>${esc(s.where)}</em>
+        <em class="promo-slot-takes">Ye jagah leti hai: ${s.shapes.map(shapeWord).join(' ya ')}</em>
       </span>
     </label>`
   ).join('');
+}
+
+/**
+ * Jo jagah is shakal ko nahi leti, wo band kar do.
+ *
+ * ★ Ye shart shuru se promo-slots.ts mein likhi thi magar kahin LAGAI nahi
+ *   gayi thi — yani sirf likhi hui thi, chalti nahi thi. Nateeja: banner ko
+ *   "patli patti" wali jagah par lagaya ja sakta tha, aur wahan logo poori
+ *   chaurai mein khinch kar har page ke neeche dikhta tha.
+ *
+ * ★ Pehle se chuni hui ghalat jagah ko KHAMOSHI se nahi hatate — nishan laga
+ *   rehta hai aur uske saath wajah likhi aati hai. Chupke se hata dete to
+ *   banda save karta aur usay pata bhi na chalta ke uska ad ek jagah se ghayab
+ *   ho gaya.
+ */
+function syncSlotShapes(): void {
+  const sh = shape();
+  let mismatched = 0;
+
+  for (const def of SLOTS) {
+    const box = root.querySelector<HTMLElement>(`[data-slot-opt="${def.id}"]`);
+    const input = box?.querySelector<HTMLInputElement>('input');
+    if (!box || !input) continue;
+
+    const ok = def.shapes.includes(sh);
+    input.disabled = !ok && !input.checked;
+    box.classList.toggle('promo-slot-off', !ok);
+
+    if (!ok && input.checked) mismatched += 1;
+  }
+
+  const warn = q('[data-slot-warn]');
+  if (mismatched) {
+    warn.querySelector('span')!.textContent =
+      `${mismatched} aisi jagah chuni hui hai jo ${shapeWord(sh)} nahi leti. ` +
+      'Wahan ad site ke design se mail nahi khayega — ya nishan hata dein, ya doosri shakal chunein.';
+    warn.hidden = false;
+  } else {
+    warn.hidden = true;
+  }
 }
 
 function shape(): 'card' | 'banner' {
@@ -175,6 +238,7 @@ function syncShape(): void {
   const isCard = shape() === 'card';
   root.querySelectorAll<HTMLElement>('[data-card-only]').forEach((el) => { el.hidden = !isCard; });
   q<HTMLInputElement>('#p-title').required = isCard;
+  syncSlotShapes();
   q('[data-image-note]').textContent = isCard
     ? 'Card ke liye sirf logo — na ho to bhi ad chal jata hai. Tasveer khud ba khud chhoti ho jati hai.'
     : 'Banner ke liye tasveer LAZMI hai — banner ki poori baat hi tasveer hai. Chaurai 1200px tak khud ho jati hai.';
@@ -321,6 +385,7 @@ async function load(): Promise<void> {
   form.addEventListener('input', (e) => {
     const t = e.target as HTMLInputElement;
     if (t.name === 'shape') syncShape();
+    if (t.name === 'slots') syncSlotShapes();
     if (t.name === 'weight') q('[data-weight-out]').textContent = t.value;
     drawPreview();
   });

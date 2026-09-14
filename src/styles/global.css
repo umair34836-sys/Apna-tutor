@@ -316,3 +316,64 @@ textarea{min-height:96px;resize:vertical;line-height:1.5}
 .promo-cta{display:inline-flex;align-items:center;min-height:36px;margin-top:10px;
   color:var(--primary-dark);font-weight:600;font-size:15px}
 .promo-cta::after{content:' →';margin-inline-start:4px}
+
+/* ---------------------------------------------------------------------------
+   Admin — ishtihaar ki fehrist aur jagah chunne ke khane
+
+   ★ Ye rules GLOBAL hain, /admin/promos ke scoped <style> mein nahi — aur ye
+     majboori hai, pasand nahi. Astro ka scoped CSS us waqt kaam karta hai jab
+     element template mein likha ho; ye saare elements JS banata hai, is liye
+     unhein wo pehchan milti hi nahi aur CSS bilkul nahi lagti. Pehle yahi
+     ghalti hui thi: jagahon ke naam bina dabbe, bina jagah ke ek doosre se
+     chipke hue dikh rahe thay. Baqi admin pages (jaise featured) isi liye
+     shuru se global classes istemal karte hain.
+
+   ★ Har naam "promo-" se shuru hota hai. Aam naam (.pill, .num) global
+     stylesheet mein rakhna ek din kisi aur cheez se takrata hai.
+   --------------------------------------------------------------------------- */
+/* ---- list ---- */
+.promo-row{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:var(--space-3);display:flex;flex-direction:column;gap:12px}
+.promo-row + .promo-row{margin-top:var(--space-2)}
+.promo-row-top{display:flex;gap:14px;align-items:flex-start}
+.promo-row-thumb{width:56px;height:56px;flex:none;border-radius:var(--radius);object-fit:cover;
+  background:var(--bg-alt);border:1px solid var(--border)}
+.promo-row-main{min-width:0;flex:1}
+.promo-row-main h3{font-size:16.5px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.promo-row-brand{color:var(--muted-fg);font-size:14px;font-weight:500}
+.promo-row-sub{margin-top:4px;color:var(--muted-fg);font-size:14.5px;overflow-wrap:anywhere}
+.promo-pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;
+  border:1px solid var(--border);color:var(--muted-fg);background:var(--bg-alt);white-space:nowrap}
+.promo-pill.on{color:#065F46;background:#ECFDF5;border-color:#A7F3D0}
+.promo-pill.off{color:#92400E;background:#FFFBEB;border-color:#FDE68A}
+.promo-pill.gone{color:#9F1239;background:#FFF1F2;border-color:#FECDD3}
+.promo-pill.warn{color:#92400E;background:#FFFBEB;border-color:#F59E0B}
+.promo-row-warn{display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.6;
+  color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;
+  border-radius:var(--radius);padding:10px 12px}
+.promo-row-warn svg{flex:none;margin-top:2px}
+
+.promo-row-slots{display:flex;flex-wrap:wrap;gap:6px}
+.promo-row-nums{display:flex;gap:var(--space-3);flex-wrap:wrap;padding-top:10px;
+  border-top:1px solid var(--border)}
+.promo-num b{display:block;font-family:var(--font-heading);font-size:21px;font-weight:700}
+.promo-num span{font-size:13px;color:var(--muted-fg)}
+.promo-row-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}
+
+
+.promo-slot-opt{display:flex;gap:10px;align-items:flex-start;padding:12px;
+  border:1px solid var(--border);border-radius:var(--radius);cursor:pointer}
+.promo-slot-opt:has(input:checked){border-color:var(--primary);background:var(--primary-soft)}
+.promo-slot-opt input{margin-top:3px;width:20px;height:20px;flex:none}
+.promo-slot-opt strong{display:block;font-size:15px;font-weight:600}
+.promo-slot-takes{color:var(--muted-fg);font-weight:600;font-size:13px}
+
+/* Band jagah — nazar aati rehti hai (taake pata chale ke mojood hai),
+   magar chuni nahi ja sakti. */
+.promo-slot-opt.promo-slot-off{opacity:.55;background:var(--bg-alt);cursor:not-allowed}
+.promo-slot-opt.promo-slot-off .promo-slot-takes{color:#B45309}
+.promo-slot-opt.promo-slot-off:has(input:checked){opacity:1;border-color:#F59E0B;background:#FFFBEB}
+.promo-slot-opt em{display:block;font-style:normal;margin-top:3px;font-size:13.5px;
+  color:var(--muted-fg);line-height:1.55}
+
+
