@@ -14,6 +14,7 @@ import { url } from '../lib/site';
 // =============================================================================
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
+import PromoSlot from '../components/PromoSlot.astro';
 import { cities, subjects } from '../lib/data';
 import { AREA_LABEL, ONLY_AREA, SERVICE_AREA_LABEL } from '../lib/site';
 import { BOARDS, CLASSES, GENDERS, MODES } from '../lib/taxonomy';
@@ -139,6 +140,8 @@ const ready = cities.length > 0 && subjects.length > 0;
     </aside>
 
     <div class="results" id="results">
+      <PromoSlot slot="search-inline" />
+
       {!ready && (
         <p class="state state-error">
           <Icon name="alert-circle" />

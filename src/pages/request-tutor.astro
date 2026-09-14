@@ -13,6 +13,7 @@ import { url } from '../lib/site';
 // =============================================================================
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
+import PromoSlot from '../components/PromoSlot.astro';
 import { cities, subjects } from '../lib/data';
 import { AREA_LABEL, AREA_WORD, ONLY_AREA } from '../lib/site';
 import { CLASSES, GENDERS, MODES } from '../lib/taxonomy';
@@ -199,6 +200,8 @@ const ready = cities.length > 0 && subjects.length > 0;
               <a class="btn btn-outline" href={url('/find-tutor')}>Khud bhi tutors dekhein</a>
             </div>
           </div>
+
+          <PromoSlot slot="request-thanks" />
         </div>
       </div>
     </div>

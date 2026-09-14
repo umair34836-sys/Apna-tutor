@@ -1,0 +1,307 @@
+---
+// =============================================================================
+// src/pages/admin/promos.astro — ishtihaar chalane ka panel
+//
+// ★ Slots ki fehrist yahan NAHI likhi. Wo src/lib/promo-slots.ts se aati hai —
+//   wahi fehrist jo site par ads lagati hai. Do jagah likhte to ek din chupke
+//   se alag ho jatin, aur admin aisi jagah par ad laga deta jo site par hai hi
+//   nahi.
+//
+// ★ Naya ad rebuild ke baad live hota hai. Ye page har save ke baad yaad
+//   dilata hai — warna banda ad bana kar intezar karta rehta hai.
+// =============================================================================
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+import { url } from '../../lib/site';
+import { SLOTS_IN_ORDER } from '../../lib/promo-slots';
+---
+<App
+  title="Admin — Ishtihaar | ApnaTutor"
+  heading="Ishtihaar"
+  sub="Brands ki promotion — kahan chale, kab tak chale, aur kitne logon tak pohanchi."
+  admin
+  path="/admin/promos"
+>
+  <div id="admin-promos" data-slots={JSON.stringify(SLOTS_IN_ORDER)}>
+    <p class="state state-info">
+      <Icon name="info" />
+      <span>
+        Naya ad <strong>rebuild ke baad</strong> site par aata hai — bilkul waise
+        jaise naya approved tutor. Save karne ke baad
+        <a href={url('/admin/rebuild')}>rebuild</a> daba dein (~2 minute).
+        Tareekh alag baat hai: "1 tareekh se shuru" wala ad apne waqt par khud
+        chalu ho jata hai, dobara rebuild ki zaroorat nahi.
+      </span>
+    </p>
+
+    <div class="bar">
+      <button type="button" class="btn btn-primary" data-new>
+        <Icon name="plus" size={18} />Naya ishtihaar
+      </button>
+      <span class="bar-note" data-count></span>
+    </div>
+
+    <div class="skeleton sk-box" data-loading></div>
+    <p class="state state-error" data-error hidden><Icon name="alert-circle" /><span></span></p>
+    <div data-list hidden></div>
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- Form                                                              -->
+    <!-- ---------------------------------------------------------------- -->
+    <div class="sheet" data-sheet hidden>
+      <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="promo-form-title">
+        <div class="sheet-head">
+          <h2 id="promo-form-title">Naya ishtihaar</h2>
+          <button type="button" class="icon-btn" data-close aria-label="Band karein">
+            <Icon name="x" size={20} />
+          </button>
+        </div>
+
+        <form data-form novalidate>
+          <input type="hidden" data-id />
+
+          <fieldset>
+            <legend>Kya dikhana hai</legend>
+
+            <div class="field">
+              <label>Shakal</label>
+              <div class="seg" role="radiogroup">
+                <label class="seg-opt">
+                  <input type="radio" name="shape" value="card" checked />
+                  <span><strong>Card</strong>Site jaisa box — logo, naam, ek line aur button. Jin ke paas banner nahi.</span>
+                </label>
+                <label class="seg-opt">
+                  <input type="radio" name="shape" value="banner" />
+                  <span><strong>Banner</strong>Brand ki apni tayar chauri tasveer.</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="p-brand">Brand ka naam <b>*</b></label>
+              <input id="p-brand" name="brand" type="text" maxlength="60" required placeholder="Al-Noor Stationery" />
+              <p class="hint">Card par "Ishtihaar · {'{'}naam{'}'}" likha nazar aata hai.</p>
+            </div>
+
+            <div class="field" data-card-only>
+              <label for="p-title">Heading <b>*</b></label>
+              <input id="p-title" name="title" type="text" maxlength="80" placeholder="Naye school bags aa gaye" />
+            </div>
+
+            <div class="field" data-card-only>
+              <label for="p-body">Ek line</label>
+              <input id="p-body" name="body" type="text" maxlength="140" placeholder="Bazar se 20% kam qeemat par." />
+            </div>
+
+            <div class="field" data-card-only>
+              <label for="p-cta">Button ka matn</label>
+              <input id="p-cta" name="ctaLabel" type="text" maxlength="30" placeholder="Dekhein" />
+            </div>
+
+            <div class="field">
+              <label for="p-href">Click par kahan jaye <b>*</b></label>
+              <input id="p-href" name="href" type="url" required inputmode="url"
+                     placeholder="https://… ya https://wa.me/92XXXXXXXXXX" />
+              <p class="hint">
+                WhatsApp ke liye <code>https://wa.me/92</code> ke baad number bina 0 ke (0300… ki jagah 92300…).
+                Har ad ke link par <code>rel="sponsored"</code> lagta hai — paid link ko
+                aam link ki tarah dikhana Google ki nazar mein dhoka hai aur poori site
+                ki ranking gira sakta hai.
+              </p>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Tasveer</legend>
+            <div class="field">
+              <input type="file" accept="image/*" data-image hidden />
+              <button type="button" class="btn btn-outline" data-pick>
+                <Icon name="upload" size={18} />Phone se tasveer chunein
+              </button>
+              <p class="hint" data-image-note>
+                Banner ke liye tasveer lazmi hai. Card ke liye sirf logo — na ho to bhi chalta hai.
+                Tasveer khud ba khud chhoti ho jati hai, aap ko kuch nahi karna.
+              </p>
+              <div class="img-row" data-image-row hidden>
+                <img data-image-preview alt="" />
+                <button type="button" class="btn btn-ghost btn-sm" data-image-clear>Tasveer hatayein</button>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Kahan chale</legend>
+            <p class="hint">Ek hi ad kai jagahon par chal sakta hai.</p>
+            <div class="slots" data-slot-list></div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Kab chale</legend>
+            <div class="two">
+              <div class="field">
+                <label for="p-from">Shuru</label>
+                <input id="p-from" name="startsAt" type="date" />
+                <p class="hint">Khali chhoren to aaj se.</p>
+              </div>
+              <div class="field">
+                <label for="p-to">Khatam</label>
+                <input id="p-to" name="endsAt" type="date" />
+                <p class="hint">Khali chhoren to chalta rahega.</p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="p-weight">Wazan — <span data-weight-out>1</span></label>
+              <input id="p-weight" name="weight" type="range" min="1" max="10" step="1" value="1" />
+              <p class="hint">
+                Ek hi jagah par kai ads hon to bari bari aate hain. Zyada wazan
+                wale ki bari zyada baar aati hai.
+              </p>
+            </div>
+
+            <label class="check">
+              <input type="checkbox" name="active" checked />
+              <span>Chalu hai</span>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Hisaab <span class="legend-note">— sirf aap ke liye, site par kabhi nahi</span></legend>
+            <div class="two">
+              <div class="field">
+                <label for="p-contact">Rabta</label>
+                <input id="p-contact" name="contact" type="text" maxlength="60" placeholder="03XX XXXXXXX" />
+              </div>
+              <div class="field">
+                <label for="p-amount">Kitne paise tay hue</label>
+                <input id="p-amount" name="amount" type="number" min="0" step="100" inputmode="numeric" placeholder="3000" />
+              </div>
+            </div>
+            <label class="check">
+              <input type="checkbox" name="paid" />
+              <span>Paise mil gaye</span>
+            </label>
+            <div class="field">
+              <label for="p-notes">Note</label>
+              <textarea id="p-notes" name="notes" rows="2" maxlength="300" placeholder="Agle mahine renew karna hai."></textarea>
+            </div>
+          </fieldset>
+
+          <div class="preview-wrap">
+            <p class="preview-label">Site par aise dikhega</p>
+            <div class="preview" data-preview></div>
+          </div>
+
+          <p class="state state-error" data-form-error hidden><Icon name="alert-circle" /><span></span></p>
+
+          <div class="sheet-actions">
+            <button type="submit" class="btn btn-primary" data-save>Save karein</button>
+            <button type="button" class="btn btn-ghost" data-close>Rehne dein</button>
+            <button type="button" class="btn btn-ghost danger" data-delete hidden>Mita dein</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    #admin-promos{display:flex;flex-direction:column;gap:var(--space-3)}
+    .sk-box{height:220px}
+    .bar{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+    .bar-note{color:var(--muted-fg);font-size:14.5px}
+
+    /* ---- list ---- */
+    .promo-row{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3);display:flex;flex-direction:column;gap:12px}
+    .promo-row + .promo-row{margin-top:var(--space-2)}
+    .row-top{display:flex;gap:14px;align-items:flex-start}
+    .row-thumb{width:56px;height:56px;flex:none;border-radius:var(--radius);object-fit:cover;
+      background:var(--bg-alt);border:1px solid var(--border)}
+    .row-main{min-width:0;flex:1}
+    .row-main h3{font-size:16.5px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .row-brand{color:var(--muted-fg);font-size:14px;font-weight:500}
+    .row-sub{margin-top:4px;color:var(--muted-fg);font-size:14.5px;overflow-wrap:anywhere}
+    .pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;
+      border:1px solid var(--border);color:var(--muted-fg);background:var(--bg-alt);white-space:nowrap}
+    .pill.on{color:#065F46;background:#ECFDF5;border-color:#A7F3D0}
+    .pill.off{color:#92400E;background:#FFFBEB;border-color:#FDE68A}
+    .pill.gone{color:#9F1239;background:#FFF1F2;border-color:#FECDD3}
+
+    .row-slots{display:flex;flex-wrap:wrap;gap:6px}
+    .row-nums{display:flex;gap:var(--space-3);flex-wrap:wrap;padding-top:10px;
+      border-top:1px solid var(--border)}
+    .num b{display:block;font-family:var(--font-heading);font-size:21px;font-weight:700}
+    .num span{font-size:13px;color:var(--muted-fg)}
+    .row-actions{display:flex;gap:var(--space-1);flex-wrap:wrap}
+
+    /* ---- sheet ---- */
+    .sheet{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.5);
+      display:flex;align-items:flex-end;justify-content:center;overflow-y:auto}
+    @media(min-width:720px){.sheet{align-items:center;padding:var(--space-3)}}
+    .sheet-card{background:var(--bg);width:100%;max-width:640px;
+      border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      max-height:94vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+    @media(min-width:720px){.sheet-card{border-radius:var(--radius-lg)}}
+    .sheet-head{position:sticky;top:0;z-index:1;background:var(--bg);
+      display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);
+      padding:var(--space-3);border-bottom:1px solid var(--border)}
+    .sheet-head h2{font-size:19px;font-weight:600}
+    .icon-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:var(--radius);
+      border:1px solid var(--border);background:#fff;color:var(--fg)}
+
+    form{padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-3)}
+    fieldset{border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2);background:#fff}
+    legend{padding:0 8px;font-size:14px;font-weight:600;color:var(--fg)}
+    .legend-note{font-weight:400;color:var(--muted-fg)}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:14.5px;font-weight:600}
+    .field label b{color:var(--danger,#B91C1C)}
+    .field input[type=text],.field input[type=url],.field input[type=number],
+    .field input[type=date],.field textarea{
+      width:100%;min-height:48px;padding:12px 14px;border:1px solid var(--border);
+      border-radius:var(--radius);background:#fff;font-size:16px;color:var(--fg)}
+    .field textarea{min-height:72px;resize:vertical;font-family:inherit}
+    .hint{font-size:13.5px;color:var(--muted-fg);line-height:1.6}
+    .hint code{background:var(--bg-alt);padding:1px 5px;border-radius:4px;font-size:12.5px}
+    .two{display:grid;grid-template-columns:1fr;gap:var(--space-2)}
+    @media(min-width:520px){.two{grid-template-columns:1fr 1fr}}
+
+    .seg{display:grid;gap:10px}
+    .seg-opt{display:flex;gap:10px;align-items:flex-start;padding:12px;
+      border:1px solid var(--border);border-radius:var(--radius);background:#fff;cursor:pointer}
+    .seg-opt:has(input:checked){border-color:var(--primary);background:var(--primary-soft)}
+    .seg-opt input{margin-top:3px;width:20px;height:20px;flex:none}
+    .seg-opt span{font-size:14.5px;color:var(--muted-fg);line-height:1.55}
+    .seg-opt strong{display:block;color:var(--fg);font-size:15.5px;font-weight:600}
+
+    .check{display:flex;gap:10px;align-items:center;min-height:44px;font-size:15.5px;cursor:pointer}
+    .check input{width:20px;height:20px;flex:none}
+
+    .slots{display:grid;gap:10px}
+    .slot-opt{display:flex;gap:10px;align-items:flex-start;padding:12px;
+      border:1px solid var(--border);border-radius:var(--radius);cursor:pointer}
+    .slot-opt:has(input:checked){border-color:var(--primary);background:var(--primary-soft)}
+    .slot-opt input{margin-top:3px;width:20px;height:20px;flex:none}
+    .slot-opt strong{display:block;font-size:15px;font-weight:600}
+    .slot-opt em{display:block;font-style:normal;margin-top:3px;font-size:13.5px;
+      color:var(--muted-fg);line-height:1.55}
+
+    .img-row{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
+    .img-row img{max-width:200px;max-height:110px;border-radius:var(--radius);
+      border:1px solid var(--border);background:var(--bg-alt)}
+
+    .preview-wrap{display:flex;flex-direction:column;gap:8px}
+    .preview-label{font-size:13.5px;font-weight:600;color:var(--muted-fg);
+      text-transform:uppercase;letter-spacing:.04em}
+    .preview{background:var(--bg-alt);border:1px dashed var(--border);
+      border-radius:var(--radius-lg);padding:var(--space-2)}
+
+    .sheet-actions{position:sticky;bottom:0;background:var(--bg);
+      padding:var(--space-2) 0;display:flex;gap:var(--space-1);flex-wrap:wrap;
+      border-top:1px solid var(--border)}
+    .danger{color:#B91C1C}
+  </style>
+
+  <script src="../../scripts/admin-promos.ts"></script>
+</App>

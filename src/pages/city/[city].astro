@@ -7,6 +7,7 @@ import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import SeoIntro from '../../components/SeoIntro.astro';
 import TutorGrid from '../../components/TutorGrid.astro';
+import PromoSlot from '../../components/PromoSlot.astro';
 import Icon from '../../components/Icon.astro';
 import { cityPages, breadcrumbJsonLd, comboPages } from '../../lib/seo';
 import { SITE, url } from '../../lib/site';
@@ -50,7 +51,7 @@ const description =
   </div>
 
   <section>
-    <div class="wrap"><TutorGrid tutors={tutors} /></div>
+    <div class="wrap"><PromoSlot slot="listing-top" /><TutorGrid tutors={tutors} /></div>
   </section>
 
   {related.length > 0 && (

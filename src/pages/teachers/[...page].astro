@@ -3,6 +3,7 @@
 import type { GetStaticPaths, Page } from 'astro';
 import Base from '../../layouts/Base.astro';
 import TutorGrid from '../../components/TutorGrid.astro';
+import PromoSlot from '../../components/PromoSlot.astro';
 import Icon from '../../components/Icon.astro';
 import { tutors } from '../../lib/data';
 import { rank } from '../../lib/seo';
@@ -55,6 +56,8 @@ const description =
 
   <section>
     <div class="wrap">
+      <PromoSlot slot="listing-top" />
+
       <TutorGrid
         tutors={page.data}
         emptyTitle="Abhi koi tutor live nahi hai"

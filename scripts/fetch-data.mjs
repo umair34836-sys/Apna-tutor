@@ -12,10 +12,11 @@
 //      state dikhayega — "148 tutors" jaisa koi placeholder kabhi nahi.
 // =============================================================================
 
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const OUT_DIR = join(process.cwd(), 'src', 'data');
+const PROMO_DIR = join(process.cwd(), 'public', 'promos');
 
 /** Firestore Timestamp / Date → ISO string. Baqi values waisi hi. */
 function plain(value) {
@@ -43,7 +44,7 @@ function assertNoContactLeak(doc, id) {
   }
 }
 
-async function writeAll({ tutors, cities, subjects, reviews, offline }) {
+async function writeAll({ tutors, cities, subjects, reviews, promos = [], offline }) {
   await mkdir(OUT_DIR, { recursive: true });
 
   const subjectCounts = subjects.map((s) => ({
@@ -56,6 +57,7 @@ async function writeAll({ tutors, cities, subjects, reviews, offline }) {
     writeFile(join(OUT_DIR, 'cities.json'), JSON.stringify(cities)),
     writeFile(join(OUT_DIR, 'subjects.json'), JSON.stringify(subjects)),
     writeFile(join(OUT_DIR, 'reviews.json'), JSON.stringify(reviews)),
+    writeFile(join(OUT_DIR, 'promos.json'), JSON.stringify(promos)),
     writeFile(
       join(OUT_DIR, 'stats.json'),
       JSON.stringify({
@@ -70,6 +72,106 @@ async function writeAll({ tutors, cities, subjects, reviews, offline }) {
   ]);
 }
 
+// ---------------------------------------------------------------------------
+// Promotions (ishtihaar)
+//
+// ★ Spark plan par Firebase Storage nahi hai, is liye admin panel tasveer ko
+//   browser mein hi chhota kar ke base64 shakal mein Firestore ke andar rakhta
+//   hai. Yahan hum usay WAPIS asli file bana kar public/promos/ mein likh dete
+//   hain.
+//
+//   Ye jaan boojh kar hai: base64 ko seedha HTML mein chipkate to (a) wohi
+//   tasveer har us page ke HTML mein dobara jati jahan ad lagta hai, aur
+//   (b) browser usay cache hi nahi kar pata — har page par phir se utarti.
+//   Asli file ek baar utarti hai aur baqi saare pages par cache se aati hai.
+// ---------------------------------------------------------------------------
+
+/** Firestore mein rakhi ja sakne wali tasveer ki hadd (base64 ke baad). */
+const MAX_IMAGE_BYTES = 700 * 1024;
+
+const MIME_EXT = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/svg+xml': 'svg',
+};
+
+/**
+ * data: URI ko file bana kar public/promos/ mein likhta hai.
+ * Kamyabi par site ka raasta lautata hai, warna null.
+ */
+async function writePromoImage(id, dataUri) {
+  const m = /^data:([\w/+.-]+);base64,(.+)$/s.exec(String(dataUri ?? ''));
+  if (!m) return null;
+
+  const [, mime, b64] = m;
+  const ext = MIME_EXT[mime];
+  if (!ext) {
+    console.warn(`  ⚠ promos/${id}: "${mime}" qabil-e-qubool tasveer nahi — chhor diya.`);
+    return null;
+  }
+
+  const bytes = Buffer.from(b64, 'base64');
+  if (bytes.length > MAX_IMAGE_BYTES) {
+    console.warn(
+      `  ⚠ promos/${id}: tasveer ${Math.round(bytes.length / 1024)} KB ki hai ` +
+        `(hadd ${MAX_IMAGE_BYTES / 1024} KB) — chhor di. Admin panel se dobara upload karein.`
+    );
+    return null;
+  }
+
+  await writeFile(join(PROMO_DIR, `${id}.${ext}`), bytes);
+  return `/promos/${id}.${ext}`;
+}
+
+/**
+ * Promos laata hai aur unhe build ke qabil shakal mein badalta hai.
+ *
+ * ★ `imageData` aur paison ka hisaab (billing) build output mein KABHI nahi
+ *   jate. Pehla is liye ke wo HTML ko bhaari kar deta hai, doosra is liye ke
+ *   kis brand ne kitne paise diye ye site ke HTML mein khula nahi parha jana
+ *   chahiye.
+ */
+async function fetchPromos(db) {
+  // Purani tasveerein har build par saaf — warna hataye hue ad ki tasveer
+  // site par parhi rehti hai aur URL jaanne wala usay kholta rahta hai.
+  await rm(PROMO_DIR, { recursive: true, force: true });
+  await mkdir(PROMO_DIR, { recursive: true });
+
+  const snap = await db.collection('promos').where('active', '==', true).get();
+
+  const promos = [];
+  for (const d of snap.docs) {
+    const { imageData, billing, contact, amount, paid, notes, ...rest } = plain(d.data());
+
+    const promo = { id: d.id, ...rest };
+    promo.image = imageData ? await writePromoImage(d.id, imageData) : null;
+
+    // Banner ki poori baat hi tasveer hai — tasveer na bane to ad na dikhe,
+    // warna khali dabba reh jata hai.
+    if (promo.shape === 'banner' && !promo.image) {
+      console.warn(`  ⚠ promos/${d.id}: banner hai magar tasveer nahi — site par nahi jayega.`);
+      continue;
+    }
+    // ★ Link ka scheme yahan bhi jaancha jata hai, sirf admin form mein nahi.
+    //   `javascript:` wala link seedha XSS hai — aur agar kabhi admin ka
+    //   account haath se nikal jaye to form ki jaanch bekaar ho jati hai.
+    //   Build waqt ki jaanch tab bhi khari rehti hai.
+    if (!/^https?:\/\//i.test(String(promo.href ?? ''))) {
+      console.warn(
+        `  ⚠ promos/${d.id}: link "${promo.href}" http:// ya https:// se shuru nahi hota ` +
+          '— site par nahi jayega.'
+      );
+      continue;
+    }
+
+    promos.push(promo);
+  }
+
+  return promos;
+}
+
 async function main() {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
 
@@ -79,7 +181,8 @@ async function main() {
         '  Site banegi aur deploy hogi, magar tutors ke bajaye empty states dikhenge.\n' +
         '  Ye local development ke liye theek hai. Production build mein ye secret lazmi hai.'
     );
-    await writeAll({ tutors: [], cities: [], subjects: [], reviews: [], offline: true });
+    await mkdir(PROMO_DIR, { recursive: true });
+    await writeAll({ tutors: [], cities: [], subjects: [], reviews: [], promos: [], offline: true });
     console.log('✓ 0 tutors, 0 cities (offline mode)');
     return;
   }
@@ -152,12 +255,15 @@ async function main() {
     .filter((r) => liveIds.has(r.tutorUid))
     .map(({ parentUid, ...rest }) => rest); // parent ki uid public HTML mein na jaye
 
-  await writeAll({ tutors, cities, subjects, reviews, offline: false });
+  // ---- Promotions
+  const promos = await fetchPromos(db);
+
+  await writeAll({ tutors, cities, subjects, reviews, promos, offline: false });
 
   const withPhoto = tutors.filter((t) => t.photoUrl).length;
   console.log(
     `✓ ${tutors.length} tutors (${withPhoto} photos ke saath), ${cities.length} cities, ` +
-      `${subjects.length} subjects, ${reviews.length} reviews`
+      `${subjects.length} subjects, ${reviews.length} reviews, ${promos.length} promos`
   );
 }
 

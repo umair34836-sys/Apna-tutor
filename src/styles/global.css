@@ -278,3 +278,41 @@ textarea{min-height:96px;resize:vertical;line-height:1.5}
 .content-actions .btn{margin-left:auto}
 .linklike{background:none;border:0;padding:0;color:var(--destructive);text-decoration:underline;
   cursor:pointer;font:inherit;font-size:13.5px}
+
+/* ---------------------------------------------------------------------------
+ Ishtihaar (promos)
+
+ ★ Ye CSS global hai, PromoSlot.astro ke andar scoped nahi. Wajah: admin panel
+   ka preview bilkul yahi class names istemal karta hai. Alag CSS rakhte to
+   preview kuch aur dikhata aur site kuch aur — aur admin ad ko bar bar theek
+   karta reh jata.
+ --------------------------------------------------------------------------- */
+.promo-slot{display:grid;gap:var(--space-2);margin:var(--space-3) 0}
+
+.promo{display:block;color:inherit;border-radius:var(--radius-lg);overflow:hidden;
+  border:1px solid var(--border);background:var(--card)}
+.promo:hover{text-decoration:none;border-color:var(--primary-border)}
+
+/* "Ishtihaar" har haal mein parha jana chahiye — is liye rang halka hai
+   magar itna halka nahi ke ghayab ho jaye. */
+.promo-tag{font-size:12px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--muted-fg)}
+
+/* ---- Banner ---- */
+.promo-banner{position:relative;line-height:0;background:var(--bg-alt)}
+.promo-banner img{width:100%;height:auto;display:block}
+.promo-banner .promo-tag{position:absolute;top:8px;inset-inline-start:8px;
+  line-height:1;padding:4px 8px;border-radius:999px;
+  background:rgba(255,255,255,.92);color:#334155;
+  box-shadow:0 1px 3px rgba(0,0,0,.18)}
+
+/* ---- Card ---- */
+.promo-card{display:flex;gap:14px;align-items:flex-start;padding:var(--space-3)}
+.promo-logo{width:56px;height:56px;flex:none;border-radius:var(--radius);
+  object-fit:cover;background:var(--bg-alt)}
+.promo-text{min-width:0}
+.promo-card h3{font-size:17px;font-weight:600;margin-top:4px;color:var(--fg)}
+.promo-body{margin-top:4px;color:var(--muted-fg);font-size:15px;line-height:1.6}
+.promo-cta{display:inline-flex;align-items:center;min-height:36px;margin-top:10px;
+  color:var(--primary-dark);font-weight:600;font-size:15px}
+.promo-cta::after{content:' →';margin-inline-start:4px}

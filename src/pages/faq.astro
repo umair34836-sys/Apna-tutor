@@ -7,6 +7,7 @@ import { url } from '../lib/site';
 //   hain — dono ek hi source se aane par ye galti mumkin hi nahi.
 import Base from '../layouts/Base.astro';
 import Prose from '../components/Prose.astro';
+import PromoSlot from '../components/PromoSlot.astro';
 
 const faqs = [
   {
@@ -84,6 +85,8 @@ const faqJsonLd = {
         </div>
       ))}
     </dl>
+
+    <PromoSlot slot="article-inline" />
 
     <section>
       <h2>Aur koi sawal?</h2>

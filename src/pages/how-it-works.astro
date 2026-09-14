@@ -2,6 +2,7 @@
 import { url } from '../lib/site';
 import Base from '../layouts/Base.astro';
 import Prose from '../components/Prose.astro';
+import PromoSlot from '../components/PromoSlot.astro';
 import HowItWorks from '../components/HowItWorks.astro';
 import Icon from '../components/Icon.astro';
 ---
@@ -48,6 +49,7 @@ import Icon from '../components/Icon.astro';
         arrangement parent aur tutor ke darmiyan hota hai.
       </p>
     </section>
+    <PromoSlot slot="article-inline" />
   </Prose>
 
   <HowItWorks alt />

@@ -17,6 +17,7 @@ import Badges from '../../components/Badges.astro';
 import Rating from '../../components/Rating.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import ContactUnlock from '../../components/ContactUnlock.astro';
+import PromoSlot from '../../components/PromoSlot.astro';
 import ReportButton from '../../components/ReportButton.astro';
 import SafetyCallout from '../../components/SafetyCallout.astro';
 import { cityBySlug, reviewsForTutor, subjectBySlug, tutors } from '../../lib/data';
@@ -186,6 +187,11 @@ if (tutor.ratingCount > 0) {
         <p class="fee-big">{feeRange(tutor.feeMin, tutor.feeMax)}</p>
         <p class="fee-note">Monthly. Final fee aap tutor se khud tay karein.</p>
       </div>
+
+      {/* ★ Ad verification wale card ke BAAD hai, uske andar nahi. Badge ke
+          saath lagne se log samajhte hain ke ApnaTutor us brand ki zimmedari
+          le raha hai. */}
+      <PromoSlot slot="profile-side" />
 
       {verified && (
         <div class="side-card verified-card">

@@ -293,6 +293,10 @@ intro       : string    // 2–3 unique paragraphs, har city ke liye alag
 | reviews | `status` ASC, `createdAt` DESC | admin moderation queue |
 | reports | `status` ASC, `createdAt` DESC | admin reports queue |
 
+`promos` aur `promoStats` ke liye **koi composite index nahi chahiye** — dono
+queries ek hi field par hain (`promos` par to filter hai hi nahi, `promoStats`
+par sirf `day`), aur single field par Firestore khud index rakhta hai.
+
 ### Search query ki ek asli limitation
 
 Firestore ek query mein **sirf ek `array-contains`** allow karta hai. Iska matlab
@@ -385,6 +389,65 @@ apnatutor/
 │  └─ pages/                          # routes — 02-PAGES-SPEC.md dekho
 └─ docs/                              # ye documentation
 ```
+
+---
+
+## 6b. Ishtihaar (promos)
+
+Brands ki promotion site par chalane ka nizam. Char faisle jo is ka pura dhancha
+tay karte hain:
+
+**1. Ad HTML mein pak kar aata hai, browser mein fetch nahi hota.**
+`scripts/fetch-data.mjs` build ke waqt `promos` collection padhti hai aur
+`src/data/promos.json` likhti hai; `PromoSlot.astro` wahin se HTML banata hai.
+Agar browser se fetch karte to har page view par ek read lagta — 3 slots wale
+page par 3 — aur 50,000 reads/day ki hadd ~16,000 views par khatam ho jati. Is
+tareeqay par **sifar read** lagta hai. Qeemat: naya ad rebuild ke baad live hota
+hai (bilkul naye tutor ki tarah).
+
+**2. Tareekh ka faisla browser karta hai, build nahi.**
+Build sirf ye tay karti hai ke kis slot ke liye kaun se ad *mumkin* hain; "aaj
+kaun sa" ka faisla `PromoSlot.astro` ka chhota `is:inline` script karta hai. Isi
+liye "1 tareekh se shuru" wala ad apne waqt par khud chalu ho jata hai aur jis ka
+waqt guzar gaya wo khud ghayab — dobara rebuild dabaye bagair.
+
+**3. Tasveer Firestore mein base64, site par asli file.**
+Spark par Storage nahi hai. Admin panel browser mein hi tasveer ko canvas par
+chhota kar ke `imageData` mein rakhta hai (hadd 700 KB — Firestore doc 1 MB ka
+hota hai). Build us base64 ko wapis asli file bana kar `public/promos/{id}.jpg`
+mein likh deti hai. Base64 ko seedha HTML mein chipkana ghalat hota: wohi tasveer
+har us page ke HTML mein dobara jati jahan ad lagta, aur browser usay cache hi na
+kar pata.
+
+**4. Slots ki fehrist sirf ek jagah hai.**
+`src/lib/promo-slots.ts` — component bhi wahin se padhta hai aur admin ka
+dropdown bhi wahin se banta hai. Do fehristein rakhte to ek din chupke se alag ho
+jatin aur admin aisi jagah par ad laga deta jo site par hai hi nahi. Ghalat naam
+wala slot **build tor deta hai**, khamoshi se khali nahi rehta.
+
+### Numbers (views / clicks)
+
+`promoStats/{promoId}__{pkDay}` — Pakistan ke din ke hisaab se ek document per ad
+per din. Ye **waahid** collection hai jahan bina login ke likha ja sakta hai, is
+liye rules wahan sab se tang hain: sirf **aaj** ka document, sirf **theek 1** ka
+izafa, aur sirf chaar fields. Khatra farzi number nahi — 20,000 writes/day ki
+hadd hai: wo khatam ho jaye to signup aur request post karna bhi ruk jata hai.
+
+Browser bhi apni taraf se ek din mein ek hi baar ginta hai
+(`src/lib/promo-stats.ts`), is liye number "kitni baar dikha" nahi balke **"roz
+kitne alag logon ne dekha"** hai. Ye jaan boojh kar hai — aur brand ko batane ke
+liye ye zyada saaf aur zyada sachi baat hai.
+
+### Kya jaan boojh kar NAHI kiya
+
+- **AdSense ya koi ad network** — baahar ka script page par pura ikhtiyar rakhta
+  hai; parents ka data us ke hawale karna is site ke maqsad ke khilaf hai.
+- **Safety, privacy, terms, login/signup par koi slot** — jahan banda bharosay ki
+  baat parh raha ho ya password daal raha ho, wahan ad usi bharosay ko khata hai.
+- **Verification badge ke andar ad** — log samajhte ke ApnaTutor us brand ki
+  zimmedari le raha hai. Slot badge ke *baad* hai, uske andar nahi.
+- **`rel="sponsored"` ke bagair link** — paid link ko aam link ki tarah dikhana
+  Google ki nazar mein dhoka hai aur poori site ki ranking gira sakta hai.
 
 ---
 

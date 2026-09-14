@@ -4,6 +4,7 @@ import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import SeoIntro from '../../components/SeoIntro.astro';
 import TutorGrid from '../../components/TutorGrid.astro';
+import PromoSlot from '../../components/PromoSlot.astro';
 import { subjectPages, breadcrumbJsonLd, comboPages } from '../../lib/seo';
 import { AREA_WORD, SERVICE_AREA_LABEL, SERVICE_AREA_NAME, SITE, url } from '../../lib/site';
 import type { Subject, Tutor } from '../../lib/types';
@@ -35,7 +36,7 @@ const description =
     <p class="lead">{n} verified {subject.name.toLowerCase()} tutors — aapke ghar, teacher ke ghar, ya online.</p>
   </div>
 
-  <section><div class="wrap"><TutorGrid tutors={tutors} /></div></section>
+  <section><div class="wrap"><PromoSlot slot="listing-top" /><TutorGrid tutors={tutors} /></div></section>
 
   {related.length > 0 && (
     <section class="sec-alt">

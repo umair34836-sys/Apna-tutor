@@ -6,6 +6,7 @@ import { url } from '../lib/site';
 // mein koi combo page nahi bana, isliye ye list build-time data se aati hai —
 // hard-coded links 404 dete aur SEO ko nuqsan dete.
 import Logo from './Logo.astro';
+import PromoSlot from './PromoSlot.astro';
 import { cities, subjects, tutors } from '../lib/data';
 import { AREA_WORD, SERVICE_AREA_LABEL } from '../lib/site';
 
@@ -34,6 +35,11 @@ const subjectLinks = cities
 
 const year = new Date().getFullYear();
 ---
+{/* ★ Footer ki patti footer ke BAHAR hai, uske upar. Dark footer ke andar
+    ad ka safed card bhadda lagta hai, aur log usay site ka hissa samajh
+    lete hain. */}
+<div class="wrap"><PromoSlot slot="footer-strip" /></div>
+
 <footer>
   <div class="wrap">
     <div class="foot-grid">

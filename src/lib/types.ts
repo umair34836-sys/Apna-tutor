@@ -137,3 +137,86 @@ export function isFeatured(t: Pick<Tutor, 'featuredUntil'>, now: Date = new Date
   const until = new Date(t.featuredUntil);
   return !Number.isNaN(until.getTime()) && until > now;
 }
+
+// ---------------------------------------------------------------------------
+// Promotions (ishtihaar)
+// ---------------------------------------------------------------------------
+
+/**
+ * Ek ishtihaar.
+ *
+ * ★ Do shaklein hoti hain aur farq bara hai:
+ *   - `banner`: brand ki apni tayar chauri tasveer.
+ *   - `card`: site ke design jaisa box — logo, naam, ek line, ek button.
+ *     Gaon ke chhote karobar ke paas designer nahi hota; unhein card hi
+ *     bech sakte hain.
+ *
+ * ★ `image` build ke waqt banti hai. Firestore mein tasveer base64 mein
+ *   `imageData` ke andar rehti hai (Spark par Storage nahi hai), aur
+ *   fetch-data.mjs usay asli file bana kar /promos/ mein rakh deti hai.
+ *   Is liye `imageData` KABHI build output mein nahi jata — warna har page
+ *   ke HTML mein tasveer dobara chipak jati.
+ */
+export interface Promo {
+  id: string;
+  shape: 'banner' | 'card';
+
+  /** Kaun sa brand. Public taur par card par dikhta hai. */
+  brand: string;
+  /** Card ka heading. Banner par sirf screen-reader ke liye. */
+  title: string;
+  /** Card ki ek line. Banner par istemal nahi hoti. */
+  body?: string;
+  /** Button ka matn, jaise "Dekhein" ya "WhatsApp karein". */
+  ctaLabel?: string;
+  /** Kahan le jaye — https:, tel:, ya wa.me ka link. */
+  href: string;
+
+  /** Build ke baad ka asli raasta, jaise "/promos/abc.jpg". */
+  image?: string | null;
+  /** Nabina logon ke liye tasveer ka bayan. */
+  imageAlt?: string;
+  /**
+   * Tasveer ki asli chorai aur oonchai (upload ke waqt browser ne naapi).
+   * Ye is liye rakhi jati hain ke page par tasveer ki jagah PEHLE se roki ja
+   * sake — warna tasveer utarte hi neeche ka saara matn niche khisak jata hai.
+   */
+  imageW?: number;
+  imageH?: number;
+
+  /** Kin jagahon par chale. promo-slots.ts ki id's. */
+  slots: string[];
+  /** 1 se 10. Zyada wazan = bari zyada baar aati hai. */
+  weight: number;
+
+  active: boolean;
+  /** ISO tareekh. null = aaj hi se. */
+  startsAt: string | null;
+  /** ISO tareekh. null = koi aakhri tareekh nahi. */
+  endsAt: string | null;
+
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+/**
+ * Paison ka hisaab. Ye SIRF admin ke liye hai aur build output mein kabhi
+ * nahi jata — warna brand ne kitne paise diye ye site ke HTML mein khula
+ * parha ja sakta.
+ */
+export interface PromoBilling {
+  contact?: string;
+  amount?: number;
+  paid?: boolean;
+  notes?: string;
+}
+
+/** Ek din ke gine hue numbers. Admin panel mein dikhte hain. */
+export interface PromoStat {
+  /** "{promoId}__{YYYY-MM-DD}" */
+  id: string;
+  promoId: string;
+  day: string;
+  views: number;
+  clicks: number;
+}

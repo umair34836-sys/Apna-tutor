@@ -13,7 +13,7 @@
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import { assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import {
-  addDoc, collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy,
+  addDoc, collection, deleteDoc, doc, getDoc, getDocs, increment, limit, orderBy,
   query, serverTimestamp, setDoc, updateDoc, where,
 } from 'firebase/firestore';
 
@@ -808,5 +808,196 @@ describe('default deny', () => {
   it('jo collection rules mein nahi hai wo bilkul band hai', async () => {
     await assertFails(getDoc(doc(db(PARENT_UID), 'secret-collection/doc-1')));
     await assertFails(setDoc(doc(db(PARENT_UID), 'secret-collection/doc-1'), { x: 1 }));
+  });
+});
+
+// =============================================================================
+// promos — ishtihaar
+//
+// ★ promoStats WAAHID collection hai jahan bina login ke likha ja sakta hai.
+//   Agar wahan be-hisaab likha ja sake to 20,000 writes/din ki hadd khatam ho
+//   jayegi aur us ke saath signup aur request post karna bhi ruk jayega. Yani
+//   in tests ka fail hona sirf ginti ka masla nahi — poori site ka masla hai.
+// =============================================================================
+
+/** Pakistan UTC+5 — rules mein bilkul yahi hisaab hai. */
+const pkDay = () => Math.floor((Date.now() + 5 * 60 * 60 * 1000) / 86_400_000);
+const statId = (promoId: string, day = pkDay()) => `${promoId}__${day}`;
+
+describe('promos/{id} — ishtihaar', () => {
+  it('admin ad bana sakta hai', async () => {
+    await assertSucceeds(
+      setDoc(doc(db(ADMIN_UID), 'promos/p1'), {
+        shape: 'card', brand: 'Test Brand', title: 'Test', href: 'https://example.com',
+        slots: ['home-mid'], weight: 1, active: true, startsAt: null, endsAt: null,
+      })
+    );
+  });
+
+  it('❗ logged-out banda ad nahi bana sakta', async () => {
+    await assertFails(
+      setDoc(doc(anonDb(), 'promos/p2'), {
+        shape: 'card', brand: 'Spam', title: 'Spam', href: 'https://spam.example',
+        slots: ['home-hero'], weight: 10, active: true,
+      })
+    );
+  });
+
+  it('❗ aam logged-in banda bhi ad nahi bana sakta', async () => {
+    await assertFails(
+      setDoc(doc(db(PARENT_UID), 'promos/p3'), {
+        shape: 'card', brand: 'Spam', title: 'Spam', href: 'https://spam.example',
+        slots: ['home-hero'], weight: 10, active: true,
+      })
+    );
+  });
+
+  it('❗ admin-promos.ts wali asli query chalti hai (promos)', async () => {
+    await seedDoc('promos/p9', {
+      shape: 'card', brand: 'B', title: 'T', href: 'https://e.com',
+      slots: ['home-mid'], weight: 1, active: true,
+    });
+    await assertSucceeds(getDocs(query(collection(db(ADMIN_UID), 'promos'), limit(100))));
+    // Logged-out banda wahi query nahi chala sakta.
+    await assertFails(getDocs(query(collection(anonDb(), 'promos'), limit(100))));
+  });
+
+  it('❗ ads public readable NAHI hain — draft aur billing bahar nahi jate', async () => {
+    await seedDoc('promos/p4', {
+      shape: 'card', brand: 'B', title: 'T', href: 'https://e.com',
+      slots: ['home-mid'], weight: 1, active: false, amount: 5000, contact: '+923001234567',
+    });
+    await assertFails(getDoc(doc(anonDb(), 'promos/p4')));
+    await assertFails(getDoc(doc(db(PARENT_UID), 'promos/p4')));
+    await assertSucceeds(getDoc(doc(db(ADMIN_UID), 'promos/p4')));
+  });
+});
+
+describe('promoStats — roz ki ginti', () => {
+  it('logged-out banda aaj ka view gin sakta hai', async () => {
+    await assertSucceeds(
+      setDoc(doc(anonDb(), `promoStats/${statId('p1')}`), {
+        promoId: 'p1', day: pkDay(), views: 1,
+      })
+    );
+  });
+
+  it('logged-out banda click bhi gin sakta hai', async () => {
+    await assertSucceeds(
+      setDoc(doc(anonDb(), `promoStats/${statId('p1')}`), {
+        promoId: 'p1', day: pkDay(), clicks: 1,
+      })
+    );
+  });
+
+  it('❗ ek se zyada nahi barha sakta — "views: 5000" reject hota hai', async () => {
+    await assertFails(
+      setDoc(doc(anonDb(), `promoStats/${statId('p1')}`), {
+        promoId: 'p1', day: pkDay(), views: 5000,
+      })
+    );
+  });
+
+  it('❗ mojood ginti par bhi ek se zyada ka chhalang nahi lag sakti', async () => {
+    await seedDoc(`promoStats/${statId('p1')}`, { promoId: 'p1', day: pkDay(), views: 3, clicks: 0 });
+    await assertFails(
+      setDoc(doc(anonDb(), `promoStats/${statId('p1')}`), {
+        promoId: 'p1', day: pkDay(), views: 900, clicks: 0,
+      })
+    );
+    await assertSucceeds(
+      setDoc(doc(anonDb(), `promoStats/${statId('p1')}`), {
+        promoId: 'p1', day: pkDay(), views: 4, clicks: 0,
+      })
+    );
+  });
+
+  it('❗ increment() se barhana chalta hai — asli code yahi bhejta hai', async () => {
+    await seedDoc(`promoStats/${statId('p1')}`, { promoId: 'p1', day: pkDay(), views: 7, clicks: 2 });
+    await assertSucceeds(
+      setDoc(
+        doc(anonDb(), `promoStats/${statId('p1')}`),
+        { promoId: 'p1', day: pkDay(), views: increment(1) },
+        { merge: true }
+      )
+    );
+  });
+
+  it('❗ ginti ghatai nahi ja sakti', async () => {
+    await seedDoc(`promoStats/${statId('p1')}`, { promoId: 'p1', day: pkDay(), views: 10, clicks: 0 });
+    await assertFails(
+      setDoc(doc(anonDb(), `promoStats/${statId('p1')}`), {
+        promoId: 'p1', day: pkDay(), views: 0, clicks: 0,
+      })
+    );
+  });
+
+  it('❗ kal ka ya kal-parson ka document banaya nahi ja sakta', async () => {
+    await assertFails(
+      setDoc(doc(anonDb(), `promoStats/${statId('p1', pkDay() - 1)}`), {
+        promoId: 'p1', day: pkDay() - 1, views: 1,
+      })
+    );
+    await assertFails(
+      setDoc(doc(anonDb(), `promoStats/${statId('p1', pkDay() + 1)}`), {
+        promoId: 'p1', day: pkDay() + 1, views: 1,
+      })
+    );
+  });
+
+  it('❗ document ka naam us ke andar likhe promoId se mail khana lazmi hai', async () => {
+    await assertFails(
+      setDoc(doc(anonDb(), `promoStats/${statId('p1')}`), {
+        promoId: 'doosra-ad', day: pkDay(), views: 1,
+      })
+    );
+  });
+
+  it('❗ koi fazool field ghusai nahi ja sakti', async () => {
+    await assertFails(
+      setDoc(doc(anonDb(), `promoStats/${statId('p1')}`), {
+        promoId: 'p1', day: pkDay(), views: 1, junk: 'x'.repeat(5000),
+      })
+    );
+  });
+
+  it('❗ ek hi likhai mein view aur click dono nahi barh sakte', async () => {
+    await assertFails(
+      setDoc(doc(anonDb(), `promoStats/${statId('p1')}`), {
+        promoId: 'p1', day: pkDay(), views: 1, clicks: 1,
+      })
+    );
+  });
+
+  it('❗ numbers logged-out banda parh nahi sakta — sirf admin', async () => {
+    await seedDoc(`promoStats/${statId('p1')}`, { promoId: 'p1', day: pkDay(), views: 5, clicks: 1 });
+    await assertFails(getDoc(doc(anonDb(), `promoStats/${statId('p1')}`)));
+    await assertSucceeds(getDoc(doc(db(ADMIN_UID), `promoStats/${statId('p1')}`)));
+  });
+
+  // ★ Ye do tests us ghalti ke liye hain jo pehle leads mein ho chuki hai:
+  //   rule POORI QUERY ko jaanchta hai, ek ek document ko nahi. Agar asli code
+  //   ki query rule se mail na khaye to wo chalti hi nahi — aur error "kuch
+  //   masla hua" bankar aata hai. Is liye yahan bilkul WOHI query chalai ja
+  //   rahi hai jo admin-promos.ts bhejti hai.
+
+  it('❗ admin-promos.ts wali asli query chalti hai (promoStats)', async () => {
+    await seedDoc(`promoStats/${statId('p1')}`, { promoId: 'p1', day: pkDay(), views: 5, clicks: 1 });
+    await assertSucceeds(
+      getDocs(query(collection(db(ADMIN_UID), 'promoStats'), where('day', '>=', pkDay() - 29), limit(400)))
+    );
+  });
+
+  it('❗ limit ke bagair ya hadd se zyada limit par query rukti hai', async () => {
+    await assertFails(getDocs(query(collection(db(ADMIN_UID), 'promoStats'), where('day', '>=', 0))));
+    await assertFails(
+      getDocs(query(collection(db(ADMIN_UID), 'promoStats'), where('day', '>=', 0), limit(401)))
+    );
+  });
+
+  it('purane numbers sirf admin mita sakta hai', async () => {
+    await seedDoc(`promoStats/${statId('p1')}`, { promoId: 'p1', day: pkDay(), views: 5, clicks: 1 });
+    await assertFails(deleteDoc(doc(anonDb(), `promoStats/${statId('p1')}`)));
+    await assertSucceeds(deleteDoc(doc(db(ADMIN_UID), `promoStats/${statId('p1')}`)));
   });
 });

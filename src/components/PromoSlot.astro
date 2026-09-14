@@ -1,0 +1,235 @@
+---
+// =============================================================================
+// src/components/PromoSlot.astro — ishtihaar ka dabba
+//
+// ★ Ad HTML mein PAK KAR aata hai, browser mein Firestore se nahi. Har page
+//   view par read karna roz 50,000 ki hadd kha jata, aur ad baad mein aane se
+//   page hilta. Tafseel src/lib/promos.ts.
+//
+// ★ Tareekh ka faisla yahan neeche wala chhota script karta hai, build nahi.
+//   Is liye "1 tareekh se shuru" wala ad apne waqt par KHUD chalu ho jata hai
+//   — dobara rebuild dabane ki zaroorat nahi. Isi tarah jis ki tareekh guzar
+//   gayi wo khud ghayab ho jata hai.
+//
+// ★ Script `is:inline` hai aur apne dabbe ke foran baad chalta hai — yani
+//   browser ke paint karne se PEHLE. Isi liye ad achanak se "koodta" nahi.
+//
+// ★ rel="sponsored nofollow" har link par lazmi hai. Paise le kar diya gaya
+//   link agar aam link ki tarah ho to Google isay dhoka samajhta hai aur
+//   poori site ki search ranking gir sakti hai.
+// =============================================================================
+import { url } from '../lib/site';
+import { getSlot } from '../lib/promo-slots';
+import { promosForSlot } from '../lib/promos';
+
+export interface Props {
+  /** promo-slots.ts ki koi id. */
+  slot: string;
+  /** Bahar se extra class, jaise page ke hisaab se margin. */
+  class?: string;
+}
+
+const { slot, class: className } = Astro.props;
+
+const def = getSlot(slot);
+if (!def) {
+  // Build yahin tootni chahiye. Ghalat naam wala slot khamoshi se khali reh
+  // jata to admin ad banata rehta aur wo kabhi kisi ko nazar na aata.
+  throw new Error(
+    `PromoSlot: "${slot}" naam ki koi jagah mojood nahi.\n` +
+      '  Mojood jagahein src/lib/promo-slots.ts mein hain.'
+  );
+}
+
+// Zyada se zyada 12 — is se aage HTML bhaari hone lagta hai aur itne ads ek
+// jagah par kisi soorat nahi hone chahiyein.
+const candidates = promosForSlot(slot).slice(0, 12);
+---
+{candidates.length > 0 && (
+  <>
+    <aside
+      class:list={['promo-slot', className]}
+      data-promo-slot={slot}
+      data-max={def.max}
+      aria-label="Ishtihaar"
+      hidden
+    >
+      {candidates.map((p) => (
+        <div
+          class="promo-item"
+          data-promo={p.id}
+          data-brand={p.brand}
+          data-weight={p.weight ?? 1}
+          data-from={p.startsAt ?? ''}
+          data-to={p.endsAt ?? ''}
+          hidden
+        >
+          {p.shape === 'banner' && p.image ? (
+            <a
+              class="promo promo-banner"
+              href={p.href}
+              target="_blank"
+              rel="sponsored nofollow noopener"
+              data-promo-link
+            >
+              <img
+                src={url(p.image)}
+                alt={p.imageAlt || `${p.brand} ka ishtihaar`}
+                width={p.imageW ?? 1200}
+                height={p.imageH ?? 300}
+                loading="lazy"
+                decoding="async"
+              />
+              <span class="promo-tag">Ishtihaar</span>
+            </a>
+          ) : (
+            <a
+              class="promo promo-card"
+              href={p.href}
+              target="_blank"
+              rel="sponsored nofollow noopener"
+              data-promo-link
+            >
+              {p.image && (
+                <img
+                  class="promo-logo"
+                  src={url(p.image)}
+                  alt=""
+                  width="56"
+                  height="56"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              <div class="promo-text">
+                <p class="promo-tag">Ishtihaar · {p.brand}</p>
+                <h3>{p.title}</h3>
+                {p.body && <p class="promo-body">{p.body}</p>}
+                <span class="promo-cta">{p.ctaLabel || 'Dekhein'}</span>
+              </div>
+            </a>
+          )}
+        </div>
+      ))}
+    </aside>
+
+    {/* Paint se pehle chalta hai — is liye `is:inline`. */}
+    <script is:inline>
+      (function () {
+        var box = document.currentScript.previousElementSibling;
+        if (!box || !box.hasAttribute('data-promo-slot')) return;
+
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Jo aaj ke din ke daire mein hain sirf wahi.
+        var live = [];
+        var items = box.querySelectorAll('.promo-item');
+        for (var i = 0; i < items.length; i++) {
+          var el = items[i];
+          var from = el.getAttribute('data-from');
+          var to = el.getAttribute('data-to');
+          if (from && today < new Date(from)) continue;
+          // Aakhri din pura ginte hain: "31 tareekh tak" ka matlab 31 shaam tak.
+          if (to) {
+            var end = new Date(to);
+            end.setHours(23, 59, 59, 999);
+            if (today > end) continue;
+          }
+          live.push(el);
+        }
+
+        if (!live.length) {
+          box.remove(); // Khali dabba chhorne se behtar hai dabba hi na ho.
+          return;
+        }
+
+        // Wazan ke hisaab se bari. Zyada wazan = zyada baar aane ka mauqa.
+        var max = parseInt(box.getAttribute('data-max') || '1', 10) || 1;
+        var chosen = [];
+        for (var n = 0; n < max && live.length; n++) {
+          var total = 0;
+          for (var j = 0; j < live.length; j++) {
+            total += parseFloat(live[j].getAttribute('data-weight')) || 1;
+          }
+          var r = Math.random() * total;
+          var pick = live.length - 1;
+          for (var k = 0; k < live.length; k++) {
+            r -= parseFloat(live[k].getAttribute('data-weight')) || 1;
+            if (r <= 0) { pick = k; break; }
+          }
+          chosen.push(live.splice(pick, 1)[0]);
+        }
+
+        for (var m = 0; m < chosen.length; m++) chosen[m].hidden = false;
+        // Jo nahi chune gaye unhe DOM se hata dete hain, warna un ki tasveerein
+        // bhi utarti rehti hain aur screen reader unhe parhta rehta hai.
+        for (var x = 0; x < live.length; x++) live[x].remove();
+
+        box.hidden = false;
+      })();
+    </script>
+
+    {/* Ginti alag script mein hai aur jaan boojh kar module (yani deferred) —
+        ye kaam page dikhne ke baad ka hai, us se pehle ka nahi. */}
+    <script>
+      import { promoView, promoClick } from '../lib/promo-stats';
+
+      // Page par kai slots ho sakte hain magar ye kaam ek hi baar hona chahiye.
+      const w = window as unknown as { __promoWatch?: boolean };
+      if (!w.__promoWatch) {
+        w.__promoWatch = true;
+
+        const seen = new WeakSet<Element>();
+
+        const info = (el: Element) => {
+          const item = el.closest<HTMLElement>('[data-promo]')!;
+          const slot = item.closest<HTMLElement>('[data-promo-slot]');
+          return {
+            id: item.dataset.promo ?? '',
+            slot: slot?.dataset.promoSlot ?? '',
+            brand: item.dataset.brand ?? '',
+          };
+        };
+
+        const start = () => {
+          const items = document.querySelectorAll<HTMLElement>('[data-promo-slot] [data-promo]');
+          if (!items.length) return;
+
+          // ★ View tabhi ginte hain jab ad waqai screen par aaye — sirf page
+          //   par mojood hone se nahi. Warna footer wala ad bhi "dekha gaya"
+          //   ginta, aur brand ko diya gaya number jhoota hota.
+          if ('IntersectionObserver' in window) {
+            const io = new IntersectionObserver(
+              (entries) => {
+                for (const e of entries) {
+                  if (!e.isIntersecting || seen.has(e.target)) continue;
+                  seen.add(e.target);
+                  io.unobserve(e.target);
+                  const { id, slot, brand } = info(e.target);
+                  if (id) promoView(id, slot, brand);
+                }
+              },
+              { threshold: 0.5 }
+            );
+            items.forEach((el) => io.observe(el));
+          }
+
+          document.addEventListener('click', (e) => {
+            const link = (e.target as Element | null)?.closest?.('[data-promo-link]');
+            if (!link) return;
+            const { id, slot, brand } = info(link);
+            if (id) promoClick(id, slot, brand);
+          });
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', start, { once: true });
+        } else {
+          start();
+        }
+      }
+    </script>
+  </>
+)}
+

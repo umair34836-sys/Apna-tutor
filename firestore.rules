@@ -400,6 +400,87 @@ service cloud.firestore {
     }
 
     // ---------------------------------------------------------------------
+    // promos/{promoId}  —  ishtihaar
+    //
+    // ★ Ye collection PUBLIC READABLE NAHI hai, halanke ads sab ko dikhte
+    //   hain. Wajah: ad site par build ke waqt HTML mein pak kar jata hai
+    //   (build script Admin SDK se padhti hai, jo rules se guzarti hi nahi).
+    //   Browser ko yahan kabhi aana hi nahi parta. Public read rakhte to
+    //   banaye ja rahe draft ads, band kiye hue ads, aur brand ke paison ka
+    //   hisaab — sab kisi ko bhi nazar aa jata.
+    // ---------------------------------------------------------------------
+
+    match /promos/{promoId} {
+      allow get:   if isAdmin();
+      allow list:  if isAdmin() && capped(100);
+      allow write: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------
+    // promoStats/{promoId__day}  —  roz ke numbers
+    //
+    // ★ Ye WAAHID jagah hai jahan bina login ke likha ja sakta hai, is liye
+    //   yahan rules sab se tang hain. Khatra saaf hai: agar koi be-hisaab
+    //   likh sake to 20,000 writes/din ki hadd khatam ho jayegi, aur us ke
+    //   saath signup aur request post karna bhi ruk jayega — yani ishtihaar
+    //   ki ginti poori site le doobegi.
+    //
+    //   Is liye teen bandishein:
+    //     1. Document ka naam khud tay karta hai ke wo kis ad ka aur kis din
+    //        ka hai — aur din wahi ho sakta hai jo AAJ hai. Yani purane ya
+    //        aane wale dinon ke documents banaye hi nahi ja sakte.
+    //     2. Sirf do number barh sakte hain, aur ek waqt mein ek hi, wo bhi
+    //        theek 1 se. Koi "views = 50000" nahi likh sakta.
+    //     3. Aur koi field nahi. Na naam, na link, kuch nahi.
+    //
+    //   Browser bhi apni taraf se ek din mein ek hi baar ginta hai
+    //   (src/lib/promo-stats.ts), magar us par bharosa nahi — wo sirf
+    //   shareef logon ke liye hai. Asli bandish yahi hai.
+    // ---------------------------------------------------------------------
+
+    match /promoStats/{statId} {
+      // Numbers sirf admin dekhta hai. Brand ko wo admin batata hai.
+      allow get:  if isAdmin();
+      allow list: if isAdmin() && capped(400);
+
+      // Pakistan UTC+5 — din raat 12 baje badalta hai, UTC par nahi.
+      // promo-stats.ts mein bilkul yahi hisaab hai.
+      function today() {
+        return (request.time.toMillis() + 18000000) / 86400000;
+      }
+
+      function shapeOk() {
+        return request.resource.data.keys().hasOnly(['promoId', 'day', 'views', 'clicks'])
+               && request.resource.data.promoId is string
+               && request.resource.data.promoId.size() > 0
+               && request.resource.data.promoId.size() < 200
+               && request.resource.data.day == today()
+               && statId == request.resource.data.promoId + '__' + string(today());
+      }
+
+      // Pehli ginti: ek number 1, doosra 0 ya ghair-mojood.
+      allow create: if shapeOk()
+                    && request.resource.data.get('views', 0) in [0, 1]
+                    && request.resource.data.get('clicks', 0) in [0, 1]
+                    && request.resource.data.get('views', 0)
+                       + request.resource.data.get('clicks', 0) == 1;
+
+      // Agli ginti: theek ek se barhna, aur doosra number jahan tha wahin.
+      allow update: if shapeOk()
+                    && request.resource.data.promoId == resource.data.promoId
+                    && (
+                         (request.resource.data.views == resource.data.get('views', 0) + 1
+                          && request.resource.data.get('clicks', 0) == resource.data.get('clicks', 0))
+                      ||
+                         (request.resource.data.clicks == resource.data.get('clicks', 0) + 1
+                          && request.resource.data.get('views', 0) == resource.data.get('views', 0))
+                       );
+
+      // Purane numbers admin saaf kar sakta hai, aur koi nahi.
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------
     // Default deny — koi bhi collection jo upar list nahi hai, band hai.
     // Naya collection add karte waqt yahan rule likhna na bhoolo.
     // ---------------------------------------------------------------------

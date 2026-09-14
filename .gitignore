@@ -30,3 +30,6 @@ firestore-debug.log
 ui-debug.log
 database-debug.log
 pubsub-debug.log
+
+# build ke waqt banti hain — Firestore se aati hain, repo mein commit nahi hotin
+public/promos/

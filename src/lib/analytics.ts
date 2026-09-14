@@ -46,6 +46,10 @@ export interface EventParams {
     /** Kis ko bulaya ja raha hai — parents ya doosre tutors. */
     audience: 'parents' | 'tutors';
   };
+  /** Ishtihaar screen par waqai nazar aaya (sirf dikhne se nahi — dekhe jaane se). */
+  promo_view: { promo_id: string; slot: string; brand: string };
+  /** Ishtihaar par click hua. */
+  promo_click: { promo_id: string; slot: string; brand: string };
 }
 
 export type EventName = keyof EventParams;
