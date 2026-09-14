@@ -119,23 +119,25 @@ const candidates = promosForSlot(slot).slice(0, 12);
         var box = document.currentScript.previousElementSibling;
         if (!box || !box.hasAttribute('data-promo-slot')) return;
 
-        var today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // ★ Tareekh ka moqabla LAKEERON se hota hai, Date se nahi. Wajah
+        //   src/lib/promo-date.ts mein likhi hai — mukhtasar ye ke local
+        //   aadhi raat ko UTC aadhi raat se milane par Pakistan mein har ad
+        //   apne pehle din ghayab ho jata tha. "2026-09-14" >= "2026-09-14"
+        //   har timezone mein sach hai.
+        var d = new Date();
+        var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+        var today = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 
-        // Jo aaj ke din ke daire mein hain sirf wahi.
+        // Jo aaj ke din ke daire mein hain sirf wahi. Dono taraf ka din POORA
+        // ginte hain: "20 tareekh tak" ka matlab 20 ki raat tak.
         var live = [];
         var items = box.querySelectorAll('.promo-item');
         for (var i = 0; i < items.length; i++) {
           var el = items[i];
           var from = el.getAttribute('data-from');
           var to = el.getAttribute('data-to');
-          if (from && today < new Date(from)) continue;
-          // Aakhri din pura ginte hain: "31 tareekh tak" ka matlab 31 shaam tak.
-          if (to) {
-            var end = new Date(to);
-            end.setHours(23, 59, 59, 999);
-            if (today > end) continue;
-          }
+          if (from && today < from.slice(0, 10)) continue;
+          if (to && today > to.slice(0, 10)) continue;
           live.push(el);
         }
 

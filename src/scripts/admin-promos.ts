@@ -17,6 +17,7 @@ import {
   type PromoDraft, type PromoRow, type PromoTotals,
 } from '../lib/admin-promos';
 import type { PromoSlot } from '../lib/promo-slots';
+import { todayLocal } from '../lib/promo-date';
 import { svg } from '../lib/icons';
 
 const root = document.getElementById('admin-promos')!;
@@ -74,22 +75,25 @@ const fail = (box: HTMLElement, msg: string) => {
 
 function statusPill(p: PromoRow): string {
   if (!p.active) return '<span class="promo-pill off">Band</span>';
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  if (p.startsAt && today < new Date(p.startsAt)) {
+
+  // ★ Wahi hisaab jo site par lagta hai — promo-date.ts. Yahan alag hisaab
+  //   rakhte to admin ko "Chal raha hai" dikhta aur site par kuch na hota.
+  const today = todayLocal();
+  if (p.startsAt && today < p.startsAt.slice(0, 10)) {
     return `<span class="promo-pill">Shuru ${esc(fmtDate(p.startsAt))} se</span>`;
   }
-  if (p.endsAt) {
-    const end = new Date(p.endsAt);
-    end.setHours(23, 59, 59, 999);
-    if (today > end) return '<span class="promo-pill gone">Waqt khatam</span>';
+  if (p.endsAt && today > p.endsAt.slice(0, 10)) {
+    return '<span class="promo-pill gone">Waqt khatam</span>';
   }
   return '<span class="promo-pill on">Chal raha hai</span>';
 }
 
 function fmtDate(iso: string | null): string {
   if (!iso) return '';
-  return new Date(iso).toLocaleDateString('en-PK', { day: 'numeric', month: 'short' });
+  // "2026-09-14" ko seedha Date mein dene par wo UTC samjha jata hai aur
+  // Pakistan se pichli tareekh dikhati hai. Tukre kar ke local din banate hain.
+  const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-PK', { day: 'numeric', month: 'short' });
 }
 
 function rowHtml(p: PromoRow): string {
@@ -458,8 +462,10 @@ async function load(): Promise<void> {
       slots,
       weight: Number(fd.get('weight') ?? 1),
       active: fd.get('active') === 'on',
-      startsAt: from ? new Date(from).toISOString() : null,
-      endsAt: to ? new Date(to).toISOString() : null,
+      // ★ Sirf tareekh, waqt nahi. Ye ek DIN hai, ek lamha nahi — aur poora
+      //   ISO timestamp rakhne se hi wo timezone wala bug paida hua tha.
+      startsAt: from || null,
+      endsAt: to || null,
       contact: String(fd.get('contact') ?? '').trim(),
       amount: fd.get('amount') ? Number(fd.get('amount')) : 0,
       paid: fd.get('paid') === 'on',
