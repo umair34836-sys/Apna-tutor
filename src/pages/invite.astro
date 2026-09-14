@@ -1,0 +1,113 @@
+---
+import { url, SERVICE_AREA_LABEL, AREA_WORD } from '../lib/site';
+// =============================================================================
+// src/pages/invite.astro
+//
+// "Dosto ko batayein" — ek chhota sa page jiska maqsad sirf ek hai: link aage
+// pohanchana.
+//
+// ★ Do alag card hain, ek nahi. Parent ko bulane wala matn aur tutor ko bulane
+//   wala matn ek jaisa nahi ho sakta — parent ko "free hai" sunna hai, tutor ko
+//   "kaam milega". Ek hi matn dono ke liye likhte to dono ke liye kamzor hota.
+//
+// ★ Ye page noindex nahi hai: agar koi ise Google par dhoond le to bhi theek
+//   hai, yahan kuch niji nahi.
+// =============================================================================
+import Base from '../layouts/Base.astro';
+import InviteCard from '../components/InviteCard.astro';
+import Icon from '../components/Icon.astro';
+
+const steps = [
+  {
+    icon: 'message-square',
+    title: 'WhatsApp par bhej dein',
+    body: `Apne ${AREA_WORD} ke WhatsApp groups mein — mohalla group, school group, ya ghar walon ka group. Wahin sab se zyada logon tak baat pohanchti hai.`,
+  },
+  {
+    icon: 'users',
+    title: 'Jinko zaroorat hai unhein',
+    body: 'Jis ghar mein bacha kamzor ja raha ho, ya jis teacher ko aur tuition chahiye ho — un do logon tak baat pohanch jaye to kaam ho gaya.',
+  },
+  {
+    icon: 'shield-check',
+    title: 'Kisi ka number kahin nahi jata',
+    body: 'Aap sirf ek link bhej rahe hain. Na aapka number kisi ko jata hai, na jis ko bhej rahe hain uska hamein pata chalta hai.',
+  },
+];
+---
+<Base
+  title="Dosto ko batayein | ApnaTutor"
+  description={`ApnaTutor ka link apne doston aur ${SERVICE_AREA_LABEL} ke WhatsApp groups mein bhejein. Jitne zyada log, utne hi zyada tutors.`}
+  path="/invite"
+>
+  <div class="wrap page">
+    <header class="head">
+      <h1>Dosto ko batayein</h1>
+      <p class="lead">
+        ApnaTutor tabhi kaam karta hai jab {SERVICE_AREA_LABEL} ke log isay
+        jaante hon. Jitne zyada parents yahan aayenge, utne hi zyada tutors
+        profile banayenge — aur utni hi jaldi har bache ko sahi teacher milega.
+      </p>
+    </header>
+
+    <InviteCard heading="Parents aur students ko bhejein" audience="parents" />
+
+    <ul class="steps">
+      {steps.map((s) => (
+        <li>
+          <Icon name={s.icon} />
+          <div>
+            <h3>{s.title}</h3>
+            <p>{s.body}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <InviteCard heading="Kisi teacher ko jaante hain?" audience="tutors" />
+
+    <section class="note">
+      <h2>App ka link bhejna behtar hai, app ki file nahi</h2>
+      <p>
+        Bohat log poochte hain ke app ki file (APK) share ki jaye. Hum jaan
+        boojh kar aisa nahi karte: APK bhejne par doosre bande ke phone par
+        <strong> "unknown sources" </strong> ki tambeeh aati hai, phone rok deta
+        hai, aur adha kaam wahin ruk jata hai.
+      </p>
+      <p>
+        Link par tap karte hi site seedhi khul jati hai. Wahan se app apne phone
+        mein daalna ek qadam hai — menu (☰) mein
+        <strong> "App install karein" </strong> par tap karein. Us ke baad
+        ApnaTutor aapke phone par apne naam aur logo ke saath app ki tarah hi
+        khulta hai.
+      </p>
+      <p class="more">
+        <a href={url('/how-it-works')}>Kaise kaam karta hai</a>
+        <a href={url('/for-tutors')}>Tutors ke liye</a>
+        <a href={url('/faq')}>Aam sawalat</a>
+      </p>
+    </section>
+  </div>
+
+  <style>
+    .page{padding:var(--space-4) var(--space-2) var(--space-6);
+      display:grid;gap:var(--space-3);max-width:760px}
+    .head h1{font-size:clamp(28px,6vw,40px);font-weight:700;line-height:1.2}
+    .lead{margin-top:var(--space-1);color:var(--muted-fg);font-size:17px;line-height:1.7}
+
+    .steps{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-2)}
+    .steps li{display:flex;gap:14px;align-items:flex-start}
+    .steps :global(.icon){width:22px;height:22px;color:var(--primary);flex:none;margin-top:3px}
+    .steps h3{font-size:16.5px;font-weight:600}
+    .steps p{margin-top:4px;color:var(--muted-fg);font-size:15.5px;line-height:1.65}
+
+    .note{border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:var(--space-3);background:var(--bg-alt)}
+    .note h2{font-size:19px;font-weight:600}
+    .note p{margin-top:10px;color:var(--muted-fg);font-size:15.5px;line-height:1.7}
+    .note strong{color:var(--fg);font-weight:600}
+    .more{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+    .more a{color:var(--primary);font-weight:600;text-decoration:underline;
+      text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}
+  </style>
+</Base>

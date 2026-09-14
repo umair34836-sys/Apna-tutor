@@ -37,6 +37,15 @@ export interface EventParams {
   filter_applied: { filter_name: string; filter_value: string };
   /** Sabse qeemti event: ye batata hai log kya dhoond rahe hain jo hamare paas NAHI hai. */
   zero_results: { city: string; subject: string; class_level: string };
+  /**
+   * Kisi ne link aage bheja. `method` batata hai kis zariye — gaon mein
+   * taqreeban sab WhatsApp hoga, magar naapna zaroori hai, andaza nahi.
+   */
+  invite_share: {
+    method: 'whatsapp' | 'native' | 'copy' | 'sms';
+    /** Kis ko bulaya ja raha hai — parents ya doosre tutors. */
+    audience: 'parents' | 'tutors';
+  };
 }
 
 export type EventName = keyof EventParams;

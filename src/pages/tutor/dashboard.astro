@@ -7,6 +7,7 @@ import { url } from '../../lib/site';
 //   dekhein — wahan unlimited hain aur breakdown behtar milta hai.
 import App from '../../layouts/App.astro';
 import Icon from '../../components/Icon.astro';
+import InviteCard from '../../components/InviteCard.astro';
 ---
 <App
   title="Tutor Dashboard | ApnaTutor"
@@ -73,6 +74,10 @@ import Icon from '../../components/Icon.astro';
           likhna free quota ka bara hissa kha jata, aur GA4 mein ye data behtar shakal mein milta hai.
         </p>
       </section>
+
+      {/* ★ Tutor ko parents bulane ka faida seedha usi ka hai: jitne zyada
+          parents, utni zyada leads uske apne inbox mein. */}
+      <InviteCard heading="Zyada leads chahiye?" compact />
     </div>
   </div>
 

@@ -1,0 +1,189 @@
+---
+// =============================================================================
+// src/components/InviteCard.astro
+//
+// "Dosto ko batayein" — link aage bhejne ka card.
+//
+// ★ WhatsApp sab se upar hai, aur ye tarteeb andaze se nahi hai: is gaon mein
+//   har cheez WhatsApp par hi phailti hai. Native share sheet us ke neeche —
+//   wo behtar hai magar har phone par nahi hoti, is liye us par bharosa nahi
+//   kiya ja sakta.
+//
+// ★ APK share karne ka mashwara jaan boojh kar NAHI diya. APK bhejne par
+//   doosre bande ko "unknown sources" ki tambeeh milti hai, phone rok deta
+//   hai, aur adha kaam wahin ruk jata hai. Link par tap karte hi site khul
+//   jati hai, aur wahan se "App install karein" ek qadam hai.
+// =============================================================================
+import Icon from './Icon.astro';
+import { SERVICE_AREA_LABEL, absoluteUrl } from '../lib/site';
+
+export interface Props {
+  /** Card ke upar ka heading. Page ke hisaab se badla ja sakta hai. */
+  heading?: string;
+  /**
+   * Kis ko bulaya ja raha hai. Matn isi se badalta hai — parent ko "free hai"
+   * sunna hai, tutor ko "kaam milega". Ek hi matn dono ke liye likhna donon
+   * ke liye kamzor hota hai.
+   */
+  audience?: 'parents' | 'tutors';
+  compact?: boolean;
+}
+
+const { heading = 'Dosto ko batayein', audience = 'parents', compact = false } = Astro.props;
+
+const link = audience === 'tutors' ? absoluteUrl('/for-tutors') : absoluteUrl('/');
+
+// Ye matn wahi hai jo bheja jayega — banda pehle se dekh sakta hai. Chhupa
+// hua matn bhejna bharosa torta hai.
+const message =
+  audience === 'tutors'
+    ? `ApnaTutor — ${SERVICE_AREA_LABEL} ke tutors ke liye.\n` +
+      `Apni profile banayein, parents ki requests dekhein, jo pasand aaye us par "Interested" karein.\n` +
+      `Listing bilkul free hai — koi commission nahi.\n\n${link}`
+    : `ApnaTutor — ${SERVICE_AREA_LABEL} ke verified tutors.\n` +
+      `Teacher aapke ghar aaye, bacha teacher ke ghar jaye, ya online.\n` +
+      `Parents ke liye bilkul free.\n\n${link}`;
+
+const blurb =
+  audience === 'tutors'
+    ? 'Jitne zyada tutors, utni hi jaldi har bache ko sahi teacher milta hai. Jaan-pehchan ke teachers ko ye link bhej dein.'
+    : 'Jitne zyada parents aur students, utne hi zyada tutors. Ek link bhejna hi kaafi hai — na koi app download, na koi form.';
+---
+<section class="invite" class:list={[{ compact }]} data-invite data-link={link} data-message={message} data-audience={audience}>
+  <div class="invite-head">
+    <Icon name="users" />
+    <div>
+      <h2>{heading}</h2>
+      <p>{blurb}</p>
+    </div>
+  </div>
+
+  <div class="invite-actions">
+    <a class="btn btn-wa btn-block" data-share-wa href="#">
+      <Icon name="message-square" />WhatsApp par bhejein
+    </a>
+
+    <button type="button" class="btn btn-outline btn-block" data-share-native hidden>
+      <Icon name="share" />Kisi aur app se bhejein
+    </button>
+
+    <button type="button" class="btn btn-ghost btn-block" data-share-copy>
+      <Icon name="copy" />Link copy karein
+    </button>
+  </div>
+
+  <label class="link-row">
+    <span class="sr-only">Bhejne wala link</span>
+    <input type="text" readonly value={link} data-share-input />
+  </label>
+
+  <p class="said" data-share-said hidden role="status"></p>
+
+  {!compact && (
+    <details class="preview">
+      <summary>Kya bheja jayega?</summary>
+      <pre>{message}</pre>
+    </details>
+  )}
+</section>
+
+<style>
+  .invite{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius-lg);padding:var(--space-3);
+    display:grid;gap:var(--space-2);box-shadow:var(--shadow-sm);
+  }
+  .invite-head{display:flex;gap:14px;align-items:flex-start}
+  .invite-head :global(.icon){width:26px;height:26px;color:var(--primary);flex:none;margin-top:3px}
+  .invite h2{font-size:20px;font-weight:600}
+  .invite-head p{margin-top:6px;color:var(--muted-fg);font-size:15.5px;max-width:52ch}
+
+  .invite-actions{display:grid;gap:var(--space-1)}
+
+  .link-row input{
+    width:100%;min-height:48px;padding:12px 14px;
+    border:1px solid var(--border);border-radius:var(--radius);
+    background:var(--bg-alt);color:var(--muted-fg);
+    font-size:15px;
+  }
+
+  .said{
+    font-size:15px;font-weight:600;color:var(--primary-dark);
+    display:flex;align-items:center;gap:8px;min-height:24px;
+  }
+
+  .preview summary{
+    cursor:pointer;font-size:15px;color:var(--muted-fg);
+    min-height:44px;display:flex;align-items:center;
+  }
+  .preview pre{
+    margin:0;padding:14px;background:var(--bg-alt);
+    border:1px solid var(--border);border-radius:var(--radius);
+    font-family:inherit;font-size:14.5px;line-height:1.6;color:var(--muted-fg);
+    white-space:pre-wrap;word-break:break-word;
+  }
+
+  .compact .invite-head p{display:none}
+</style>
+
+<script>
+  import { track } from '../lib/analytics';
+
+  document.querySelectorAll<HTMLElement>('[data-invite]').forEach((box) => {
+    const link = box.dataset.link ?? '';
+    const message = box.dataset.message ?? '';
+    const audience = (box.dataset.audience === 'tutors' ? 'tutors' : 'parents') as
+      'parents' | 'tutors';
+    const said = box.querySelector<HTMLElement>('[data-share-said]')!;
+
+    const say = (text: string) => {
+      said.textContent = text;
+      said.hidden = false;
+    };
+
+    // ---- WhatsApp ----
+    // wa.me har jagah chalta hai: phone par app khulti hai, computer par web.
+    const wa = box.querySelector<HTMLAnchorElement>('[data-share-wa]')!;
+    wa.href = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    wa.target = '_blank';
+    wa.rel = 'noopener';
+    wa.addEventListener('click', () => track('invite_share', { method: 'whatsapp', audience }));
+
+    // ---- Phone ka apna share sheet ----
+    // Sirf tab dikhate hain jab waqai mojood ho — mara hua button dikhane se
+    // behtar hai ke button hi na ho.
+    const native = box.querySelector<HTMLButtonElement>('[data-share-native]');
+    if (native && typeof navigator.share === 'function') {
+      native.hidden = false;
+      native.addEventListener('click', async () => {
+        try {
+          await navigator.share({ title: 'ApnaTutor', text: message, url: link });
+          track('invite_share', { method: 'native', audience });
+        } catch {
+          // Banda share sheet band kar de — ye ghalti nahi, is liye khamoshi.
+        }
+      });
+    }
+
+    // ---- Copy ----
+    box.querySelector('[data-share-copy]')?.addEventListener('click', async () => {
+      const input = box.querySelector<HTMLInputElement>('[data-share-input]')!;
+      try {
+        await navigator.clipboard.writeText(link);
+        say('Link copy ho gaya — ab kahin bhi paste kar dein.');
+      } catch {
+        // Clipboard ki ijazat na ho (purana browser, ya http) to select kar
+        // dete hain — banda khud copy kar le.
+        input.focus();
+        input.select();
+        say('Link select ho gaya — ab copy dabayein.');
+      }
+      track('invite_share', { method: 'copy', audience });
+    });
+
+    // Link par tap karne se bhi select ho jaye — mobile par yahi aadat hai.
+    box.querySelector<HTMLInputElement>('[data-share-input]')?.addEventListener('focus', (e) => {
+      (e.currentTarget as HTMLInputElement).select();
+    });
+  });
+</script>

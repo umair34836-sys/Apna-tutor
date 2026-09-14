@@ -92,6 +92,15 @@ const sections: Section[] = [
     ],
   },
   {
+    title: 'Phailayein',
+    match: (p) => p === '/invite',
+    links: [
+      { href: '/invite',        label: 'Dosto ko batayein',   icon: 'share' },
+      { href: '/for-tutors',    label: 'Tutors ke liye',      icon: 'graduation-cap' },
+      { href: '/request-tutor', label: 'Request post karein', icon: 'send' },
+    ],
+  },
+  {
     title: 'Maloomat',
     match: (p) => ['/about', '/faq', '/safety', '/contact', '/privacy', '/terms'].includes(p),
     links: [
@@ -223,6 +232,16 @@ const rest = universal.filter((l) => !inSection.has(l.href));
         <a class="menu-link" href={url('/signup')}><Icon name="user-plus" size={18} />Naya account banayein</a>
         <a class="menu-link" href={url('/for-tutors')}><Icon name="graduation-cap" size={18} />Tutors ke liye</a>
       </div>
+
+      {/* Har role, har page — is ka faida sab ko hai, is liye kisi data-for ke
+          bagair. Magar /invite par ye section group mein pehle hi aa chuka
+          hota hai, wahan dobara nahi. */}
+      {!inSection.has('/invite') && (
+        <div class="menu-group">
+          <p class="menu-title">Phailayein</p>
+          <a class="menu-link" href={url('/invite')}><Icon name="share" size={18} />Dosto ko batayein</a>
+        </div>
+      )}
 
       {/* App install — sirf tab dikhta hai jab phone waqai install kara sakta
           ho. Chrome ise `beforeinstallprompt` se batata hai; iPhone par aisa

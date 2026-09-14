@@ -2,6 +2,7 @@
 import { url } from '../../lib/site';
 import App from '../../layouts/App.astro';
 import Icon from '../../components/Icon.astro';
+import InviteCard from '../../components/InviteCard.astro';
 ---
 <App
   title="Parent Dashboard | ApnaTutor"
@@ -49,6 +50,10 @@ import Icon from '../../components/Icon.astro';
           <li><Icon name="shield-check" size={18} /><span><a href={url('/safety')}>Safety policy parhein</a> — pehli class se pehle kya dekhna hai.</span></li>
         </ul>
       </section>
+
+      {/* ★ Yahan isliye ke jo parent request post kar chuka hai, wahi sab se
+          behtar batata hai — usay khud tajurba hua hai. */}
+      <InviteCard heading="Kisi aur ko zaroorat hai?" compact />
     </div>
   </div>
 

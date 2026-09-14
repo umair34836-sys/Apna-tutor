@@ -56,6 +56,61 @@ async function shot(file, size, scale, bg) {
   console.log(`  ✓ ${file}  ${size}×${size}`);
 }
 
+// -----------------------------------------------------------------------------
+// Social preview (Open Graph)
+//
+// ★ Ye file pehle mojood hi NAHI thi, jabke har page uspar ishara karta tha.
+//   Natija: WhatsApp ya Facebook par link share karne par preview khali ya
+//   toota hua aata tha — yani har share apni aadhi taqat kho deta tha, aur
+//   gaon mein link WhatsApp par hi phailta hai.
+// -----------------------------------------------------------------------------
+
+const ogPage = `data:text/html;base64,${Buffer.from(`
+<!doctype html><meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;width:1200px;height:630px;overflow:hidden}
+  body{
+    background:#FFFFFF;
+    font-family:system-ui,'DejaVu Sans',sans-serif;
+    display:flex;align-items:center;gap:64px;
+    padding:0 88px;box-sizing:border-box;
+    border-bottom:18px solid ${BRAND};
+  }
+  img{width:280px;height:280px;flex:none}
+  .txt{min-width:0}
+  h1{margin:0;font-size:92px;line-height:1;letter-spacing:-2px;color:#0F172A;font-weight:700}
+  h1 span{color:${BRAND}}
+  p{margin:24px 0 0;font-size:38px;line-height:1.3;color:#475569;max-width:16ch}
+  .pill{
+    display:inline-block;margin-top:34px;padding:12px 28px;
+    background:#F0FDFA;border:2px solid #99F6E4;border-radius:999px;
+    font-size:28px;font-weight:600;color:#134E4A;
+  }
+</style>
+<img src="${logoData}" alt="">
+<div class="txt">
+  <h1>Apna<span>Tutor</span></h1>
+  <p>Gunderi Payan ke verified tutors</p>
+  <div class="pill">Parents ke liye bilkul free</div>
+</div>
+`).toString('base64')}`;
+
+async function ogShot() {
+  const dir = join(process.cwd(), 'public', 'og');
+  await mkdir(dir, { recursive: true });
+  await new Promise((resolve, reject) => {
+    const p = spawn(CHROME, [
+      '--headless=new', '--no-sandbox', '--disable-gpu', '--hide-scrollbars',
+      '--window-size=1200,630',
+      `--screenshot=${join(dir, 'default.png')}`,
+      ogPage,
+    ], { stdio: 'ignore' });
+    p.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`chrome exit ${code}`))));
+    p.on('error', reject);
+  });
+  console.log('  ✓ og/default.png  1200×630');
+}
+
 await mkdir(OUT, { recursive: true });
 
 console.log('\nIcons ban rahe hain…\n');
@@ -67,6 +122,8 @@ await shot('icon-maskable-192.png', 192, 0.6, BRAND);
 await shot('icon-maskable-512.png', 512, 0.6, BRAND);
 // iOS maskable nahi samajhta aur transparency ko kala kar deta hai
 await shot('apple-touch-icon.png', 180, 0.68, '#FFFFFF');
+
+await ogShot();
 
 await writeFile(join(OUT, 'README.txt'),
   'Ye icons scripts/make-icons.mjs se bante hain (public/logo-mark.svg se).\n' +
