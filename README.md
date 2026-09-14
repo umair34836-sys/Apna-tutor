@@ -234,6 +234,67 @@ Teesra check khaas taur par un links ke liye hai jo JS banata hai (search
 results, dashboards, admin) — wo build ke waqt HTML mein hote hi nahi, is
 liye pehle do check unhe kabhi nahi pakarte thay.
 
+## App (PWA) — phone par install ho jati hai
+
+Site ab **installable app** hai. Chrome/Edge par menu ka **"App install
+karein"** dabane se ye phone par app ki tarah lag jati hai: apna icon, apni
+window, browser ka address bar aur tabs ghayab. iPhone par Safari → Share →
+**Add to Home Screen**.
+
+| File | Kaam |
+|---|---|
+| `src/pages/manifest.webmanifest.ts` | naam, icons, rang, start URL |
+| `src/pages/sw.js.ts` | service worker — offline aur tez loading |
+| `src/pages/offline.astro` | signal na ho to yahi page dikhta hai |
+| `public/icons/` | `scripts/make-icons.mjs` se bante hain |
+
+### Service worker kya karta hai (aur kya nahi)
+
+| Cheez | Tareeqa | Kyun |
+|---|---|---|
+| `/_astro/*` | cache-first | naam mein hash hai — badle to naam badal jata hai |
+| HTML pages | **network-first** | cache-first hota to banda kal ka page dekhta, bina jane |
+| icons waghaira | stale-while-revalidate | foran dikhe, peeche se taza ho jaye |
+| Firebase, fonts | **bilkul haath nahi** | auth aur data ke beech mein khara hona kabhi acha khatma nahi hota |
+
+Har build ka apna cache hai (`apnatutor-<timestamp>`), aur purana `activate`
+par khud mit jata hai — naya deploy purani files le kar nahi baithta.
+
+★ Icon ka `id` aur `start_url` kabhi na badlein. Phone isi se pehchanta hai ke
+ye wahi app hai; badalne par install shuda app ka rishta toot jata hai.
+
+### Icons dobara banane hon
+
+```bash
+node scripts/make-icons.mjs     # public/logo-mark.svg se
+```
+
+Bane hue PNG repo mein commit hote hain — CI ke paas Chromium nahi hai, aur
+icon sirf tab badalta hai jab logo badle.
+
+## Play Store par app — jab domain aa jaye
+
+PWA ko Play Store ki asli app (`.aab`) banane ka tareeqa **TWA** hai —
+Android app jo andar se yahi site chalati hai. Uske liye teen cheezein
+chahiye:
+
+1. **Apna domain** (misal `apnatutor.com`). Ye lazmi hai: TWA ko
+   `https://DOMAIN/.well-known/assetlinks.json` chahiye — domain ki **jar**
+   par, `/Apna-tutor/` ke neeche nahi. Us file se Android ko yaqeen hota hai
+   ke app aur site ek hi malik ke hain; na ho to app ke andar browser ka URL
+   bar dikhta rehta hai.
+2. **Play Console account** — ek baar ki $25 fees.
+3. **Bubblewrap** — Google ka apna tool:
+
+```bash
+npx @bubblewrap/cli init --manifest https://apnatutor.com/manifest.webmanifest
+npx @bubblewrap/cli build
+```
+
+Domain se pehle ye qadam uthane ka faida nahi — assetlinks ke bagair app
+adhoora lagta hai. Tab tak PWA install hi behtar raasta hai: koi fees nahi,
+koi review nahi, aur update deploy karte hi pohanch jati hai.
+
 ## Architecture ek nazar mein
 
 ```

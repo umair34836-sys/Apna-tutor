@@ -27,4 +27,14 @@ const { heading, sub } = Astro.props;
   .auth-card h1{font-size:24px;font-weight:700}
   .auth-sub{color:var(--muted-fg);font-size:15.5px}
   .auth-foot{text-align:center;margin-top:var(--space-3);font-size:14px;color:var(--muted-fg)}
+
+  /* ★ Auth card ke saare chhote link — "Password bhool gaye", "Naya account",
+     Terms, Privacy. Ye 16px unche thay. Phone par yahi wo lamha hai jahan
+     banda pehle se uljha hua hota hai; wahan chook jana sab se bura hai.
+     `:global` is liye ke ye link card ke andar slot se aate hain. */
+  .auth :global(.forgot a),
+  .auth :global(.alt a),
+  .auth-foot a{display:inline-flex;align-items:center;min-height:44px;padding-inline:4px}
+
+  .auth :global(.logo){min-height:44px;display:inline-flex;align-items:center}
 </style>

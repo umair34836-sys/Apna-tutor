@@ -224,6 +224,21 @@ const rest = universal.filter((l) => !inSection.has(l.href));
         <a class="menu-link" href={url('/for-tutors')}><Icon name="graduation-cap" size={18} />Tutors ke liye</a>
       </div>
 
+      {/* App install — sirf tab dikhta hai jab phone waqai install kara sakta
+          ho. Chrome ise `beforeinstallprompt` se batata hai; iPhone par aisa
+          koi ishara nahi milta, is liye wahan tareeqa likh dete hain. */}
+      <div class="menu-group" data-install hidden>
+        <p class="menu-title">App</p>
+        <button type="button" class="menu-link" data-install-run hidden>
+          <Icon name="download" size={18} />App install karein
+        </button>
+        <p class="menu-note" data-install-ios hidden>
+          Safari mein neeche <strong>Share</strong> (⬆) dabayein →
+          <strong>Add to Home Screen</strong>. Phir ApnaTutor aapke phone par
+          app ki tarah khulega.
+        </p>
+      </div>
+
       <div class="menu-group" data-for="in" hidden>
         <button type="button" class="menu-link danger" data-menu-signout>
           <Icon name="log-out" size={18} />Logout
@@ -237,6 +252,8 @@ const rest = universal.filter((l) => !inSection.has(l.href));
   header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);
     backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
   .nav{display:flex;align-items:center;justify-content:space-between;min-height:68px;gap:var(--space-2)}
+  /* Logo bhi ungli ke laayaq — 38px thora chhota tha. */
+  .nav :global(.logo){display:inline-flex;align-items:center;min-height:44px}
 
   .nav-links{display:none;gap:4px}
   .nav-links a{padding:10px 12px;border-radius:var(--radius);color:var(--muted-fg);
@@ -307,6 +324,9 @@ const rest = universal.filter((l) => !inSection.has(l.href));
   .menu-link.danger :global(.icon){color:var(--destructive)}
   .menu-link.danger:hover{background:#FEF2F2}
 
+  .menu-note{padding:0 12px 8px;font-size:14.5px;color:var(--muted-fg);line-height:1.55}
+  .menu-note strong{color:var(--fg)}
+
   @media (prefers-reduced-motion: reduce){
     .bars span{transition:none}
   }
@@ -369,6 +389,50 @@ const rest = universal.filter((l) => !inSection.has(l.href));
       const t = e.target as Node;
       if (!menu.hidden && !menu.contains(t) && !btn.contains(t)) setOpen(false);
     });
+
+    // ---- App install ----
+    // Chrome install se pehle ye event deta hai. Usay rok kar apne paas rakh
+    // lete hain, taake apna button dabane par asli prompt khol sakein —
+    // browser ka apna banner aksar nazar-andaz ho jata hai.
+    const installBox = document.querySelector<HTMLElement>('[data-install]');
+    const installBtn = document.querySelector<HTMLButtonElement>('[data-install-run]');
+    const iosNote = document.querySelector<HTMLElement>('[data-install-ios]');
+
+    // Pehle se install ho chuki ho to kuch dikhane ka matlab nahi.
+    const installed =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as { standalone?: boolean }).standalone === true;
+
+    if (installBox && !installed) {
+      let deferred: (Event & { prompt(): Promise<void>; userChoice: Promise<{ outcome: string }> }) | null = null;
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferred = e as typeof deferred;
+        installBox.hidden = false;
+        if (installBtn) installBtn.hidden = false;
+      });
+
+      installBtn?.addEventListener('click', async () => {
+        if (!deferred) return;
+        installBtn.disabled = true;
+        await deferred.prompt();
+        await deferred.userChoice;
+        // Prompt ek hi baar chalta hai — dobara chahiye to browser naya event dega.
+        deferred = null;
+        installBox.hidden = true;
+      });
+
+      // iPhone/iPad: koi event nahi milta, sirf hidayat di ja sakti hai.
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isIOS && iosNote) {
+        installBox.hidden = false;
+        iosNote.hidden = false;
+      }
+
+      window.addEventListener('appinstalled', () => { installBox.hidden = true; });
+    }
 
     // ---- Logout ----
     // Firebase sirf ab load hoti hai, page load par nahi.

@@ -81,9 +81,21 @@ const year = new Date().getFullYear();
   @media(min-width:700px){.foot-grid{grid-template-columns:1.4fr 1fr 1fr 1fr}}
   footer h4{font-size:14px;color:#fff;text-transform:uppercase;letter-spacing:.06em;
     margin-bottom:14px;font-weight:600}
-  footer ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+  footer ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
   footer a{color:var(--footer-fg)}
   footer a:hover{color:var(--footer-link-hover)}
+
+  /* ★ Footer ke link 18px unche thay — ungli ke liye bohat chhote. Phone par
+     ye site ka aakhri hissa hai jahan banda dhoond kar tap karta hai, aur
+     chook jana yahin sab se zyada khalta hai. Ab har link apni poori qatar
+     leta hai: 44px, jitna Apple aur Google dono kehte hain. */
+  footer li a{display:flex;align-items:center;min-height:44px}
+  @media(min-width:700px){
+    footer ul{gap:2px}
+    footer li a{min-height:34px}
+  }
+
+  .foot-bottom a{display:inline-flex;align-items:center;min-height:44px}
   .foot-about :global(.logo){margin-bottom:14px}
   .foot-about p{font-size:14.5px;max-width:36ch;line-height:1.6}
   .foot-bottom{margin-top:var(--space-4);padding-top:var(--space-3);

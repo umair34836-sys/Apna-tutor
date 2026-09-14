@@ -130,15 +130,45 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="twitter:image" content={ogImage} />
 
   <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
-  <link rel="apple-touch-icon" href={url('/favicon.svg')} />
-  <meta name="theme-color" content="#1F3A63" />
+  {/* iOS SVG icon nahi samajhta — home screen par usay PNG hi chahiye. */}
+  <link rel="apple-touch-icon" href={url('/icons/apple-touch-icon.png')} />
 
+  {/* ---- App (PWA) ---- */}
+  <link rel="manifest" href={url('/manifest.webmanifest')} />
+  {/* Status bar ka rang — site ka primary teal, taake app ek cheez lage. */}
+  <meta name="theme-color" content="#0F766E" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="ApnaTutor" />
+
+  {/* ---- Fonts ----
+       ★ Ye stylesheet JAAN BOOJH KAR render-blocking nahi hai.
+
+       Pehle ye aam `rel="stylesheet"` tha, aur uska natija ye tha ke agar
+       fonts.googleapis.com atak jaye to page ka SAARA JavaScript ruk jata —
+       browser module scripts ko pending stylesheet par rokta hai. Yani slow
+       connection par menu nahi khulta, search nahi chalti, app offline
+       support register nahi karta. Aur jahan ye sab sab se zyada chahiye —
+       gaon ke 2G par — wahin sab se pehle tootta tha.
+
+       `media="print"` se browser isay ghair-zaroori samajh kar background
+       mein leta hai; aane par onload usay `all` kar deta hai. Font aane tak
+       system ka font chalta hai (URL mein display=swap isi liye hai). */}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap"
     rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap"
+    media="print"
+    onload="this.media='all'"
   />
+  <noscript>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap"
+    />
+  </noscript>
 
   {[...baseJsonLd, ...jsonLd].map((block) => (
     <script type="application/ld+json" is:inline set:html={ld(block)} />
@@ -196,6 +226,58 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe>`} />
         { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
       );
       items.forEach((el) => io.observe(el));
+    }
+  </script>
+
+  <script>
+    // -----------------------------------------------------------------------
+    // Service worker — app ka wo hissa jo signal jane par bhi kaam aata hai.
+    //
+    // ★ Register load ke BAAD hota hai. Pehli visit par asli kaam page ka
+    //   khulna hai; SW ka install us se muqabla kare to pehla tajurba slow ho
+    //   jata hai — khaas kar 2G par, jahan ye sab se zyada mayne rakhta hai.
+    //
+    // ★ `astro dev` par register NAHI hota. Warna purana SW cache pakar kar
+    //   baith jata hai aur "meri tabdeeli nazar kyun nahi aa rahi" wala pura
+    //   din zaya hota hai. Bani hui site localhost par chalayein to register
+    //   hota hai — test isi tarah ho sakta hai.
+    // -----------------------------------------------------------------------
+    const secure =
+      window.location.protocol === 'https:' ||
+      ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+    if (import.meta.env.PROD && secure && 'serviceWorker' in navigator) {
+      // ★ Scope ke aakhir mein slash LAZMI hai.
+      //   sw.js /Apna-tutor/ ke andar hai, is liye us ka zyada se zyada scope
+      //   "/Apna-tutor/" hai. Bagair slash ke "/Apna-tutor" us ke andar nahi
+      //   ginta aur browser SecurityError de kar register hi nahi karta.
+      const dir = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/`;
+
+      const register = () => {
+        navigator.serviceWorker.register(`${dir}sw.js`, { scope: dir }).catch((err) => {
+          // Site iske bagair bilkul theek chalti hai — bas offline nahi. Magar
+          // khamoshi se nigalna nahi: ye ghalti dhoondne mein ghanton le leti
+          // hai, kyunki har cheez theek "lagti" hai.
+          console.error('[sw] register nahi hua:', err);
+        });
+      };
+
+      // ★ `load` ka intezar NAHI karte.
+      //   `load` tab aata hai jab har cheez aa chuke — font, analytics, sab.
+      //   Google font ki request atak jaye to wo kabhi aata hi nahi, aur SW
+      //   register hi nahi hota. Gaon ke 2G par yahi asal soorat hai — yani
+      //   jahan offline support ki sab se zyada zarurat hai, wahin ye khud
+      //   bekaar ho jata.
+      //
+      //   requestIdleCallback page ke pehle kaam ke baad chalta hai magar
+      //   kisi ruki hui request ka mohtaj nahi. Timeout is liye ke idle ka
+      //   moqa na mile to bhi chal pare.
+      if ('requestIdleCallback' in window) {
+        (window as Window & { requestIdleCallback: (cb: () => void, o?: { timeout: number }) => void })
+          .requestIdleCallback(register, { timeout: 3000 });
+      } else {
+        setTimeout(register, 1200);
+      }
     }
   </script>
 </body>

@@ -1,0 +1,66 @@
+---
+import { url } from '../lib/site';
+// =============================================================================
+// src/pages/offline.astro
+//
+// Service worker install ke waqt isay cache kar leta hai, taake signal jane
+// par bhi kuch to dikhe — browser ka "dinosaur" wala page nahi.
+//
+// ★ Yahan koi JS nahi jo network mange. Ye wahi page hai jo us waqt chalna
+//   chahiye jab network hai hi nahi.
+// =============================================================================
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+---
+<Base
+  title="Internet nahi hai | ApnaTutor"
+  description="Is waqt internet nahi mil raha. Connection aate hi page khud khul jayega."
+  path="/offline"
+  noindex
+>
+  <div class="wrap offline">
+    <Icon name="globe" />
+    <h1>Internet nahi mil raha</h1>
+    <p>
+      ApnaTutor ko tutors ki list Firebase se laani parti hai, aur us ke liye
+      connection chahiye. WiFi ya mobile data on karein — phir ye page khud
+      khul jayega.
+    </p>
+
+    <div class="actions">
+      <button type="button" class="btn btn-primary" data-retry>
+        <Icon name="refresh" />Dobara koshish karein
+      </button>
+      <a class="btn btn-ghost" href={url('/')}>Homepage</a>
+    </div>
+
+    <p class="hint" data-status hidden>Connection aa gaya — page khol rahe hain…</p>
+  </div>
+
+  <style>
+    .offline{padding:var(--space-6) var(--space-2);text-align:center;
+      display:flex;flex-direction:column;align-items:center;gap:var(--space-2)}
+    .offline :global(.icon){width:44px;height:44px;color:var(--icon-muted)}
+    .offline h1{font-size:clamp(26px,5vw,38px);font-weight:700}
+    .offline p{color:var(--muted-fg);font-size:17px;max-width:46ch}
+    .offline .hint{color:var(--primary-dark);font-weight:600}
+    .actions{display:flex;flex-wrap:wrap;gap:var(--space-1);justify-content:center;
+      margin-top:var(--space-2)}
+  </style>
+
+  <script>
+    const status = document.querySelector<HTMLElement>('[data-status]')!;
+
+    const back = () => {
+      status.hidden = false;
+      // history.back() se wahi page khulta hai jispar banda jana chahta tha.
+      if (history.length > 1) history.back();
+      else window.location.reload();
+    };
+
+    document.querySelector('[data-retry]')?.addEventListener('click', back);
+
+    // Connection wapas aate hi khud — banda dobara tap karne ka intezar na kare.
+    window.addEventListener('online', back);
+  </script>
+</Base>
