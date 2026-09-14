@@ -26,7 +26,9 @@ if (root) {
       // Interested tutors sirf open requests ke liye ginte hain — band requests
       // par query chalana bekaar reads kharch karta hai.
       const interestedCounts = await Promise.all(
-        open.slice(0, 5).map((r) => listLeadsForRequest(r.id).then((l) => l.length).catch(() => 0))
+        open.slice(0, 5).map((r) =>
+          listLeadsForRequest(r.id, session.user.uid).then((l) => l.length).catch(() => 0)
+        )
       );
       const interested = interestedCounts.reduce((a, b) => a + b, 0);
 

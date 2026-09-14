@@ -45,7 +45,7 @@ if (root) {
     q('[data-list-view]').hidden = false;
   }
 
-  async function renderDetail(id: string) {
+  async function renderDetail(id: string, uid: string) {
     const request = await getRequest(id);
 
     if (!request) {
@@ -91,7 +91,7 @@ if (root) {
     }
 
     // Interested tutors — inke public profiles laate hain.
-    const leads = await listLeadsForRequest(id);
+    const leads = await listLeadsForRequest(id, uid);
     const box = q('[data-interested]');
 
     if (leads.length === 0) {
@@ -120,7 +120,7 @@ if (root) {
 
     try {
       if (id) {
-        await renderDetail(id);
+        await renderDetail(id, session.user.uid);
         q('[data-loading]').hidden = true;
         q('[data-detail-view]').hidden = false;
       } else {

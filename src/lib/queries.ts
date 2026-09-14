@@ -388,14 +388,30 @@ export async function closeRequest(id: string): Promise<void> {
   await updateDoc(doc(db, 'requests', id), { status: 'closed' });
 }
 
-/** Ek request par kaun se tutors ne dilchaspi li. */
-export async function listLeadsForRequest(requestId: string): Promise<Lead[]> {
+/**
+ * Ek request par kaun se tutors ne dilchaspi li.
+ *
+ * ★ `parentUid` ka filter LAZMI hai — chahe requestId se natija wahi aata ho.
+ *
+ *   Firestore ki list rules har document par alag nahi chalti; wo poori query
+ *   ko pehle hi dekh kar faisla karti hai ke "kya ye query SIRF wahi documents
+ *   maang rahi hai jo rule ijazat deta hai?". Rule kehta hai
+ *   `resource.data.parentUid == uid()`, is liye query mein bhi parentUid ka
+ *   filter hona chahiye — warna Firestore poori query reject kar deta hai,
+ *   chahe usmein aane wala har document rule par poora utarta ho.
+ *
+ *   Yahi wajah thi ke parent apni hi request khol kar "Aapko is kaam ki ijazat
+ *   nahi hai" dekhta tha, aur tutor ke "Interested" karne ke baad bhi usay
+ *   kuch nazar nahi aata tha — list kabhi aati hi nahi thi.
+ */
+export async function listLeadsForRequest(requestId: string, parentUid: string): Promise<Lead[]> {
   const { db } = await getFirebase();
   const { collection, getDocs, limit, query, where } = await import('firebase/firestore');
 
   const snap = await getDocs(
     query(
       collection(db, 'leads'),
+      where('parentUid', '==', parentUid),
       where('requestId', '==', requestId),
       where('status', '==', 'interested'),
       limit(LIST_CAP)

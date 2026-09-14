@@ -468,6 +468,65 @@ describe('leads/{id}', () => {
     await assertSucceeds(addDoc(collection(db(PARENT_UID), 'leads'), validLead(PARENT_UID)));
   });
 
+  // ---------------------------------------------------------------------
+  // Parent apne interested tutors kaise parhta hai
+  //
+  // ★ Ye do test ek asli bug ki wajah se hain. Parent apni hi request khol
+  //   kar "Aapko is kaam ki ijazat nahi hai" dekhta tha, aur tutor ke
+  //   "Interested" karne ke baad bhi usay kuch nazar nahi aata tha.
+  //
+  //   Wajah: query sirf requestId + status par filter karti thi. Firestore ki
+  //   list rules har document par alag nahi chaltin — wo POORI QUERY dekh kar
+  //   faisla karti hain ke kya ye sirf wahi documents maang rahi hai jo rule
+  //   ijazat deta hai. Rule `parentUid == uid()` kehta hai, is liye query mein
+  //   bhi parentUid ka filter hona LAZMI hai — chahe requestId se natija wahi
+  //   aata ho.
+  // ---------------------------------------------------------------------
+
+  it('parent apne leads parh sakta hai — jab query mein parentUid ho', async () => {
+    await assertSucceeds(
+      getDocs(query(
+        collection(db(PARENT_UID), 'leads'),
+        where('parentUid', '==', PARENT_UID),
+        where('requestId', '==', REQUEST_ID),
+        where('status', '==', 'interested'),
+        limit(50)
+      ))
+    );
+  });
+
+  it('parentUid ke bagair wahi query reject hoti hai ❗', async () => {
+    await assertFails(
+      getDocs(query(
+        collection(db(PARENT_UID), 'leads'),
+        where('requestId', '==', REQUEST_ID),
+        where('status', '==', 'interested'),
+        limit(50)
+      ))
+    );
+  });
+
+  it('tutor apne leads tutorUid se parh sakta hai', async () => {
+    await assertSucceeds(
+      getDocs(query(
+        collection(db(TUTOR_UID), 'leads'),
+        where('tutorUid', '==', TUTOR_UID),
+        orderBy('createdAt', 'desc'),
+        limit(50)
+      ))
+    );
+  });
+
+  it('doosre parent ke leads nahi parhe ja sakte ❗', async () => {
+    await assertFails(
+      getDocs(query(
+        collection(db(PARENT2_UID), 'leads'),
+        where('parentUid', '==', PARENT_UID),
+        limit(50)
+      ))
+    );
+  });
+
   it('parent doosre parent ki request ka lead fan-out nahi kar sakta ❗', async () => {
     await assertFails(addDoc(collection(db(PARENT2_UID), 'leads'), validLead(PARENT2_UID)));
   });
