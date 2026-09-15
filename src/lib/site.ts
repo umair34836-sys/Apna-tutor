@@ -18,6 +18,7 @@ const BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
  *   page par wo domain ki jar par chala jata hai aur 404 deta hai.
  *   scripts/validate-links.mjs build ke baad ye pakad leta hai.
  */
+import CONTACT from '../../config/contact.json';
 export function url(path: string): string {
   if (!path.startsWith('/')) return path; // bahar ka link, mailto, #anchor
   return `${BASE}${path}` || '/';
@@ -148,9 +149,19 @@ export const env = {
   gtmId: import.meta.env.PUBLIC_GTM_ID ?? '',
   ga4Id: import.meta.env.PUBLIC_GA4_ID ?? '',
   metaPixelId: import.meta.env.PUBLIC_META_PIXEL_ID ?? '',
-  contactEmail: import.meta.env.PUBLIC_CONTACT_EMAIL ?? '',
+
+  // ★ Rabta config/contact.json se aata hai, GitHub secret se nahi.
+  //   Wajah: ye SECRET hai hi nahi — ye contact page par khula dikhta hai.
+  //   Secret bana kar rakhne se do nuqsan huye thay: (a) har nayi jagah par
+  //   dobara set karna parta tha, aur (b) set na ho to contact page par
+  //   "rabte ki tafseel abhi set nahi hui" likha reh jata tha — yani site
+  //   khamoshi se bebuniyad dikhti thi. Env var ab bhi upar rehta hai, taake
+  //   code badle bagair badla ja sake.
+  contactEmail: import.meta.env.PUBLIC_CONTACT_EMAIL || CONTACT.email,
   /** ApnaTutor ka apna number. SEO gate ke phone-leak check se mustasna hai. */
-  officialWhatsapp: import.meta.env.PUBLIC_OFFICIAL_WHATSAPP ?? '',
+  officialWhatsapp: import.meta.env.PUBLIC_OFFICIAL_WHATSAPP || CONTACT.whatsapp,
+  /** Contact page par number ke saath likha jata hai. */
+  whatsappNote: CONTACT.whatsappNote,
   /** "owner/repo" — /admin/rebuild isay GitHub Actions trigger karne ke liye padhta hai. */
   githubRepo: import.meta.env.PUBLIC_GITHUB_REPO ?? '',
   /** Workflow ka file name. */

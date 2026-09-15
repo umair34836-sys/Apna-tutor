@@ -100,7 +100,21 @@ function isSeoComboPage(rel) {
 // Phone numbers — static HTML mein kabhi nahi
 // ---------------------------------------------------------------------------
 
-const OFFICIAL = [process.env.PUBLIC_OFFICIAL_PHONE, process.env.PUBLIC_OFFICIAL_WHATSAPP]
+// ★ Wahi file jo site parhti hai (config/contact.json) — env sirf upar chalta
+//   hai. Do alag jagahon se parhte to ek din number badalta aur gate usay
+//   ajnabi samajh kar build rok deta, bilkul theek dikhne wale HTML par.
+let contactConfig = {};
+try {
+  contactConfig = JSON.parse(readFileSync(join(process.cwd(), 'config', 'contact.json'), 'utf8'));
+} catch {
+  // File na ho to koi mustasna number nahi — gate zyada sakht ho jata hai,
+  // jo is soorat mein mehfooz taraf hai.
+}
+
+const OFFICIAL = [
+  process.env.PUBLIC_OFFICIAL_PHONE,
+  process.env.PUBLIC_OFFICIAL_WHATSAPP || contactConfig.whatsapp,
+]
   .filter(Boolean)
   .map((n) => n.replace(/[^\d]/g, ''));
 

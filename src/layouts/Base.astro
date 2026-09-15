@@ -65,6 +65,21 @@ const baseJsonLd: Record<string, unknown>[] = [
     url: SITE.url,
     logo: absoluteUrl('/logo-mark.svg'),
     areaServed: AREA_SERVED,
+    // ★ Rabta yahan bhi — Google isi se search natije mein contact dikhata hai.
+    //   Sirf wo dikhate hain jo waqai mojood ho; khali field bhejna Google ko
+    //   adhoora data dena hai.
+    ...(env.contactEmail ? { email: env.contactEmail } : {}),
+    ...(env.officialWhatsapp
+      ? {
+          contactPoint: {
+            '@type': 'ContactPoint',
+            contactType: 'customer support',
+            telephone: env.officialWhatsapp,
+            ...(env.contactEmail ? { email: env.contactEmail } : {}),
+            availableLanguage: ['ur', 'en'],
+          },
+        }
+      : {}),
     ...(SITE.sameAs.length ? { sameAs: SITE.sameAs } : {}),
   },
 ];

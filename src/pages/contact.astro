@@ -29,7 +29,7 @@ const waDigits = env.officialWhatsapp.replace(/[^\d]/g, '');
         {waDigits && (
           <a class="contact-card" href={`https://wa.me/${waDigits}`} rel="noopener">
             <Icon name="message-square" />
-            <div><strong>WhatsApp</strong><span>Tez jawab ke liye</span></div>
+            <div><strong>WhatsApp</strong><span>{env.whatsappNote || 'Tez jawab ke liye'}</span></div>
           </a>
         )}
       </div>
